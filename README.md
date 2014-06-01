@@ -1,26 +1,48 @@
-﻿## Vector video format
+# Animation format thoughts
 
-* http://svg-wow.org/camera/camera.xhtml
-* Raphael.js library - http://raphaeljs.com/
-	* demo: http://raphaeljs.com/chart.html
+## general ideas
 
-found on 23.4.:
-* SMIL - http://www.w3.org/TR/SMIL20/animation.html
-	- this could be used as the video format
-* Wacom - use this plugin http://www.wacomeng.com/web/, http://www.wacomeng.com/web/WebPluginReleaseNotes.htm#_Toc324315282
-* Progressive path drawing - http://code.voidblossom.com/raphael-progressive-path-drawing/
-* SVG animation - http://www.hongkiat.com/blog/scalable-vector-graphics-animation/
-* Frame by frame animation with SVG, SMILE - http://www.microsoft.com/en-gb/developers/articles/frame-by-frame-animation-with-svg
-* Animated SVG - https://camo.githubusercontent.com/a33393c3cfd5711c2b9699b60652775cd8cf9190/68747470733a2f2f7261776769746875622e636f6d2f68766672616e636573636f2f667265657374796c657376672f6d61737465722f6578616d706c652f616e696d617465642e737667
-	- it has frames, redraws the whole screen each time
-* GASP - should be fast, is it opensource? 
-	- see http://www.greensock.com/why-gsap/
-* timeline - http://css-tricks.com/myth-busting-css-animations-vs-javascript/
-* another article about animating SVG - http://24ways.org/2013/animating-vectors-with-svg/
-* svg.js looks better than Raphaël
-	- see https://github.com/otm/svg.path.js
-* raw javascript would be the best still I guess - se this benchmark: http://jsperf.com/paper-vs-processing-vs-raphael/16
+- The format needs to be as lightweight as possible.
+- It should be somehow similar or derived from SVG (browser compatibility).
+- Seeking should be easy and fast.
+- As many data as possible should be saved
+    + it might be used later to do some postprocessing
+- Every movement of cursor must be saved (the cursor position is shown all the time - unless it is not inside the recording area)
 
-found on 1.6.:
-* jPlayer - browser compatibility, better API
-    - http://jplayer.org/
+## idea __#1__ (2014-06-01)
+
+The video is divided into chunks corresponding to what happend on the screen in the last _n_ seconds (1, 2, 5 ?). Seeking will then be restricted to these chunks (at least in the first version).
+
+### xml file structure
+
+        <animation>
+            <meta>
+                ...
+            </meta>
+            <data>
+                <chunk start="..." end="...">
+                    <cursor>
+                        <m x="..." y="..." pressure="[0 .. 1]" time="..." />
+                        ...
+                        <color-change name="..." />
+                        ...
+                    </cursor>
+                    <svg>
+                        <path ... />
+                    </svg>
+                </chunk>
+                ...
+                <chunk />
+            </data>
+        </animation>
+
+- __cursor__ - the positions of cursor
+    - __color-change__ - change of current color
+    - __m__ - cursor movement
+        + pressure - stylus pressure, for mouse it would be 0 - up, 1 - down
+- __svg__ - contains the path(s) that were drawn in this chunk => rendering of the cursor movement should result in the same output
+
+The advantage of this approach should be fast seeking - there is no need to render the output step by step but only to render some of the _svg_'s.
+
+The disadvangate is data duplicity. But if the resulting xml should be quite small anyway.
+
