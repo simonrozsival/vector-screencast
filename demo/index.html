@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Vector screencast - DEMO</title>
+		
+		<!-- Libraries -->
+		<link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/style.css">
+
+		<!-- Open Sans font -->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+
+	</head>
+	<body>
+		<div class="container">
+			<div class="row" id="title">
+				<div class="col-xs-12">
+					<h1>Khanova škola</h1>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xs-12">
+					<div id="board">
+						<object data="img/logo.svg" type="image/svg+xml" id="loading-logo">
+							<!-- @todo fallback: img src="img/logo.png" / -->
+						</object>
+
+						<noscript>
+							<!-- for browsers with no JavaScript support -->
+							<p>Váš prohlížeč nepodporuje JavaScript, nebo ho máte vypnutný. Pro přehrávání videa je nutné mít JavaScript v prohlížeči zapnutý.</p>
+						</noscript>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xs-12">
+					<div id="controls">
+						<div class="row">
+							<!-- play/pause button -->
+							<div class="col-xs-2 text-center">
+								<button class="btn btn-success" id="play-pause">
+									<span class="glyphicon glyphicon-play"></span>
+								</button>
+							</div> 
+
+							<!-- the progress axis -->
+							<div class="col-xs-8" id="video-progress">
+								<div class="progress">
+									<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+									<div class="progress-bar progress-bar-buffer-size" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+								</div>
+							</div>
+
+							<!-- progress text -->
+							<div class="col-xs-2" id="video-time">
+								<strong id="current-time">6:21</strong>&nbsp;/&nbsp;<span id="total-time">10:53</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- downloading scripts at the end of the page to allow displaying *some* content -->
+		<script src="http://code.jquery.com/jquery.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/raphael.js"></script>
+		<script type="text/javascript" src="js/player.js"></script>
+		<script type="text/javascript">
+			window.onload = function() {
+				var player = new KhanAcademyPlayer($("#board"), Raphael);
+
+				var playing = false;
+				$("#play-pause").on("click", function(e) {
+					if(playing == false) {
+						$(this).children(".glyphicon").removeClass("glyphicon-play").addClass("glyphicon-stop");
+						player.start();
+						playing = true;
+					}
+
+					return false;
+				});
+			}
+		</script>
+	</body>
+</html>
