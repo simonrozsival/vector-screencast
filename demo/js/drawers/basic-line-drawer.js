@@ -27,7 +27,7 @@ BasicLineDrawer.prototype.startLine = function(x, y, pressure) {
 	this.x = x;
 	this.y = y;
 	this.pressure = pressure;
-}
+};
 
 BasicLineDrawer.prototype.drawSegment = function(x, y, presure) {
 	var c = this.context;
@@ -46,12 +46,16 @@ BasicLineDrawer.prototype.drawSegment = function(x, y, presure) {
 	// save the data
 	this.x = x;
 	this.y = y;
-}
+};
 
 BasicLineDrawer.prototype.endLine = function(x, y, pressure) {
 
-}
+};
 
 BasicLineDrawer.prototype.setColor = function(color) {
 	this.color = color;
-}
+};
+
+BasicLineDrawer.prototype.clearAll = function(width, height) {
+	this.context.clearRect(0, 0, width, height);
+};

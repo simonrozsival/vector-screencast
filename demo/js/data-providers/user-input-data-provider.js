@@ -55,28 +55,24 @@ UserInputDataProvider.prototype.inside = function() {
 //  
 
 UserInputDataProvider.prototype.onMouseMove = function(e) {
-	var coords = this.correctMouseCoords(e);
-	this.cursorX = coords.x;
-	this.cursorY = coords.y;
-	this.reportAction();
+	if(this.running) {		
+		var coords = this.correctMouseCoords(e);
+		this.cursorX = coords.x;
+		this.cursorY = coords.y;
+		this.reportAction();
+	}
 }
 
 UserInputDataProvider.prototype.onMouseDown = function(e) {
-	this.pressed = true;
-	this.reportAction();
+	if(this.running) {		
+		this.pressed = true;
+		this.reportAction();
+	}
 }
 
 UserInputDataProvider.prototype.onMouseUp = function(e) {
-	this.pressed = false;
-	this.reportAction();
-}
-
-UserInputDataProvider.prototype.onMouseOver = function(e) {
-	this.inside = true;
-	this.reportAction();
-}
-
-UserInputDataProvider.prototype.onMouseOut = function(e) {
-	this.inside = false;
-	this.reportAction();
+	if(this.running) {
+		this.pressed = false;
+		this.reportAction();
+	}
 }

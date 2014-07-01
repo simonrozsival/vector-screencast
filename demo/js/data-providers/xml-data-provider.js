@@ -21,6 +21,7 @@ function XmlDataProvider(fileName, settings) {
 
 	this.videoInformation = new KhanAcademyVectorReader();
 	this.videoInformation.loadFile(fileName, errorReport, onSuccess);//, validate); // - validation does not work well so far..
+	this.rewind();
 	this.settings = settings;
 	this.running = false;	
 }
@@ -29,13 +30,19 @@ XmlDataProvider.prototype.getCurrentCursorState = function() {
 	this.lastState = this.currentState;
 	this.currentState = this.nextState;
 
+	// I have returned the very last state when this function was called last
+	if(this.reachedEnd == true) {
+		this.nextState = this.currentState;
+		this.stop(true);
+		return undefined;
+	}
+
 	do {
 		this.nextState = this.videoInformation.getNext();
 
 		if(this.nextState == undefined) {
 			// reached the end of the video!
-			this.nextState = this.currentState;
-			this.stop();
+			this.reachedEnd = true; // return the current state, but then stop
 			break;
 		}
 
@@ -54,9 +61,18 @@ XmlDataProvider.prototype.getCurrentCursorState = function() {
 		y: this.currentState.y,
 		pressure: this.currentState.pressure,
 		time: this.currentState.time,
-		inside: true // @todo - I shouldn't use this after all...
+		inside: true // @todo - I shouldn't use this at all...
 	};
 };
+
+XmlDataProvider.prototype.getMetaData = function() {
+	return this.videoInformation.getMetaData(); // this information is available only after the document is loaded!
+}
+
+XmlDataProvider.prototype.rewind = function() {
+	this.videoInformation.rewind();
+	this.reachedEnd = false;
+}
 
 XmlDataProvider.prototype.start = function() {
 	this.running = true;
@@ -65,15 +81,22 @@ XmlDataProvider.prototype.start = function() {
 
 XmlDataProvider.prototype.tick = function() {
 	var _this = this;
+	var timeGap = this.currentState.time - this.lastState.time;
 	this.timeout = setTimeout(function(){
 		// this is "window" in this context
 		_this.parent.reportAction.call(_this);
 		if(_this.running) {
 			_this.tick();
 		}
-	}, this.currentState.time - this.lastState.time);
+	}, timeGap);
 }
 
-XmlDataProvider.prototype.stop = function() {
-	this.running = false;
+XmlDataProvider.prototype.stop = function(reachedEnd) {
+	if(this.running == true) {
+		this.running = false;
+
+		if(reachedEnd == true) {
+			this.consumer.onReachedEnd();
+		}
+	}
 }

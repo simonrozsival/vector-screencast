@@ -87,12 +87,30 @@ KhanAcademyVectorReader.prototype.validateXmlDocument = function(rawXml, validat
 	// @todo: Explain here in comments, why validation is not strictly required.
 }
 
+KhanAcademyVectorReader.prototype.getMetaData = function() {
+	return this.meta;
+};
+
 KhanAcademyVectorReader.prototype.loadData = function($xml) {
 	// I know that:
 	// - the file is a well-formed XML (but it doesn't have to be valid!)
 	// - the version is OK too
 	
-	// @todo - load META DATA
+	// [1] load meta data
+
+	var search = function(parent) {
+		var data = {};
+
+		parent.children().each(function(){
+			var child = $(this);
+			data[this.tagName] = child.children().length > 0 ? search(child) : child.text();
+		});
+
+		return data;
+	};
+	this.meta = search($xml.find("meta"));	
+
+	// [2] load image data
 
 	var reader = this;
 	$xml.find("chunk").each(function(){
@@ -116,8 +134,8 @@ KhanAcademyVectorReader.prototype.loadData = function($xml) {
 						type: "cursor-movement",
 						x: parseInt(item.attr("x")),
 						y: parseInt(item.attr("y")),
-						pressure: parseInt(item.attr("pressure")),
-						time: parseInt(item.attr("time"))
+						pressure: parseInt(item.attr("p")),
+						time: parseInt(item.attr("t"))
 					});
 					break;
 				case "c":
@@ -138,9 +156,6 @@ KhanAcademyVectorReader.prototype.loadData = function($xml) {
 		reader.chunks.push(data);
 	});
 
-	this.currentChunk = 0; // the first chunk
-	this.currentStep = 0; // the first "step" of the first chunk
-
 	return true;
 };
 
@@ -150,9 +165,11 @@ KhanAcademyVectorReader.prototype.getNext = function() {
 	}
 
 	if(this.chunks[this.currentChunk].cursor.length <= this.currentStep) {
-		// load next chunk
-		console.log(this.currentChunk++);
+		// skip to the next chunk
 		this.currentStep = 0;
+		this.currentChunk++;
+
+		// have I reached the very end of the video?
 		if(this.chunks.length <= this.currentChunk) {
 			// end of the video
 			return undefined;
@@ -160,14 +177,15 @@ KhanAcademyVectorReader.prototype.getNext = function() {
 	}
 
 	var chunk = this.chunks[this.currentChunk].cursor[this.currentStep++];
-	if(chunk == undefined) {
-		console.log("current chunk: " + this.currentChunk);
-		console.log("current step: " + this.currentStep);
-		console.log("steps count: " + this.chunks[this.currentChunk].cursor.length);
-	}
 	return chunk;
 };
 
+
 KhanAcademyVectorReader.prototype.getPrerenderedData = function(from, to) {
 
+};
+
+KhanAcademyVectorReader.prototype.rewind = function() {
+	this.currentChunk = 0; // the first chunk
+	this.currentStep = 0; // the first "step" of the first chunk
 };

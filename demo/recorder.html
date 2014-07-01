@@ -16,16 +16,15 @@
 		<div class="container">
 			<div class="row" id="title">
 				<div class="col-xs-12">
-					<h1>Khanova škola</h1>
+					<h1 title="Khanova škola">	
+						Khanova škola
+					</h1>
 				</div>
 			</div>
 
 			<div class="row">
 				<div class="col-xs-12">
 					<div id="board">
-						<object data="img/logo.svg" type="image/svg+xml" id="loading-logo">
-							<!-- @todo fallback: img src="img/logo.png" / -->
-						</object>
 						<canvas id="board-canvas" width="1140" height="500"></canvas>
 
 						<noscript>
@@ -43,34 +42,20 @@
 					<div id="controls">
 						<div class="row">
 							<!-- play/pause button -->
-							<div class="col-xs-2 text-center">
-								<button class="btn btn-danger" id="record-stop">
-									<span class="glyphicon glyphicon-record"></span>
-								</button>
+							<div class="col-xs-2 text-center" id="rec-button-container">
 							</div> 
 
-							<!-- the progress axis -->
-							<div class="col-xs-8" id="video-progress">
-								<div class="progress">
-									<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
-								</div>
-							</div>
-
-							<!-- progress text -->
-							<div class="col-xs-2" id="video-time">
-								<strong id="current-time">0:00</strong>&nbsp;/&nbsp;<span id="total-time" data-toggle="tooltip" title="The maximum length of the clip is 15 minutes.">15:00</span>
-							</div>
-						</div>
-
-						<!-- color and brush size panels: -->
-						<div class="row">
+							<!-- color and brush size panels: -->
 							<div class="col-xs-6">
 								<div id="colors-panel"></div>
 							</div>
 
-							<div class="col-xs-6">
+							<div class="col-xs-4">
 								<div id="bush-sizes-panel"></div>
 							</div>
+						</div>
+
+						<div class="row">
 						</div>
 					</div>
 				</div>
@@ -126,48 +111,19 @@
 
 				var recorder = new KhanAcademyRecorder({
 					board: "#board",
-					canvas: "#board-canvas"
+					canvas: "#board-canvas",
+					recButtonContainer: "#rec-button-container"
 				}, lineDrawer, dataProvider);
 
-				var recording = false;
-				var startRecording = function() {
-					// canvas and controls settings
-					$("#loading-logo").hide();
-					$("#board-canvas").addClass("active");
-					$(this).children(".glyphicon").removeClass("glyphicon-record").addClass("glyphicon-stop");
+				//
+				//
+				//
+				
+				recorder.startWhenReady();
 
-					// start recording
-					recorder.clearAll();
-					recorder.start();
-				};
-
-				var stopRecording = function() {
-					// inform the user about uploading that is in process
-					$(this).removeClass("btn-danger").addClass("btn-default")
-							.children(".glyphicon").removeClass("glyphicon-stop").addClass("glyphicon-upload");
-
-					//saveRecordedData(recorder);
-
-					// inform the user that uploading has finished and he can record again
-					$(this).removeClass("btn-default").addClass("btn-danger")
-							.children(".glyphicon").removeClass("glyphicon-upload").addClass("glyphicon-record");
-					$("#board-canvas").removeClass("active");
-					$("#loading-logo").show();
-				};
-
-				$("#record-stop").on("click", function(e) {
-					e.preventDefault();
-
-					// disable the button until the initialization is 
-					$(this).attr("disabled", "disabled");
-
-					// toggle recording
-					recording == false ? startRecording() : stopRecording();
-					recording = !recording;
-
-					// the button can be pressed again
-					$(this).removeAttr("disabled");
-				});
+				//
+				//
+				//
 
 			});
 		</script>

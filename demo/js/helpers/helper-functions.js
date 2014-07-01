@@ -24,6 +24,38 @@ var hasMethods = function(obj /*, method list as strings */){
     return true;
 };
 
+/**
+ * Converts an integer value of seconds to a human-readable time format - "0:00"
+ * @param  {integer} s seconds
+ * @return {string}    Human readable time
+ */
+var secondsToString = function(s) {
+    var seconds = s % 60;
+    if(seconds <= 9) {
+        seconds = "0" + seconds; // seconds should have leading zero if lesser than 10
+    }
+
+    var minutes = Math.floor(s / 60);
+    return minutes + ":" + seconds;
+};
+
+/**
+ * Converts an integer value of milliseconds to a human-readable time format - "0:00"
+ * @param  {integer} ms     milliseconds
+ * @return {string}         Human readable time
+ */
+var millisecondsToString = function(ms) {
+    return secondsToString(Math.floor(ms / 1000));
+};
+
+var tryParseInt = function(maybeInt) {
+    var tmp = parseInt(maybeInt);
+    if(tmp != NaN) {
+        return tmp;
+    }
+
+    return maybeInt; // could be renamed to "notAInt" ... ;-)
+}
 
 
 (function($) {

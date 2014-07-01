@@ -16,6 +16,11 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 	this.settings = {
 		board: "#khan-academy-board",
 		canvas: "#khan-academy-board canvas",
+		playButtonId: "play",
+		buttonContainer: "#button-container",
+		progressBarContainer: "#progress-bar",
+		timerContainer: "#video-time",
+		progressStep: 80
 	};
 
 	$.extend(true, this.settings, options);
@@ -31,7 +36,6 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 
 	// init the data provider
 	// - register as a data consumer to the data provider
-	dataProvider.registerDataConsumer(this);
 	dataProvider.setOffset(this.canvas.offset());
 	this.dataProvider = dataProvider;
 
@@ -39,23 +43,140 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 	this.cursor = new Cursor(this.board, 20, "white"); // @todo load or calculate these constants somehow
 	var initState = dataProvider.getCurrentCursorState();
 	this.cursor.moveTo(initState.x, initState.y);
-	this.playing = false;
 
+	// progress information - default values
+	this.playing = false;
+	this.time = 0;
+
+	this.prepareControls();
+};
+
+KhanAcademyPlayer.prototype.prepareControls = function() {
+
+	// [1] playing button
+	this.playButton = $("<button></button>").addClass("btn btn-success").attr("id", this.settings.playButtonId);
+	var icon = $("<span></span>").addClass("glyphicon glyphicon-play");
+	
+	this.playButton.append(icon);
+	$(this.settings.buttonContainer).append(this.playButton);		
+
+	// [2] progress bar
+	this.progressBar = $("<div></div>").addClass("progress-bar progress-bar-success").attr("role", "progress-bar");
+	this.preloadedBar = $("<div></div>").addClass("progress-bar progress-bar-info");
+	var progressBarContainer = $(this.settings.progressBarContainer);
+	progressBarContainer.append(this.progressBar);
+	progressBarContainer.append(this.preloadedBar);
+
+	// [3] displayed time
+	this.textSpan = $("<strong></strong>").addClass("time").attr("id", "current-time").text(secondsToString(this.time));
+	this.videoLength = this.dataProvider.getMetaData().length;
+	totalTime = $("<span></span>").addClass("time").attr("id", "total-time").text(millisecondsToString(this.videoLength));
+	var timerContainer = $(this.settings.timerContainer);
+	timerContainer.append(this.textSpan).append("<span>&nbsp;/&nbsp;</span>").append(totalTime);
+
+};
+
+KhanAcademyPlayer.prototype.replay = function() {
+	this.drawer.clearAll(this.board.width(), this.board.height());
+	this.dataProvider.rewind();
+	this.time = 0;
 };
 
 KhanAcademyPlayer.prototype.start = function () {
-	this.playing = true;
+	if(this.reachedEnd == true) {
+		this.replay();
+	}
+
+	// UI changes
+	this.playButton.children(".glyphicon").removeClass("glyphicon-play").removeClass("glyphicon-repeat").addClass("glyphicon-pause");
+
+	// start recording
+	this.dataProvider.registerDataConsumer(this);
 	this.dataProvider.start();
+	this.runTimeCounter(this.time);
 };
 
-KhanAcademyPlayer.prototype.stop = function () {
-	this.painting = false;
-	this.recording = false;
+KhanAcademyPlayer.prototype.onReachedEnd = function() {
+	if(this.playing == true) {
+		this.reachedEnd = true;
+		this.playing = false;
+		this.stop(true);
+	}
+}
+
+KhanAcademyPlayer.prototype.stop = function (reachedEnd) {
+	this.dataProvider.stop(reachedEnd);
+
+	// inform the user about uploading that is in process
+	var icon = this.playButton.children(".glyphicon");
+  	icon.removeClass("glyphicon-pause");
+
+	if(reachedEnd == false) { // do not inform the data provider if the stop was signaled by him
+		icon.addClass("glyphicon-play"); // it is just paused
+	} else {
+		icon.addClass("glyphicon-repeat"); // it is just paused		
+		this.updateDisplayedTime(this.videoLength); // make sure the progressbar goes to 100%
+	}
+
+	this.stopTimeCounter();
+	//saveRecordedData(recorder);
 };
 
 KhanAcademyPlayer.prototype.getCanvas = function() {
 	return this.canvas;
+};
+
+KhanAcademyPlayer.prototype.runTimeCounter = function(time) {
+	this.time = time;
+	this.textSpan.text(secondsToString(this.time));
+	var _this = this;
+	this.tick = setInterval(function() {			
+		_this.time += _this.settings.progressStep;
+		_this.updateDisplayedTime(_this.time);
+	}, this.settings.progressStep);
+};
+
+KhanAcademyPlayer.prototype.updateDisplayedTime = function(time) {
+	var text = millisecondsToString(time);
+	this.textSpan.text(text);
+
+	var percents = time / this.videoLength * 100;
+	console.log(time + " / " + this.videoLength + " * 100 = " + percents);
+	this.progressBar.css("width", percents + "%");
 }
+
+KhanAcademyPlayer.prototype.stopTimeCounter = function() {
+	clearInterval(this.tick);
+};
+
+
+KhanAcademyPlayer.prototype.startWhenReady = function() {
+
+	//
+	//
+	
+	var _this = this;
+	
+	//
+	//
+
+	$("body").on("click", "#" + this.settings.playButtonId, function(e) {
+		e.preventDefault();
+		var btn = $(this);
+
+		// disable the button until the initialization is 
+		btn.attr("disabled", "disabled");
+
+		// toggle recording
+		_this.playing == false ? _this.start() : _this.stop(false);
+		_this.playing = !_this.playing;
+
+
+		// the button can be pressed again
+		btn.removeAttr("disabled");
+	});
+};
+
 
 //
 //
@@ -93,14 +214,3 @@ KhanAcademyPlayer.prototype.recieveNewState = function(state) {
 	this.lastState = state;
 
 };
-
-
-//
-//
-// HELPER methods
-//
-//
-
-KhanAcademyPlayer.prototype.clearAll = function() {
-	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-}
