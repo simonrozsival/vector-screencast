@@ -55,7 +55,11 @@ body {
 	}
 
 	#controls button .glyphicon + span {
-		padding-right: 10px;
+		padding-left: 10px;
+	}
+
+	#controls button:not(:last-child) {
+		margin-right: 10px;
 	}
 
 	#video-progress {

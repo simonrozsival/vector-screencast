@@ -20,7 +20,7 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 		buttonContainer: "#button-container",
 		progressBarContainer: "#progress-bar",
 		timerContainer: "#video-time",
-		progressStep: 80
+		progressbarRefreshPeriod: 30
 	};
 
 	$.extend(true, this.settings, options);
@@ -37,6 +37,7 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 	// init the data provider
 	// - register as a data consumer to the data provider
 	dataProvider.setOffset(this.canvas.offset());
+	dataProvider.registerDataConsumer(this);
 	this.dataProvider = dataProvider;
 
 	// create a cursor
@@ -78,20 +79,23 @@ KhanAcademyPlayer.prototype.prepareControls = function() {
 
 KhanAcademyPlayer.prototype.replay = function() {
 	this.drawer.clearAll(this.board.width(), this.board.height());
-	this.dataProvider.rewind();
 	this.time = 0;
+	this.updateDisplayedTime(this.time);	
+
+	var _this = this;
+	setTimeout(function(){
+		_this.dataProvider.rewind();
+		_this.dataProvider.start();
+		_this.runTimeCounter(_this.time);
+		_this.playButton.children(".glyphicon").removeClass("glyphicon-play").removeClass("glyphicon-repeat").addClass("glyphicon-pause");
+	}, 1000);
 };
 
 KhanAcademyPlayer.prototype.start = function () {
-	if(this.reachedEnd == true) {
-		this.replay();
-	}
-
 	// UI changes
 	this.playButton.children(".glyphicon").removeClass("glyphicon-play").removeClass("glyphicon-repeat").addClass("glyphicon-pause");
 
 	// start recording
-	this.dataProvider.registerDataConsumer(this);
 	this.dataProvider.start();
 	this.runTimeCounter(this.time);
 };
@@ -130,18 +134,19 @@ KhanAcademyPlayer.prototype.runTimeCounter = function(time) {
 	this.time = time;
 	this.textSpan.text(secondsToString(this.time));
 	var _this = this;
-	this.tick = setInterval(function() {			
-		_this.time += _this.settings.progressStep;
+	this.tick = setInterval(function() {	
+		_this.time += _this.settings.progressbarRefreshPeriod;	
 		_this.updateDisplayedTime(_this.time);
-	}, this.settings.progressStep);
+	}, this.settings.progressbarRefreshPeriod);
 };
 
 KhanAcademyPlayer.prototype.updateDisplayedTime = function(time) {
+	console.log(time);
+
 	var text = millisecondsToString(time);
 	this.textSpan.text(text);
 
 	var percents = time / this.videoLength * 100;
-	console.log(time + " / " + this.videoLength + " * 100 = " + percents);
 	this.progressBar.css("width", percents + "%");
 }
 
@@ -168,7 +173,16 @@ KhanAcademyPlayer.prototype.startWhenReady = function() {
 		btn.attr("disabled", "disabled");
 
 		// toggle recording
-		_this.playing == false ? _this.start() : _this.stop(false);
+		if(_this.playing == false) {
+			if(_this.reachedEnd == false) {
+				_this.start();
+			} else {
+				_this.replay();
+			}
+		} else {
+			_this.stop(false);
+		}
+
 		_this.playing = !_this.playing;
 
 
@@ -185,6 +199,11 @@ KhanAcademyPlayer.prototype.startWhenReady = function() {
 //
 
 KhanAcademyPlayer.prototype.recieveNewState = function(state) {
+
+	if(state == undefined) {
+		console.log("No more data. Can't recieve new state.");
+		return;
+	}
 
 	// [1] set the cursor
 	this.cursor.moveTo(state.x, state.y);

@@ -12,16 +12,12 @@ function XmlDataProvider(fileName, settings) {
 	var _this = this;
 	var onSuccess = function() {
 		// this is not XmlDataProvider in this context
-
-		_this.lastState = { time: 0 };
-		_this.currentState = _this.videoInformation.getNext();
-		_this.nextState = _this.videoInformation.getNext();
+		_this.rewind();
 		_this.onReady();
 	};
 
 	this.videoInformation = new KhanAcademyVectorReader();
 	this.videoInformation.loadFile(fileName, errorReport, onSuccess);//, validate); // - validation does not work well so far..
-	this.rewind();
 	this.settings = settings;
 	this.running = false;	
 }
@@ -71,6 +67,9 @@ XmlDataProvider.prototype.getMetaData = function() {
 
 XmlDataProvider.prototype.rewind = function() {
 	this.videoInformation.rewind();
+	this.lastState = { time: 0 };
+	this.currentState = this.videoInformation.getNext();
+	this.nextState = this.videoInformation.getNext();
 	this.reachedEnd = false;
 }
 
@@ -80,12 +79,18 @@ XmlDataProvider.prototype.start = function() {
 };
 
 XmlDataProvider.prototype.tick = function() {
+
+	if(this.currentState == undefined) {
+		console.log("No more data. Can't `tick`.");
+		return;
+	}
+
 	var _this = this;
 	var timeGap = this.currentState.time - this.lastState.time;
 	this.timeout = setTimeout(function(){
 		// this is "window" in this context
-		_this.parent.reportAction.call(_this);
 		if(_this.running) {
+			_this.parent.reportAction.call(_this);
 			_this.tick();
 		}
 	}, timeGap);

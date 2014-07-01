@@ -48,15 +48,6 @@ var millisecondsToString = function(ms) {
     return secondsToString(Math.floor(ms / 1000));
 };
 
-var tryParseInt = function(maybeInt) {
-    var tmp = parseInt(maybeInt);
-    if(tmp != NaN) {
-        return tmp;
-    }
-
-    return maybeInt; // could be renamed to "notAInt" ... ;-)
-}
-
 
 (function($) {
 
