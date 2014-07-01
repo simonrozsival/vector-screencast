@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+				targetNamespace="http://www.w3schools.com"
+				xmlns="http://www.w3schools.com"
+				elementFormDefault="qualified">
+
+<xs:element name="animation" type="animationType"></xs:element>
+
+
+<!-- TYPES -->
+
+<!-- root element "animation" -->
+<xs:complexType name="animationType">
+	<xs:sequence>
+	  <xs:element name="meta" type="metaType" />
+	  <xs:element name="data" type="dataType" />
+	</xs:sequence>
+
+	<!-- version attribute -->
+	<xs:attribute name="version">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<!-- list of versions -->
+				<xs:enumeration value="dev" />
+				<!--xs:enumeration value="0.1" /-->
+				<!--xs:enumeration value="1.0" /-->
+				<!-- ... -->
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+</xs:complexType>
+
+
+
+
+<!-- information about the video -->
+
+<xs:complexType name="metaType">
+	<xs:all> <!-- the order is not relevant -->
+		<xs:element name="about">
+			<xs:complexType>
+				<xs:all>
+					<xs:element name="author" type="xs:string" />
+					<xs:element name="title" type="xs:string" />
+					<xs:element name="description" type="xs:string" />
+				</xs:all>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="length" type="xs:nonNegativeInteger" /> <!-- milliseconds -->
+		<xs:element name="chunkLength" type="xs:nonNegativeInteger" />  <!-- milliseconds -->
+		<xs:element name="chunksCount" type="xs:nonNegativeInteger" />
+
+		<xs:element name="board">
+			<xs:complexType>
+				<xs:all>
+					<!-- these entries will be used to calculate 
+							positions of cursor on a board with different dimensions -->
+					<xs:element name="width" type="xs:positiveInteger" />
+					<xs:element name="height" type="xs:positiveInteger" />
+				</xs:all>	
+				<xs:attribute name="background" type="colorType" />
+			</xs:complexType>
+		</xs:element>
+
+	</xs:all>
+</xs:complexType>
+
+
+
+<!-- video data -->
+
+<xs:complexType name="dataType">
+	<xs:sequence>
+		<xs:element name="chunk" type="chunkType" minOccurs="0" maxOccurs="unbounded" />
+	</xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="chunkType">
+	<xs:sequence>
+		<xs:element name="cursor" type="cursorType" />
+		<xs:element name="svg" name="prerenderedSvgType" />
+	</xs:sequence>
+
+	<xs:attribute name="start" type="xs:nonNegativeInteger" />
+	<xs:attribute name="currentColor" type="colorType" />
+	<xs:attribute name="currentBrushSize" type="xs:positiveInteger" />
+</xs:complexType>
+
+<xs:complexType name="cursorType">
+	<xs:all>
+		<xs:element name="m" type="cursorMovementType" minOccurs="0" maxOccurs="unbounded" />
+		<xs:element name="c" type="colorChangeType" minOccurs="0" maxOccurs="unbounded" />
+		<xs:element name="s" type="brushSizeChangeType" minOccurs="0" maxOccurs="unbounded" />
+	</xs:all>
+</xs:complexType>
+
+<xs:complexType name="cursorMovementType">
+	<xs:attribute name="x" type="xs:float" />
+	<xs:attribute name="y" type="xs:float" />
+	<xs:attribute name="p" type="xs:float" /> <!-- pressure -->
+	<xs:attribute name="t" type="xs:float" /> <!-- time -->
+</xs:complexType>
+
+<xs:complexType name="colorChangeType">
+	<xs:attribute name="value" type="colorType" />
+</xs:complexType>
+
+<xs:complexType name="brushSizeChangeType">
+	<xs:attribute name="size" type="xs:positiveInteger" />
+</xs:complexType>
+
+<xs:complexType name="prerenderedSvgType">
+	<!-- SVG -->
+	<xs:any namespace="http://www.w3.org/2000/svg" processContents="strict" />
+</xs:complexType>
+
+
+
+
+<!-- helper types -->
+
+<xs:complexType name="timeType">
+	<xs:sequence>
+		<xs:element name="minutes" type="xs:nonNegativeInteger" />
+		<xs:element name="seconds" type="xs:nonNegativeInteger" />
+	</xs:sequence>
+</xs:complexType>
+
+<xs:simpleType name="colorType">
+	<xs:restriction base="xs:string">
+		<xs:whitespace value="collapse" />
+		<xs:pattern value="#[a-fA-F0-9]{6}" />
+	</xs:restriction>
+</xs:simpleType>
+
+
+</xs:schema>

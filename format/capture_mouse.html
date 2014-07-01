@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Capturing mouse movement</title>
+
+		<script>
+		var currentChunk = 0;
+		var chunkSize = 2000;
+		var mouseState = 0;
+		var startTime = 0;
+
+		var currentTime = function() {
+			return (new Date()).getTime() - startTime;
+		}
+
+		var chunkSeparator = function(time) {
+			var nextChunk = Math.floor(time / chunkSize);
+			if(nextChunk > currentChunk) {
+				console.log("</chunk>");
+				console.log("<chunk>");
+				currentChunk = nextChunk;
+			}
+		}
+
+		window.onload = function() {
+			startTime = currentTime();
+		}
+
+		window.onmousedown = function() {
+			mouseState = 1;
+		}
+
+		window.onmouseup = function() {
+			mouseState = 0;
+		}
+
+		window.onmousemove = function(e) {
+			var time = currentTime();
+			chunkSeparator(time);
+			console.log('<m x="' + e.x +'" y="' + e.y + '" pressure="' + mouseState + '" time="' + time + '" />')
+		}
+		</script>
+	</head>
+	<body>
+
+	</body>
+</html>

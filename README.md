@@ -28,7 +28,7 @@ The video is divided into chunks corresponding to what happend on the screen in 
                         ...
                     </cursor>
                     <svg>
-                        <path ... />
+                        <path d="..." style="stroke: [color]" />
                     </svg>
                 </chunk>
                 ...
@@ -39,10 +39,15 @@ The video is divided into chunks corresponding to what happend on the screen in 
 - __cursor__ - the positions of cursor
     - __color-change__ - change of current color
     - __m__ - cursor movement
-        + pressure - stylus pressure, for mouse it would be 0 - up, 1 - down
+        + __pressure__ - stylus pressure, number between 0 and 1, for mouse it would be 0 - up, 1 - down
 - __svg__ - contains the path(s) that were drawn in this chunk => rendering of the cursor movement should result in the same output
+    + it doesn't have to be the SVG &lt;path&gt;
 
 The advantage of this approach should be fast seeking - there is no need to render the output step by step but only to render some of the _svg_'s.
 
-The disadvangate is data duplicity. But if the resulting xml should be quite small anyway.
+### disadvantages
+- data duplicity - cursor movement and the pre-rendered svg. But if the resulting xml should be quite small anyway.
+- pre-rendering does not have to match the style of the renderer
+    + paths vs. trapezoides
+
 

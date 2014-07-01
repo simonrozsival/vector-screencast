@@ -1,106 +1,106 @@
 /**
- * Khanova Škola - vektorové video
- *
- * THE VIDEO PLAYER OBJECT
- * This is the base stylesheet that contains the basic layout and appearance of the board.
- *
- * @author:		Šimon Rozsíval (simon@rozsival.com)
- * @project:	Vector screencast for Khan Academy (Bachelor thesis)
- * @license:	MIT
- */
+* Khanova Škola - vektorové video
+*
+* THE VIDEO PLAYER OBJECT
+* This is the base stylesheet that contains the basic layout and appearance of the board.
+*
+* @author:		Šimon Rozsíval (simon@rozsival.com)
+* @project:	Vector screencast for Khan Academy (Bachelor thesis)
+* @license:	MIT
+*/
 
-function KhanAcademyPlayer (boardEl, Raphael) {
+function KhanAcademyPlayer() {}
+
+KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
+
+	this.settings = {
+		board: "#khan-academy-board",
+		canvas: "#khan-academy-board canvas",
+	};
+
+	$.extend(true, this.settings, options);
+
+	// board data
+	this.board = $(this.settings.board); 
 
 	// init variables to default values
-	this.board = boardEl;
-	this.painting = false;
-	this.inside = false;
+	this.canvas = $(this.settings.canvas);
 
-	// init canvas
-	this.boardCanvas = Raphael(boardEl, boardEl.width(), boardEl.height());
-	this.ox = board.offsetLeft;
-	this.oy = board.offsetTop;
+	// Drawer is the object that takes care of drawing lines.
+	this.drawer = drawer;
 
-	// init microphone
+	// init the data provider
+	// - register as a data consumer to the data provider
+	dataProvider.registerDataConsumer(this);
+	dataProvider.setOffset(this.canvas.offset());
+	this.dataProvider = dataProvider;
+
+	// create a cursor
+	this.cursor = new Cursor(this.board, 20, "white"); // @todo load or calculate these constants somehow
+	var initState = dataProvider.getCurrentCursorState();
+	this.cursor.moveTo(initState.x, initState.y);
+	this.playing = false;
+
 };
 
 KhanAcademyPlayer.prototype.start = function () {
-	player = this;
-	window.onmousemove = function(e) {
-		console.log("move");
-		player.setPosition(e.clientX, e.clientY);
-	};
-	window.onmousedown = function(e) {
-		player.storePosition();
-		player.painting = true;
-	};
-	window.onmouseup = function(e) {
-		console.log("up");
-		//player.painting = false;
-	};
-	player.board.on("mouseout", function(e) {
-		console.log("out");
-		player.mouseOut(e);
-	});
-	player.board.onmouseover = function(e) {
-		console.log("over");
-		player.mouseOver();
-	};
-
-
-	this.tick = setInterval(function() {
-		if(player.painting && player.inside) {
-			player.draw();
-		}
-	}, 10);
+	this.playing = true;
+	this.dataProvider.start();
 };
 
 KhanAcademyPlayer.prototype.stop = function () {
-	clearInterval(this.tick);
-};
-
-KhanAcademyPlayer.prototype.mouseMove = function(e) {
-	this.setPosition(e.clientX, e.clientY);
-};
-
-KhanAcademyPlayer.prototype.mouseDown = function(e) {
-	this.storePosition();
-	this.painting = true;
-};
-
-KhanAcademyPlayer.prototype.mouseUp = function() {
 	this.painting = false;
+	this.recording = false;
 };
 
-KhanAcademyPlayer.prototype.mouseOut = function(e) {
-	if(this.painting == true) {
-		this.setPosition(e.clientX, e.clientY);
-		this.draw();
+KhanAcademyPlayer.prototype.getCanvas = function() {
+	return this.canvas;
+}
+
+//
+//
+// PROCESS signals from the data provider
+//
+//
+
+KhanAcademyPlayer.prototype.recieveNewState = function(state) {
+
+	// [1] set the cursor
+	this.cursor.moveTo(state.x, state.y);
+
+	// [2] draw a segment if the button is pressed and the cursor
+	// is inside the recording area or it has just left the area
+	if(state.pressure > 0) {
+
+		if(state.inside == true || this.lastState.inside == true) {
+
+			if(this.lastState == undefined // the very first state
+				|| this.lastState.pressure == 0
+				|| this.lastState.inside == false) {
+
+				this.drawer.startLine(state.x, state.y, state.pressure);
+			} else {
+				this.drawer.drawSegment(state.x, state.y, state.pressure);
+			}
+
+		}
+
+	} else if (this.lastState !== undefined && this.lastState.presure > 0) {
+		this.darwer.endLine(state.x, state.y);
 	}
 
-	this.inside = false;
+	// save this state for next time
+	this.lastState = state;
+
 };
 
-KhanAcademyPlayer.prototype.mouseOver = function() {
-	if(this.inside == false) {
-		this.storePosition();
-	}
 
-	this.inside = true;
-};
+//
+//
+// HELPER methods
+//
+//
 
-KhanAcademyPlayer.prototype.setPosition = function(absoluteX, absoluteY) {
-	this.x = absoluteX-this.ox;
-	this.y = absoluteY-this.oy;
-};
-
-KhanAcademyPlayer.prototype.storePosition = function() {
-	this.fromX = this.x;
-	this.fromY = this.y;
-};
-
-KhanAcademyPlayer.prototype.draw = function() {
-	var segment = this.boardCanvas.path(Raphael.format("M{0};{1}L{2};{3}", this.fromX, this.fromY, this.x, this.y));	
-	segment.attr({fill: '#FAF31E', stroke: '#FAF31E', 'stroke-width': 3});
-	this.storePosition();								
-};
+KhanAcademyPlayer.prototype.clearAll = function() {
+	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+}
