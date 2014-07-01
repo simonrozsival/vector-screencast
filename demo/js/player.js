@@ -20,7 +20,7 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 		buttonContainer: "#button-container",
 		progressBarContainer: "#progress-bar",
 		timerContainer: "#video-time",
-		progressbarRefreshPeriod: 30
+		progressbarRefreshPeriod: 250
 	};
 
 	$.extend(true, this.settings, options);
@@ -47,6 +47,7 @@ KhanAcademyPlayer.prototype.init = function(options, drawer, dataProvider) {
 
 	// progress information - default values
 	this.playing = false;
+	this.reachedEnd = false;
 	this.time = 0;
 
 	this.prepareControls();
@@ -85,6 +86,7 @@ KhanAcademyPlayer.prototype.replay = function() {
 	var _this = this;
 	setTimeout(function(){
 		_this.dataProvider.rewind();
+		_this.reachedEnd = false;
 		_this.dataProvider.start();
 		_this.runTimeCounter(_this.time);
 		_this.playButton.children(".glyphicon").removeClass("glyphicon-play").removeClass("glyphicon-repeat").addClass("glyphicon-pause");
@@ -132,7 +134,7 @@ KhanAcademyPlayer.prototype.getCanvas = function() {
 
 KhanAcademyPlayer.prototype.runTimeCounter = function(time) {
 	this.time = time;
-	this.textSpan.text(secondsToString(this.time));
+	this.textSpan.text(millisecondsToString(this.time));
 	var _this = this;
 	this.tick = setInterval(function() {	
 		_this.time += _this.settings.progressbarRefreshPeriod;	
@@ -141,8 +143,6 @@ KhanAcademyPlayer.prototype.runTimeCounter = function(time) {
 };
 
 KhanAcademyPlayer.prototype.updateDisplayedTime = function(time) {
-	console.log(time);
-
 	var text = millisecondsToString(time);
 	this.textSpan.text(text);
 
