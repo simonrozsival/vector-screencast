@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<animation version="dev">
+<animation version="dev"
+			xmlns="http://www.rozsival.com/xml/khan-academy"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xmlns:noNamespaceSchemaLocation="vector-video.xsd">
 	<meta>
 		<about>
 			<title>First test of the animation format</title>

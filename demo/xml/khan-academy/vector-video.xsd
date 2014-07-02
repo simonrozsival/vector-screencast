@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-				targetNamespace="http://www.w3schools.com"
-				xmlns="http://www.w3schools.com"
+				xmlns="http://www.rozsival.com/xml/khan-academy"
+				targetNamespace="http://www.rozsival.com/xml/khan-academy"
 				elementFormDefault="qualified">
+
+<xs:annotation>
+	<xs:documentation>
+		This document describes a draft for vector video format for Khan Academy (it's CZE branch).
+	</xs:documentation>
+</xs:annotation>
 
 <xs:element name="animation" type="animationType"></xs:element>
 
 
 <!-- TYPES -->
 
-<!-- root element "animation" -->
 <xs:complexType name="animationType">
+	<xs:annotation>
+		<xs:documentation>
+			The root element "animation" has two sons - "meta" and "data". It has to have a "version" attribute with an allowed value.
+		</xs:documentation>
+	</xs:annotation>
+
 	<xs:sequence>
 	  <xs:element name="meta" type="metaType" />
 	  <xs:element name="data" type="dataType" />
 	</xs:sequence>
 
-	<!-- version attribute -->
 	<xs:attribute name="version">
 		<xs:simpleType>
 			<xs:restriction base="xs:string">
@@ -32,10 +42,13 @@
 
 
 
-
-<!-- information about the video -->
-
 <xs:complexType name="metaType">
+	<xs:annotation>
+		<xs:documentation>
+			The "meta" element contains information about the video.
+		</xs:documentation>
+	</xs:annotation>
+
 	<xs:all> <!-- the order is not relevant -->
 		<xs:element name="about">
 			<xs:complexType>
@@ -57,8 +70,8 @@
 							positions of cursor on a board with different dimensions -->
 					<xs:element name="width" type="xs:positiveInteger" />
 					<xs:element name="height" type="xs:positiveInteger" />
+					<xs:element name="background" type="colorType" />
 				</xs:all>	
-				<xs:attribute name="background" type="colorType" />
 			</xs:complexType>
 		</xs:element>
 
@@ -70,6 +83,12 @@
 <!-- video data -->
 
 <xs:complexType name="dataType">
+	<xs:annotation>
+		<xs:documentation>
+			The "data" section consists of chunks - these chunks represent small ammount of data, which contain detailed information about the movement of cursor and it's pressure status. This allows the video player to play the video precisely. Each chunk should have also a pre-rendered SVG representation of it's result. This will be used for fast jumping to any random position in the video.
+		</xs:documentation>
+	</xs:annotation>
+
 	<xs:sequence>
 		<xs:element name="chunk" type="chunkType" minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
@@ -79,7 +98,7 @@
 <xs:complexType name="chunkType">
 	<xs:sequence>
 		<xs:element name="cursor" type="cursorType" />
-		<xs:element name="svg" name="prerenderedSvgType" />
+		<xs:element name="svg" type="prerenderedSvgType" />
 	</xs:sequence>
 
 	<xs:attribute name="start" type="xs:nonNegativeInteger" />
@@ -88,18 +107,66 @@
 </xs:complexType>
 
 <xs:complexType name="cursorType">
-	<xs:all>
-		<xs:element name="m" type="cursorMovementType" minOccurs="0" maxOccurs="unbounded" />
-		<xs:element name="c" type="colorChangeType" minOccurs="0" maxOccurs="unbounded" />
-		<xs:element name="s" type="brushSizeChangeType" minOccurs="0" maxOccurs="unbounded" />
-	</xs:all>
+	<xs:sequence maxOccurs="unbounded">
+		<xs:element name="m" type="cursorMovementType" minOccurs="0" maxOccurs="unbounded">
+			<xs:annotation>
+				<xs:documentation>
+					"M" for cursor "M"ovement.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:element>
+		<xs:element name="c" type="colorChangeType" minOccurs="0" maxOccurs="unbounded">
+			<xs:annotation>
+				<xs:documentation>
+					"C" for "C"olor change.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:element>
+		<xs:element name="s" type="brushSizeChangeType" minOccurs="0" maxOccurs="unbounded">
+			<xs:annotation>
+				<xs:documentation>
+					"S" for brush "S"ize change.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:element>
+	</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="cursorMovementType">
-	<xs:attribute name="x" type="xs:float" />
-	<xs:attribute name="y" type="xs:float" />
-	<xs:attribute name="p" type="xs:float" /> <!-- pressure -->
-	<xs:attribute name="t" type="xs:float" /> <!-- time -->
+	<xs:attribute name="x" type="xs:float">
+		<xs:annotation>
+			<xs:documentation>
+				The x coordinate.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="y" type="xs:float">
+		<xs:annotation>
+			<xs:documentation>
+				The y coordinate.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="p">
+		<xs:annotation>
+			<xs:documentation>
+				"P" for "P"ressure. Represents the pressure of the mouse, tablet or a similar device. The value is between 0 and 1, where 0 means "no pressure at all" and 1 means "high pressure". Player draws a line whenever there is a pressure of more than 0.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:float">
+				<xs:minInclusive value="0" />
+				<xs:maxInclusive value="1" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+	<xs:attribute name="t" type="xs:float">
+		<xs:annotation>
+			<xs:documentation>
+				"T" for "T"ime. This is the time (in milliseconds) from the start, after which this action is performed.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
 </xs:complexType>
 
 <xs:complexType name="colorChangeType">
@@ -112,7 +179,9 @@
 
 <xs:complexType name="prerenderedSvgType">
 	<!-- SVG -->
-	<xs:any namespace="http://www.w3.org/2000/svg" processContents="strict" />
+	<xs:sequence>
+		<xs:any minOccurs="0" />
+	</xs:sequence>
 </xs:complexType>
 
 
@@ -120,16 +189,14 @@
 
 <!-- helper types -->
 
-<xs:complexType name="timeType">
-	<xs:sequence>
-		<xs:element name="minutes" type="xs:nonNegativeInteger" />
-		<xs:element name="seconds" type="xs:nonNegativeInteger" />
-	</xs:sequence>
-</xs:complexType>
-
 <xs:simpleType name="colorType">
+	<xs:annotation>
+		<xs:documentation>
+			Hex color value - two characters for R, two for G and two for the B channel. Beginning with "#".
+		</xs:documentation>
+	</xs:annotation>
+
 	<xs:restriction base="xs:string">
-		<xs:whitespace value="collapse" />
 		<xs:pattern value="#[a-fA-F0-9]{6}" />
 	</xs:restriction>
 </xs:simpleType>
