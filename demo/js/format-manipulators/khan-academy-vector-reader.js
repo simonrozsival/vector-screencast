@@ -9,47 +9,54 @@ KhanAcademyVectorReader.prototype.loadFile = function(fileName, reportError, onS
 	var _this = this; // because of change of context
 
 	// download the whole file - it shoud be small enough
-	$.get(fileName, function(data) {
-
-		// 
-		// this is now not the KhanAcademyVectorReader object!
-		// 
-
-		var xml = $.parseXML(data); // data must be well-formed to succeed
-		if(xml == undefined) {
-			// xml was not well-formed
-			console.log("Document is not a well-formed XML document and the video can't be loaded nor played.");
-			return null;
-		}
-
-		// convert the document to a jQuery object for easier manipulation
-		$xml = $(xml);
-		//
-		// @note: the "$" indicates that the variable contains a jQuery object
-		// 
+	$.ajax({
 		
-		if(_this.validateXmlDocument(xml, validation) && _this.checkVersion($xml)) {
-			if(_this.loadData($xml)) {
-				console.log("Data was loaded successfully.");
-				_this.loadedSuccessfully = true;
-				onSuccess(); // call the callback
-			} else {
-				console.log("Could not load data from a valid document.");
-				if(typeof reportError == "function") {
-					reportError("An error occured while loading data.");
-				}
-			}
-		} else {
-			console.log("Document is not valid.");
-			if(typeof reportError == "function") {
-				reportError("Could not open this document. It is damaged or the version of the document is not supported.");
-			}
-		}
-	}).fail(function(){
-		console.log("Retrieving the file failed.");
-		if (typeof reportError == "function") {
-			reportError("Could not open the document.");
-		}
+		type: "GET",
+		url: fileName,
+		dataType: "xml",	
+
+		success:	function(data) {
+
+						// 
+						// this is now not the KhanAcademyVectorReader object!
+						// 
+
+						var $xml = $(data); // data must be well-formed to succeed
+						//
+						// @note: the "$" indicates that the variable contains a jQuery object
+						// 
+						
+						if($xml.length == 0) { // jQuery returns an empty array, when data is not well-formed XML
+							// xml was not well-formed
+							console.log("Document is not a well-formed XML document and the video can't be loaded nor played.");
+							return null;
+						}
+						
+						if(_this.checkVersion($xml)) {
+							if(_this.loadData($xml)) {
+								console.log("Data was loaded successfully.");
+								_this.loadedSuccessfully = true;
+								onSuccess(); // call the callback
+							} else {
+								console.log("Could not load data from a valid document.");
+								if(typeof reportError == "function") {
+									reportError("An error occured while loading data.");
+								}
+							}
+						} else {
+							console.log("Document is not valid or the version of the document is unsupported.");
+							if(typeof reportError == "function") {
+								reportError("Could not open this document. It is damaged or the version of the document is not supported.");
+							}
+						}
+					},
+
+		fail: 	function() {
+					console.log("Retrieving the file failed.");
+					if (typeof reportError == "function") {
+						reportError("Could not open the document.");
+					}
+				},
 	});
 }
 

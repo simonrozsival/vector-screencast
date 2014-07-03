@@ -102,7 +102,7 @@
 			$(function(){ // document.ready jQuery shortcut - all the JS files must be loaded before this script runs!!
 
 				var settings = new BasicSettings();
-				var dataProvider = new XmlDataProvider("/xml/khan-academy/demo.xml", settings);
+				var dataProvider = new XmlDataProvider("xml/khan-academy/demo.xml", settings);
 				var lineDrawer = new BasicLineDrawer($("#board-canvas"), settings);
 				var player = new KhanAcademyPlayer();
 				dataProvider.whenReady(function() {
