@@ -2,21 +2,24 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Vector screencast - DEMO</title>
+		<title>Vector screencast - RECORDING DEMO</title>
 		
 		<!-- Libraries -->
-		<link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+		<!--link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"-->
+		<link rel="stylesheet" media="screen" href="css/bootstrap.min.css">
+		
+		<!-- Open Sans font -->
+		<!--link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'-->
+
 		<link rel="stylesheet" href="css/style.css">
 
-		<!-- Open Sans font -->
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 
 	</head>
 	<body>
 		<div class="container">
 			<div class="row" id="title">
 				<div class="col-xs-12">
-					<h1 title="Khanova škola">	
+					<h1 title="Khanova škola">
 						Khanova škola
 					</h1>
 				</div>
@@ -24,8 +27,8 @@
 
 			<div class="row">
 				<div class="col-xs-12">
-					<div id="board">
-						<canvas id="board-canvas" width="1140" height="500"></canvas>
+					<div id="board" class="no-pointer">
+						<canvas width="1140" height="500"></canvas>
 
 						<noscript>
 							<!-- for browsers with no JavaScript support -->
@@ -42,29 +45,29 @@
 					<div id="controls">
 						<div class="row">
 							<!-- play/pause button -->
-							<div class="col-xs-3 text-center" id="rec-button-container">
+							<div class="col-xs-3 text-center" id="button-container">
 							</div> 
 
-							<!-- color and brush size panels: -->
-							<div class="col-xs-6">
-								<div id="colors-panel"></div>
+							<!-- the progress axis -->
+							<div class="col-xs-5" id="colors-panel">
 							</div>
 
-							<div class="col-xs-3">
-								<div id="bush-sizes-panel"></div>
+							<!-- progress text -->
+							<div class="col-xs-4" id="brushes-panel">
 							</div>
-						</div>
-
-						<div class="row">
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- JS libraries: -->
-		<script src="http://code.jquery.com/jquery.js"></script>
-		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+		<!-- JS libraries (CDN): -->
+		<!--script src="http://code.jquery.com/jquery.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script-->
+
+		<!-- JS libraries (non-CDN): -->
+		<script src="js/libs/jquery.js"></script>
+		<script src="js/libs/bootstrap.min.js"></script>
 
 
 
@@ -78,8 +81,8 @@
 
 		<!-- helpers: -->
 		<script type="text/javascript" src="js/helpers/helper-functions.js"></script>
+		<script type="text/javascript" src="js/helpers/video-events.js"></script>
 		<script type="text/javascript" src="js/helpers/video-timer.js"></script>
-		<script type="text/javascript" src="js/helpers/cursor.js"></script>
 
 		<!-- settings: -->
 		<script type="text/javascript" src="js/settings/basic-settings.js"></script>
@@ -88,43 +91,48 @@
 		<!-- data provider (recording -> user input): -->
 		<script type="text/javascript" src="js/data-providers/base-data-provider.js"></script>
 		<script type="text/javascript" src="js/data-providers/user-input-data-provider.js"></script>
+		<script type="text/javascript" src="js/format-manipulators/xml-writer.js"></script>
 
 		<!-- line drawer type: -->
-		<script type="text/javascript" src="js/drawers/basic-line-drawer.js"></script>
+		<script type="text/javascript" src="js/drawers/simple-lines.js"></script>
+
+		<!-- UI -->
+		<script type="text/javascript" src="js/ui/ui-factory.js"></script>
+		<script type="text/javascript" src="js/ui/cursor.js"></script>
+		<script type="text/javascript" src="js/ui/recorder-ui.js"></script>
 
 		<!-- the object that puts everything together: -->
-		<script type="text/javascript" src="js/player.js"></script>
 		<script type="text/javascript" src="js/recorder.js"></script>
 
 		<!-- this script will be refactored later and put into a separate file: -->
 		<script type="text/javascript">
 			$(function(){ // document.ready jQuery shortcut - all the JS files must be loaded before this script runs!!
 
-				var settings = new RecordingSettings({
-					colorsPanel: "#colors-panel",
-					brushSizesPanel: "#brush-sizes-panel"
+				var board = $("#board");
+
+				// events
+				VideoEvents.init(board);
+
+				// cursor
+				var size = board.width() / 40;
+				var color = "#fff";
+				var cursor = new Cursor(board, size, color);
+
+				// visual data provider
+				var settings = new BasicSettings();
+				var dataProvider = new UserInputDataProvider(board.offset());
+
+				// line drawing tool
+				var lineDrawer = new SimpleLines(board.children("canvas"), settings);
+
+				// ui
+				var recorderUI = new RecorderUI({
+					colorsPanel: $("#colors-panel"),
+					brushSizesPanel: $("sizes-panel"),
+					buttonsContainer: $("#button-container")
 				});
 
-				var dataProvider = new UserInputDataProvider();
-
-				var lineDrawer = new BasicLineDrawer($("#board-canvas"), settings);
-
-				var recorder = new KhanAcademyRecorder({
-					board: "#board",
-					canvas: "#board-canvas",
-					recButtonContainer: "#rec-button-container"
-				}, lineDrawer, dataProvider);
-
-				//
-				//
-				//
-				
-				recorder.startWhenReady();
-
-				//
-				//
-				//
-
+				var recorder = new Recorder();
 			});
 		</script>
 	</body>

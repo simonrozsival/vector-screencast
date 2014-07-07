@@ -3,7 +3,7 @@
 			xmlns="http://www.rozsival.com/xml/khan-academy"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xmlns:noNamespaceSchemaLocation="vector-video.xsd">
-	<meta>
+	<info>
 		<about>
 			<title>First test of the animation format</title>
 			<author>Šimon Rozsíval</author>
@@ -19,7 +19,7 @@
 			<height>500</height>
 			<background>#2E2B2B</background>
 		</board>
-	</meta>
+	</info>
 	<data>
 		<chunk start="0" currentColor="#fbff06" currentBrushSize="3">
 			<cursor>

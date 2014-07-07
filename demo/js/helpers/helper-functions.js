@@ -47,24 +47,3 @@ var secondsToString = function(s) {
 var millisecondsToString = function(ms) {
     return secondsToString(Math.floor(ms / 1000));
 };
-
-
-(function($) {
-
-
-    //
-    //
-    //  jQuery extensions
-    //
-    //
-
-    /**
-     * This simple jQuery extension gives me an easy way to check, if a selector selected something or not.
-     * Usage: var = something = $("#something"); if(something.exists()) { something.html("found an element with id 'something'"); }
-     * @return {bool} Selector selected something (== the array of found elements has at least one element)
-     */
-    $.fn.exists = function() {
-        return this.lenght !== 0;
-    };
-
-}(jQuery));

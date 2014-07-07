@@ -18,12 +18,12 @@
 <xs:complexType name="animationType">
 	<xs:annotation>
 		<xs:documentation>
-			The root element "animation" has two sons - "meta" and "data". It has to have a "version" attribute with an allowed value.
+			The root element "animation" has two sons - "info" and "data". It has to have a "version" attribute with an allowed value.
 		</xs:documentation>
 	</xs:annotation>
 
 	<xs:sequence>
-	  <xs:element name="meta" type="metaType" />
+	  <xs:element name="info" type="infoType" />
 	  <xs:element name="data" type="dataType" />
 	</xs:sequence>
 
@@ -42,10 +42,10 @@
 
 
 
-<xs:complexType name="metaType">
+<xs:complexType name="infoType">
 	<xs:annotation>
 		<xs:documentation>
-			The "meta" element contains information about the video.
+			The "info" element contains information about the video.
 		</xs:documentation>
 	</xs:annotation>
 

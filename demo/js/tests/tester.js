@@ -38,7 +38,7 @@ var Tester = (function() {
 		if(status == log || this.reportedMsgs.indexOf(msg) == -1) {
 	 		var $alertbox = $("<p></p>").addClass("alert alert-" + status).html(msg);
 			this.resultBox.append($alertbox);
-			$alertbox.hide().fadeIn();
+			//$alertbox.hide().fadeIn();
 
 			// update the stats
 			if(status != log) {
@@ -55,6 +55,10 @@ var Tester = (function() {
 	// 
 
 	Tester.prototype.start = function(expectedResultsCount, timeLimit) {
+		if(timeLimit == undefined) {
+			timeLimit = 1000; // 1s
+		}
+
 		var _this = this;
 		setTimeout(function(){
 			if(_this.resultsCount == expectedResultsCount) {

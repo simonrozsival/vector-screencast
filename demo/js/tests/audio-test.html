@@ -7,7 +7,8 @@
 		<meta name=viewport content="width=device-width, initial-scale=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<!-- Bootstrap CSS -->
-		<link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<!--link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" media="screen"-->
+		<link href="../../css/bootstrap.min.css" rel="stylesheet" media="screen">
 	</head>
 	<body>
 		<div class="container">
@@ -27,7 +28,11 @@
 		</div>
 
 		<!-- jQuery -->
-		<script src="http://code.jquery.com/jquery.js"></script>
+		<!--script src="http://code.jquery.com/jquery.js"></script-->
+		<script src="../libs/jquery.js"></script>
+
+		<!-- Helper objects -->
+		<script src="../helpers/video-events.js"></script>
 
 		<!-- Tester object -->
 		<script src="tester.js"></script>
@@ -37,7 +42,10 @@
 		<script type="text/javascript">
 		$(function(){
 
-			var tester = new Tester($("#tester-container"));
+			var container = $("#tester-container");
+			VideoEvents.init(container);
+
+			var tester = new Tester(container);
 
 			// tests:
 			var btn = $("#play-pause-button");
@@ -74,13 +82,18 @@
 
 			tester.start(6, 17*1000);
 
-			if(!player.initSuccessful) {
+			if(!player.isReady()) {
 				tester.reportError("Can't play the audio file. Check console log for more details.");
 			} else {
 				tester.reportSuccess("Init was successful.");
 
-				player.registerPlayPauseButton("#play-pause-button");
-				btn.on("click", function() { playPauseButtonClickCounter++; });
+				var playing = false;
+				btn.on("click", function() { 
+					playPauseButtonClickCounter++;
+					playing = !playing;
+					var eventName = playing == false ? "pause" : "play";
+					VideoEvents.trigger(eventName);
+				});
 
 				tester.log("clicking the play/pause button virtually");
 				btn.trigger("click"); // play

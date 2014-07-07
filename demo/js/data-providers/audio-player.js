@@ -1,14 +1,18 @@
 
 var AudioPlayer = (function() {
 
+	var playing, reachedEnd;
+	var audio, $audio;
+	var initSuccessful;
+
 	function AudioPlayer(sources, events) {
 
 		// create audio element
-		var $audio = $("<audio>").attr("preload", "auto");
-		var audio = $audio[0]; // access to the HTML5 api - I don't want to have it wrapped in the jQuery object
+		$audio = $("<audio>").attr("preload", "auto");
+		audio = $audio[0]; // access to the HTML5 api - I don't want to have it wrapped in the jQuery object
 
 		// default value - if something fails, it will remain set to 'false'
-		this.initSuccessful = false;
+		initSuccessful = false;
 
 		if(audio.canPlayType == undefined) {
 			console.log("ERROR: browser does not support HTML5 audio");
@@ -17,16 +21,17 @@ var AudioPlayer = (function() {
 
 		// the audio is stopped when the page is loaded
 		audio.autoplay = false;
-		this.playing = false;
+		playing = false;
+		reachedEnd = false;
 
 		// add sources
 		var canPlaySound = false;
 		for (var source in sources) {
 			var contentType = "audio/" + source;
 
-			if(!!audio.canPlayType(contentType)) {			
+			if(!!audio.canPlayType(contentType)) {	
 				// can play type returned "probably" or "maybe"
-				// it would return "" if this browser does not support this type (-> I use "!!" to convert string to boolean)
+				// it would return "" if this browser does not support this type (-> I use "!!" to convert string to boolean (empty string -> false))
 				$source = $("<source>").attr("type", contentType).attr("src", sources[source]);
 				$audio.append($source);
 				canPlaySound = true;
@@ -36,93 +41,97 @@ var AudioPlayer = (function() {
 		// check if at least one source is probably acceptable
 		if(canPlaySound == true) {
 			// init was successful
-			this.initSuccessful = true; 
-			this.audio = audio;
-			this.$audio = $audio;
+			initSuccessful = true;
 
 			// default system events
 			attachPrivateEvents.call(this);
 
-			// user can pass his events
+			// user can pass his events for the audio element
 			attachEvents.call(this, events);
 
 			// attach the player to the document
 			$("body").append($audio);
-			console.log("SUCCESS: audio is available");
+			console.log("Audio is available.");
 		} else {
-			console.log("ERROR: can't play any provided audio sources");
+			console.log("Can't play any provided audio sources.");
 		}
 
 	}
+
+	AudioPlayer.prototype.isReady = function() {
+		return initSuccessful;
+	};
 
 	//
 	// private functions section:
 	// 
 	
 	var attachPrivateEvents = function() {
-		var $audio = this.$audio;
-		var _this = this;
-
 		$audio.on("ended", function() {
-			_this.playing = false;
-			_this.reachedEnd = true;
+			playing = false;
+			reachedEnd = true;
 			console.log("(audio reached end)");
+		});
+		
+		VideoEvents.on("start", function() {
+			play();
+		});
+
+		VideoEvents.on("pause", function() {
+			pause();
+		});
+
+		VideoEvents.on("reached-end", function() {
+			reachedEnd = true;
+			pause();
+		});
+
+		VideoEvents.on("replay", function() {
+			rewind();
+			play();
+		});
+
+		VideoEvents.on("skip-to", function(e, progress) {
+			changePosition(audio.duration * progress);
 		});
 	};
 	
 
 	var attachEvents = function(events) {
-		var $audio = this.$audio;
-		var _this = this;
-
 		for (var eventName in events) {
 			$audio.on(eventName, events[eventName]);
 		}
 	};
 
-
-	//
-	// public functions section:
-	//
-
-	AudioPlayer.prototype.play = function() {
-		if(this.initSuccessful) {
-			if(this.reachedEnd == true) {
-				this.rewind();
+	var play = function() {
+		if(initSuccessful) {
+			if(reachedEnd == true) {
+				rewind();
 			}
 
-			this.audio.play();
+			audio.play();
 		}
 	};
 
-	AudioPlayer.prototype.pause = function() {
-		if(this.initSuccessful) {
-			this.audio.pause();
+	var pause = function() {
+		if(initSuccessful) {
+			audio.pause();
 		}
 	};
 
-	AudioPlayer.prototype.rewind = function() {
-		if(this.initSuccessful) {
-			this.audio.currentTime = 0;
-			this.reachedEnd == false;
+	var rewind = function() {
+		if(initSuccessful) {
+			audio.pause();
+			audio.currentTime = 0;
+			reachedEnd = false;
 		}
 	};
 
-	AudioPlayer.prototype.canPlay = function(callback) {
-		this.audio.canPlay = callback;
-	};
-
-	AudioPlayer.prototype.registerPlayPauseButton = function(buttonSelector) {
-		var _this = this;
-		$("body").on("click", buttonSelector, function() {
-			_this.playing ? _this.pause() : _this.play();
-			_this.playing = !_this.playing;
-		});
-	}	
-
-
-
-
+	var changePosition = function(seconds, callback) {
+		console.log("audio - change position to " + seconds + "s");
+		audio.currentTime = seconds;
+		$audio.on("canplay", callback);
+	}
 
 	return AudioPlayer;
 

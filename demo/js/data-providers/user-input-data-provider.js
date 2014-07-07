@@ -1,78 +1,107 @@
 
+var UserInputDataProvider = (function() {
 
-// UserInputDataProvider inherits from BaseDataProvider
+	// private variables
+	var running = false;
+	var offset;
+	var pressed = false;
+	var cursorX = 0;
+	var cursorY = 0;
+	var timer = new VideoTimer();
 
-UserInputDataProvider.prototype = BaseDataProvider;
-UserInputDataProvider.prototype.parent = BaseDataProvider;
 
+	function UserInputDataProvider(canvasOffset) {
+		offset = canvasOffset;
+		
+		document.onmousemove = function(e) { onMouseMove(e) };
+		document.onmousedown = function(e) { onMouseDown(e); };
+		document.onmouseup = function(e) { onMouseUp(e); };
+		window.onblur = function(e) { onMouseUp(e); }; // mouse up can't be determined when window (tab) is not focused - the app acts unexpectedly
 
-function UserInputDataProvider() {
-	// init variables
-	this.cursorX = 0;
-	this.cursorY = 0;
-	this.pressed = false;
-	this.offset = {
-		left: 0,
-		top: 0
+		init();
+	}
+
+	var getCurrentCursorState = function() {
+		return {
+			x: cursorX,
+			y: cursorY,
+			pressure: pressed ? 1 : 0,
+			time: timer.currentTime()
+		};
 	};
 
-	this.timer = new VideoTimer();
+	var correctMouseCoords = function(e) {
+		if (e.pageX == undefined || e.pageY == undefined) {
+			console.log("Wrong 'correctMouseCoords' parameter. Event data required.");
+		}
 
-	var _this = this;
-	document.onmousemove = function(e) { _this.onMouseMove(e) };
-	document.onmousedown = function(e) { _this.onMouseDown(e); };
-	document.onmouseup = function(e) { _this.onMouseUp(e); };
-	window.onblur = function(e) { _this.onMouseUp(e); }; // mouse up can't be determined when window (tab) is not focused - the app acts unexpectedly
-}
-
-UserInputDataProvider.prototype.getCurrentCursorState = function() {
-	return {
-		x: this.cursorX,
-		y: this.cursorY,
-		pressure: this.pressed ? 1 : 0,
-		time: this.timer.currentTime(),
-		inside: this.inside(),
+		return {
+			x: e.pageX - offset.left,
+			y: e.pageY - offset.top
+		};
 	};
-}
 
-UserInputDataProvider.prototype.correctMouseCoords = function(e) {
-	if (e.pageX == undefined || e.pageY == undefined) {
-		console.log("Wrong 'correctMouseCoords' parameter. Event data required.");
-	}
+	// 
+	// Events
+	//
+	
 
-	return {
-		x: e.pageX - this.offset.left,
-		y: e.pageY - this.offset.top
+	var ready = function() {
+		VideoEvents.trigger("data-ready");
 	};
-}
 
-UserInputDataProvider.prototype.inside = function() {
-	return this.parent.isInside.call(this, this.cursorX, this.cursorY);
-}
+	var init = function() {
+		VideoEvents.on("start", function() {
+			start();
+		});
 
-//
-// User input
-//  
+		VideoEvents.on("pause", function() {
+			pause();
+		});
+	};
 
-UserInputDataProvider.prototype.onMouseMove = function(e) {
-	if(this.running) {		
-		var coords = this.correctMouseCoords(e);
-		this.cursorX = coords.x;
-		this.cursorY = coords.y;
-		this.reportAction();
-	}
-}
+	var start = function() {
+		running = true;
+		timer.resetTimer();
+	};
 
-UserInputDataProvider.prototype.onMouseDown = function(e) {
-	if(this.running) {		
-		this.pressed = true;
-		this.reportAction();
-	}
-}
+	var pause = function() {
+		running = false;
+	};
 
-UserInputDataProvider.prototype.onMouseUp = function(e) {
-	if(this.running) {
-		this.pressed = false;
-		this.reportAction();
-	}
-}
+	var reportAction = function(state) {
+		if(state != undefined && state != {}) {
+			VideoEvents.trigger("new-state", state);
+		}
+	};
+
+	//
+	// User input
+	//  
+
+	var onMouseMove = function(e) {
+		if(running) {		
+			var coords = correctMouseCoords.call(this, e);
+			cursorX = coords.x;
+			cursorY = coords.y;
+			reportAction(getCurrentCursorState());
+		}
+	};
+
+	var onMouseDown = function(e) {
+		if(running) {		
+			pressed = true;
+			reportAction(getCurrentCursorState());
+		}
+	};
+
+	var onMouseUp = function(e) {
+		if(running) {
+			pressed = false;
+			reportAction(getCurrentCursorState());
+		}
+	};
+
+	return UserInputDataProvider;
+
+})();

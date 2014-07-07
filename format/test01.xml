@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <animation v="0.1">
-	<meta>
+	<info>
 		<title>First test of the animation format</title>
 		<author>Šimon Rozsíval</author>
-	</meta>
+	</info>
 	<data>
 		<chunk> 
 		<m x="679" y="240" pressure="0" time="2903" /> 

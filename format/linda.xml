@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <animation v="0.1">
-	<meta>
+	<info>
 		<about>
 			<title>First test of the animation format</title>
 			<author>Šimon Rozsíval</author>
@@ -16,7 +16,7 @@
 			<height>500</height>
 			<background>#2E2B2B</background>
 		</board>
-	</meta>
+	</info>
 	<data>
 		<chunk start="0" currentColor="#fbff06" currentBrushSize="3">
 			<m x="652" y="319" pressure="0" time="1226" /> 

@@ -16,9 +16,9 @@ The video is divided into chunks corresponding to what happend on the screen in 
 ### xml file structure
 
         <animation>
-            <meta>
+            <info>
                 ...
-            </meta>
+            </info>
             <data>
                 <chunk start="..." end="...">
                     <cursor>

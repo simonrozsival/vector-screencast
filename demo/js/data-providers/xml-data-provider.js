@@ -1,107 +1,176 @@
 
-XmlDataProvider.prototype = BaseDataProvider;
-XmlDataProvider.prototype.parent = BaseDataProvider;
+var XmlDataProvider = (function(){
 
-function XmlDataProvider(fileName, settings) {
-	this.timer = new VideoTimer();
+	// private variables
+	var videoInfo, info, boardInfo;
+	var running = false, reachedEnd = false;
+	var currentState, lastState;
+	var timeout;
 
-	var errorReport = function(msg) {
-		alert(msg); // @todo replace this with a flash message
-	};
+	function XmlDataProvider(fileName, board) {
+		videoInfo = new XmlReader();
+		videoInfo.loadFile({
+			file: fileName,
+			success: function() {
+				rewind();
 
-	var _this = this;
-	var onSuccess = function() {
-		// this is not XmlDataProvider in this context
-		_this.rewind();
-		_this.onReady();
-	};
+				// this is not XmlDataProvider in this context
+				info = getinfoData();
+				VideoEvents.trigger("data-ready", info);
 
-	this.videoInformation = new KhanAcademyVectorReader();
-	this.videoInformation.loadFile(fileName, errorReport, onSuccess);//, validate); // - validation does not work well so far..
-	this.settings = settings;
-	this.running = false;	
-}
-
-XmlDataProvider.prototype.getCurrentCursorState = function() {
-	this.lastState = this.currentState;
-	this.currentState = this.nextState;
-
-	// I have returned the very last state when this function was called last
-	if(this.reachedEnd == true) {
-		this.nextState = this.currentState;
-		this.stop(true);
-		return undefined;
+				// init other things
+				initEvents.call(this)
+				initBoard.call(this, board);
+			},
+			error: function(msg) {
+				// some other process will take care of the error and display it properly
+				VideoEvents.trigger("error", msg);
+			}
+		});
+		running = false;
 	}
 
-	do {
-		this.nextState = this.videoInformation.getNext();
+	var initEvents = function() {
 
-		if(this.nextState == undefined) {
-			// reached the end of the video!
-			this.reachedEnd = true; // return the current state, but then stop
-			break;
-		}
+		VideoEvents.on("start", function() {
+			start();
+		});
 
-		switch(this.nextState.type) {
-			case "color-change":
-				this.settings.setColor(this.nextState.value);
-				break;
-			case "brush-size-change":
-				this.settings.setSize(this.nextState.value);
-				break;
-		}
-	} while (this.nextState != undefined && this.nextState.type != "cursor-movement");
+		VideoEvents.on("pause", function() {
+			stop();
+		});
 
-	return {
-		x: this.currentState.x,
-		y: this.currentState.y,
-		pressure: this.currentState.pressure,
-		time: this.currentState.time,
-		inside: true // @todo - I shouldn't use this at all...
+		VideoEvents.on("rewind", function() {
+			rewind();
+		});
+
+		VideoEvents.on("skip-to", function(e, progress) {
+			var time = progress * info.length;
+			if (time > currentState.time) {
+				skipForward.call(this, time);
+			} else {
+				skipBackwards.call(this, time);
+			}
+		});
+
 	};
-};
 
-XmlDataProvider.prototype.getMetaData = function() {
-	return this.videoInformation.getMetaData(); // this information is available only after the document is loaded!
-}
+	var initBoard = function(board) {
+		var ratio = info.board.height / info.board.width;
+		board.height(ratio * board.width());
 
-XmlDataProvider.prototype.rewind = function() {
-	this.videoInformation.rewind();
-	this.lastState = { time: 0 };
-	this.currentState = this.videoInformation.getNext();
-	this.nextState = this.videoInformation.getNext();
-	this.reachedEnd = false;
-}
+		boardInfo = {
+			width: board.width(),
+			height: board.height()
+		};
 
-XmlDataProvider.prototype.start = function() {
-	this.running = true;
-	this.tick();
-};
+	};
 
-XmlDataProvider.prototype.tick = function() {
+	var getCurrentCursorState = function() {
 
-	if(this.currentState == undefined) {
-		console.log("No more data. Can't `tick`.");
-		return;
-	}
+		var next = videoInfo.getNext();
+		while (next != undefined
+				&& next.type != "cursor-movement") {
 
-	var _this = this;
-	var timeGap = this.currentState.time - this.lastState.time;
-	this.timeout = setTimeout(function(){
-		// this is "window" in this context
-		if(_this.running) {
-			_this.parent.reportAction.call(_this);
-			_this.tick();
+			switch(next.type) {
+				case "color-change":
+					VideoEvents.trigger("color-change", next.color);
+					break;
+				case "brush-size-change":
+					VideoEvents.trigger("brush-size-change", next.size);
+					break;
+			}
+
+			next = videoInfo.getNext();
 		}
-	}, timeGap);
-}
 
-XmlDataProvider.prototype.stop = function(reachedEnd) {
-	if(this.running == true) {
-		this.running = false;
+		if(next == undefined) {
+			if (lastState.time < getinfoData().length) {
+				// there is a gap between the last cursor movement and the end of the video
+				// create a dummy state, so the progressbar will work just fine
+				 
+				next = {
+					time: getinfoData().length,
+					x: -1,
+					y: -1,
+					pressure: 0
+				};
+			}
 
-		if(reachedEnd == true) {
-			this.consumer.onReachedEnd();
+			reachedEnd = true;
+			stop();
 		}
-	}
-}
+
+		lastState = currentState;
+		currentState = next;
+
+		return correctCoords(currentState);
+	};
+
+	var correctCoords = function(state) {
+		state.x = state.x / info.board.width * boardInfo.width;
+		state.y = state.y / info.board.height * boardInfo.height;
+
+		return state;
+	};
+
+	var getinfoData = function() {
+		return videoInfo.getinfoData(); // this information is available only after the document is loaded!
+	};
+
+	var rewind = function() {
+		lastState = { time: 0 };
+		currentState = videoInfo.getNext();
+		reachedEnd = false;
+	};
+
+	var start = function() {
+		running = true;
+		tick();
+	};
+
+	var skipForward = function(time) {
+		tickUntil.call(this, time);
+	};
+
+	var skipBackwards = function(time) {
+		VideoEvents.trigger("rewind");
+		tickUntil.call(this, time);
+	};
+
+	var tickUntil = function(time) {
+		while(currentState.time < time) {
+			VideoEvents.trigger("new-state", currentState);
+			getCurrentCursorState();
+		}
+	};
+
+	var tick = function() {
+		var state = getCurrentCursorState();
+		if(running) {
+			VideoEvents.trigger("next-state-peek", state);
+			var timeGap = state.time - lastState.time;
+
+			timeout = setTimeout(function() {
+				VideoEvents.trigger("new-state", state);
+				tick();
+			}, timeGap);
+		}
+	};
+
+	var stop = function() {
+		// if there is a timeout waiting, do not let it 
+		clearTimeout(timeout);
+
+		if(running == true) {
+			running = false;
+
+			if(reachedEnd == true) {
+				VideoEvents.trigger("reached-end");
+			}
+		}
+	};
+
+
+	return XmlDataProvider;
+})();

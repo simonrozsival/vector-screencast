@@ -38,8 +38,7 @@ body {
 		height: 100%;
 	}
 
-	canvas#board-canvas.no-pointer,
-	canvas#video-cursor {
+	canvas {
 		cursor: none;
 	}
 
@@ -54,8 +53,8 @@ body {
 		outline: none;
 	}
 
-	#controls button .glyphicon + span {
-		padding-left: 10px;
+	#controls button:not(.no-text) .glyphicon {
+		padding-right: 10px;
 	}
 
 	#controls button:not(:last-child) {
@@ -70,8 +69,10 @@ body {
 		margin: 7px 0;
 	}
 
-	#video-progress .progress-bar-buffer-size {
-		background-color: #aaa;
+	#video-progress .progress-bar {
+		transition: none;
+		-webkit-transition: none;
+		-moz-transition: none;
 	}
 
 	#video-time {

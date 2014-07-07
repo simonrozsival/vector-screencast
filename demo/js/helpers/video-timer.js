@@ -1,13 +1,26 @@
 
-function VideoTimer() {
-    this.resetTimer();
-}
+var VideoTimer = (function() {
 
-VideoTimer.prototype.resetTimer = function() {
-    this.startTime = 0;
-    this.startTime = this.currentTime();
-}
+	var startTime;
 
-VideoTimer.prototype.currentTime = function() {
-    return (new Date()).getTime() - this.startTime;
-}
+	function VideoTimer() {
+	    this.resetTimer();
+	}
+
+	VideoTimer.prototype.resetTimer = function() {
+	    startTime = 0;
+	    startTime = this.currentTime();
+	};
+
+	VideoTimer.prototype.setTime = function(ms) {
+		this.resetTimer();
+		startTime += ms;
+	};
+
+	VideoTimer.prototype.currentTime = function() {
+	    return (new Date()).getTime() - startTime;
+	};
+
+	return VideoTimer;
+
+})();

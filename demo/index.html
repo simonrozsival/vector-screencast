@@ -5,11 +5,14 @@
 		<title>Vector screencast - DEMO</title>
 		
 		<!-- Libraries -->
-		<link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+		<!--link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"-->
+		<link rel="stylesheet" media="screen" href="css/bootstrap.min.css">
+		
+		<!-- Open Sans font -->
+		<!--link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'-->
+
 		<link rel="stylesheet" href="css/style.css">
 
-		<!-- Open Sans font -->
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 
 	</head>
 	<body>
@@ -25,7 +28,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<div id="board">
-						<canvas id="board-canvas" width="1140" height="500"></canvas>
+						<canvas width="1140" height="500"></canvas>
 
 						<noscript>
 							<!-- for browsers with no JavaScript support -->
@@ -61,9 +64,13 @@
 			</div>
 		</div>
 
-		<!-- JS libraries: -->
-		<script src="http://code.jquery.com/jquery.js"></script>
-		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+		<!-- JS libraries (CDN): -->
+		<!--script src="http://code.jquery.com/jquery.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script-->
+
+		<!-- JS libraries (non-CDN): -->
+		<script src="js/libs/jquery.js"></script>
+		<script src="js/libs/bootstrap.min.js"></script>
 
 
 
@@ -77,22 +84,26 @@
 
 		<!-- helpers: -->
 		<script type="text/javascript" src="js/helpers/helper-functions.js"></script>
+		<script type="text/javascript" src="js/helpers/video-events.js"></script>
 		<script type="text/javascript" src="js/helpers/video-timer.js"></script>
-		<script type="text/javascript" src="js/helpers/cursor.js"></script>
 
 		<!-- settings: -->
 		<script type="text/javascript" src="js/settings/basic-settings.js"></script>
 		<script type="text/javascript" src="js/settings/recording-settings.js"></script>
 
 		<!-- data provider (recording -> user input): -->
-		<script type="text/javascript" src="js/format-manipulators/khan-academy-vector-reader.js"></script>
-		<script type="text/javascript" src="js/libs/xmllint.js"></script>
-		<script type="text/javascript" src="js/format-manipulators/validator.js"></script>
+		<script type="text/javascript" src="js/format-manipulators/xml-reader.js"></script>
+		<script type="text/javascript" src="js/data-providers/audio-player.js"></script>
 		<script type="text/javascript" src="js/data-providers/base-data-provider.js"></script>
 		<script type="text/javascript" src="js/data-providers/xml-data-provider.js"></script>
 
 		<!-- line drawer type: -->
-		<script type="text/javascript" src="js/drawers/basic-line-drawer.js"></script>
+		<script type="text/javascript" src="js/drawers/simple-lines.js"></script>
+
+		<!-- UI -->
+		<script type="text/javascript" src="js/ui/ui-factory.js"></script>
+		<script type="text/javascript" src="js/ui/cursor.js"></script>
+		<script type="text/javascript" src="js/ui/player-ui.js"></script>
 
 		<!-- the object that puts everything together: -->
 		<script type="text/javascript" src="js/player.js"></script>
@@ -101,19 +112,33 @@
 		<script type="text/javascript">
 			$(function(){ // document.ready jQuery shortcut - all the JS files must be loaded before this script runs!!
 
+				var board = $("#board");
+
+				// events
+				VideoEvents.init(board);
+
+				// cursor
+				var size = board.width() / 40;
+				var color = "#fff";
+				var cursor = new Cursor(board, size, color);
+
+				// visual data provider
 				var settings = new BasicSettings();
-				var dataProvider = new XmlDataProvider("data/demo.xml", settings);
+				var dataProvider = new XmlDataProvider("data/demo.xml", board);
+
+				// audio data provider
 				var audioPlayer = new AudioPlayer({
 					"mpeg": "data/demo.mp3"
 				});
-				var lineDrawer = new BasicLineDrawer($("#board-canvas"), settings);
-				var player = new KhanAcademyPlayer();
-				dataProvider.whenReady(function() {
-					player.init({
-						board: "#board",
-						canvas: "#board-canvas"
-					}, lineDrawer, dataProvider);
-					player.startWhenReady();
+
+				// line drawing tool
+				var lineDrawer = new SimpleLines(board.children("canvas"), settings);
+
+				// the UI
+				var ui = new PlayerUI({
+					buttonContainer: $("#button-container"),
+					progressBarContainer: $("#progress-bar"),
+					progressTimeContainer: $("#video-time")
 				});
 
 			});

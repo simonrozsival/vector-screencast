@@ -9,123 +9,161 @@
 * @license:	MIT
 */
 
-KhanAcademyRecorder.prototype = new KhanAcademyPlayer();
-KhanAcademyRecorder.prototype.parent = KhanAcademyPlayer.prototype;
-KhanAcademyRecorder.prototype.constructor = KhanAcademyRecorder;
+var Recorder = (function(){
 
-function KhanAcademyRecorder (options, drawer, dataProvider) {
+	var data = [];
+	var chunk = null;
 
-	var defaults = {
-		recButtonId: "rec",
-		saveButtonId: "save",
-		buttonContainer: "#rec-button-container"
+	// defaults
+	var defaultChunkLength = 2000;
+	var defaultColor = "#fff";
+	var defaultSize = 3;
+
+	// tmp data
+	var lastChunkStart = 0;
+	var chunkLength;
+	var currentColor, currentSize;
+
+	function Recorder(opts) {
+				
+		if(opts != undefined && opts.hasOwnProperty("chunkLength")) {
+			chunkLength = opts.chunkLength;
+		} else {
+			chunkLength = defaultChunkLength;
+		}
+
+		if(opts != undefined && opts.hasOwnProperty("defaultColor")) {
+			currentColor = opts.defaultColor;
+		} else {
+			currentColor = defaultColor;
+		}
+
+		if(opts != undefined && opts.hasOwnProperty("defaultSize")) {
+			currentSize = opts.defaultSize;
+		} else {
+			currentSize = defaultSize;
+		}
+
+		var recording = false;
+
+		VideoEvents.on("start", function() {
+			recording = true;
+			addChunk(0); // add first chunk
+		});
+
+		VideoEvents.on("pause", function() {
+			recording = false;
+			data.push(chunk);
+			chunk = null;
+		});
+
+		VideoEvents.on("new-state", function(e, state) {
+			if(recording == true) {
+				// add data
+				addState(state);
+			}
+		});
+
+		VideoEvents.on("color-change", function(e, state) {
+			currentColor = state.value; // color can be changed at any time
+
+			if(recording == true) {
+				addState({
+					type: "color-change",
+					value: state.value
+				});
+			}
+		});
+
+		VideoEvents.on("brush-size-change", function(e, state) {
+			currentSize = state.value;
+
+			if(recording == true) {
+				addState({
+					type: "brush-size-change",
+					value: state.value
+				});
+			}
+		});
+
+		VideoEvents.on("upload-recorded-data", function(e, url) {
+			console.log("info", info);
+			console.log("data", data);
+
+			var animation = XmlWriter.write(info, data);
+			var rawXml = $("<hack />").append(animation).html();
+			// html() returns string of it's INNER content
+			// - I want to include the root element, so I use this "hack"
+
+			var request = {
+				type: "video",
+				format: "xml",
+				rawData: rawXml
+			};
+
+			console.log("request data", request);
+
+			$.ajax({
+				type: "POST",
+				url: url,
+				data: request,
+				success: function(e) {
+					console.log("request success", e);
+				},
+				error: function(e) {
+					console.log("request error", e);
+				}
+			});
+		});
+
+		VideoEvents.on("update-info", function(e, infoData) {
+			setinfoData(infoData);
+		});
 	};
 
-	$.extend(defaults, options);
+	var addState = function(state) {
+		if (state.hasOwnProperty("time") && chunk.start + chunkLength < state.time) {
+			// color changes and brush size changes do not have exact timing
+			addChunk(state.time);
+		}
 
-	this.parent.init(defaults, drawer, dataProvider);
+		lastChunkStart = 0;
+		chunk.cursor.push(state);
+	};
 
-	// cursor & drawn segments history
-	this.cursorMovement = [];	
-	this.recording = false;
-	this.time = 0;
+	var addChunk = function(time) {
+		if (chunk != null) {
+			data.push(chunk);
+		}
 
-	// init canvas
-	this.context = this.canvas[0].getContext("2d");
+		chunk = {
+			start: time - (time % chunkLength), // rounded start time
+			color: currentColor,
+			size: currentSize,
+			cursor: []
+		};
+	};
 
-	// init microphone
-	// @todo: learn how to and implement it...
-	// 
-};
+	var info = {
+		about: {
+			author: "",
+			title: "",
+			description: ""
+		},
+		length: 0,
+		chunkLength: 2000,
+		chunkCount: 0,
+		board: {
+			width: 800,
+			height: 400,
+			background: "#000"
+		}
+	};
 
-KhanAcademyPlayer.prototype.prepareControls = function() {
+	var setinfoData = function(infoData) {
+		$.extend(true, info, data);
+	};
 
-	// recording button
-	var recButton = $("<button></button>").addClass("btn btn-danger").attr("id", this.settings.recButtonId);
-	var icon = $("<span></span>").addClass("glyphicon glyphicon-record");
-	var textSpan = $("<span>REC</span>");
-	recButton.append(icon).append(textSpan);
-	this.recButton = recButton;
+	return Recorder;
 
-	// save button
-	var saveButton = $("<button></button>").addClass("btn btn-default").attr("id", this.settings.saveButtonId).attr("disabled", "disabled");
-	var saveIcon = $("<span></span>").addClass("glyphicon glyphicon-upload");
-	var textUpload = $("<span>SAVE</span>");
-	saveButton.append(saveIcon).append(textUpload);
-	this.saveButton = saveButton;
-
-	// add them to the DOM
-	var container = $(this.settings.buttonContainer);
-	container.append(recButton);
-	container.append(saveButton);		
-
-	// I will change to time
-	this.textSpan = textSpan;
-};
-
-KhanAcademyRecorder.prototype.updateDisplayedTime = function(time) {
-	this.textSpan.text(millisecondsToString(time));
-};
-
-KhanAcademyRecorder.prototype.start = function() {
-	// update the UI
-	$("#board-canvas").addClass("active");
-	this.recButton.children(".glyphicon").removeClass("glyphicon-record").addClass("glyphicon-stop");
-
-	// start recording
-	this.dataProvider.registerDataConsumer(this);
-	this.dataProvider.start();
-	this.runTimeCounter(this.time);
-};
-
-KhanAcademyRecorder.prototype.stop = function() {
-	$(this).children(".glyphicon");
-
-	this.stopTimeCounter();
-	//saveRecordedData(recorder);
-
-	// inform the user that uploading has finished and he can record again
-	this.recButton.children(".glyphicon").removeClass("glyphicon-upload").addClass("glyphicon-record");
-	this.saveButton.removeAttr("disabled");
-	$("#board-canvas").removeClass("active");
-};
-
-KhanAcademyRecorder.prototype.startWhenReady = function() {
-
-	//
-	//
-	
-	var _this = this;
-	
-	//
-	//
-	
-	this.time = 0;
-
-	$("body").on("click", "#" + this.settings.recButtonId, function(e) {
-		e.preventDefault();
-
-		// disable the button until the initialization is 
-		$(this).attr("disabled", "disabled");
-
-		// toggle recording
-		_this.recording == false ? _this.start() : _this.stop();
-		_this.recording = !_this.recording;
-
-
-		// the button can be pressed again
-		$(this).removeAttr("disabled");
-	});
-};
-
-//
-//
-// PROCESS signals from the data provider
-//
-//
-
-KhanAcademyRecorder.prototype.recieveNewState = function(state) {
-	if(this.recording == true) {
-		this.parent.recieveNewState(state);
-	}
-};
+})();
