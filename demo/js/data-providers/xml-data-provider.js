@@ -15,7 +15,7 @@ var XmlDataProvider = (function(){
 				rewind();
 
 				// this is not XmlDataProvider in this context
-				info = getinfoData();
+				info = getInfo();
 				VideoEvents.trigger("data-ready", info);
 
 				// init other things
@@ -85,12 +85,12 @@ var XmlDataProvider = (function(){
 		}
 
 		if(next == undefined) {
-			if (lastState.time < getinfoData().length) {
+			if (lastState.time < getInfo().length) {
 				// there is a gap between the last cursor movement and the end of the video
 				// create a dummy state, so the progressbar will work just fine
 				 
 				next = {
-					time: getinfoData().length,
+					time: getInfo().length,
 					x: -1,
 					y: -1,
 					pressure: 0
@@ -114,8 +114,8 @@ var XmlDataProvider = (function(){
 		return state;
 	};
 
-	var getinfoData = function() {
-		return videoInfo.getinfoData(); // this information is available only after the document is loaded!
+	var getInfo = function() {
+		return videoInfo.getInfo(); // this information is available only after the document is loaded!
 	};
 
 	var rewind = function() {

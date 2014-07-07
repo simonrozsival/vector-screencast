@@ -124,12 +124,16 @@
 
 				// visual data provider
 				var settings = new BasicSettings();
-				var dataProvider = new XmlDataProvider("data/demo.xml", board);
+				var file = getParameterByName("file");
+				file = file == "" ? "data/data.xml" : file;
+				var dataProvider = new XmlDataProvider(file, board);
 
 				// audio data provider
-				var audioPlayer = new AudioPlayer({
-					"mpeg": "data/demo.mp3"
-				});
+				if(file == "data/data.xml") { // this is just a tmp hook
+					var audioPlayer = new AudioPlayer({
+						"mpeg": "data/demo.mp3"
+					});
+				}
 
 				// line drawing tool
 				var lineDrawer = new SimpleLines(board.children("canvas"), settings);

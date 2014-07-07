@@ -110,7 +110,7 @@ var XmlReader = (function() {
 		// @todo: Explain here in comments, why validation is not strictly required.
 	}
 
-	XmlReader.prototype.getinfoData = function() {
+	XmlReader.prototype.getInfo = function() {
 		return info;
 	};
 

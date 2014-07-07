@@ -10,8 +10,8 @@ var UserInputDataProvider = (function() {
 	var timer = new VideoTimer();
 
 
-	function UserInputDataProvider(canvasOffset) {
-		offset = canvasOffset;
+	function UserInputDataProvider(board) {
+		offset = board.offset();
 		
 		document.onmousemove = function(e) { onMouseMove(e) };
 		document.onmousedown = function(e) { onMouseDown(e); };

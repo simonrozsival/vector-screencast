@@ -21,7 +21,7 @@ var RecorderUI = (function() {
 	var currentSettings;
 
 	var playing;
-	var btn, uploadBtn;
+	var btn, uploadBtn, modal;
 	var uploadModal;
 	var progress;
 
@@ -70,7 +70,7 @@ var RecorderUI = (function() {
 		});
 
 		uploadBtn.on("click", function() {
-			VideoEvents.trigger("upload-recorded-data", "server-side/save.php");
+			modal.modal();
 		});
 	};
 
@@ -99,7 +99,68 @@ var RecorderUI = (function() {
 	};
 
 	var prepareUploadModal = function() {
-		//var modal = $("<div></div>").addClass("");
+
+		// input objects
+		var titleInput = $("<input>").attr("type", "text").attr("name", "title").attr("placeholder", "video's title").addClass("form-control");
+		var authorInput = $("<input>").attr("type", "text").attr("name", "author").attr("placeholder", "your name").addClass("form-control");
+		var descriptionTextarea = $("<textarea />").attr("name", "description").attr("placeholder", "video description").addClass("form-control");
+
+		// button
+		var save = $("<button>").attr("type", "button").addClass("btn btn-primary").text("Save video");
+
+		modal = $("<div />").addClass("modal fade").append(
+						$("<div />").addClass("modal-dialog").append(
+							$("<div />").addClass("modal-content")
+								.append(
+									// MODAL HEADER
+									$("<div />").addClass("modal-header")
+										.append(
+											$("<button>").attr("type", "button").addClass("close").attr("data-dismiss", "modal")
+												.append($("<span>").attr("aria-hidden", "true").html("&times;"))
+												.append($("<span>").addClass("sr-only").text("Close"))
+										).append(
+											$("<h4>Save captured video</h4>").addClass("modal-title")
+										)
+								).append(
+									// MODAL BODY
+									$("<div />").addClass("modal-body")
+										.append(
+											// name input
+											$("<p />").addClass("form-group")
+												.append(titleInput)
+										).append(
+											$("<p />").addClass("form-group")
+												.append(authorInput)
+										).append(
+											$("<p />").addClass("form-group")
+												.append(descriptionTextarea)
+										)
+
+
+								).append(
+									// MODAL FOOTER
+									$("<div />").addClass("modal-footer")
+										.append($("<button>").attr("type", "button").addClass("btn btn-default").attr("data-dismiss", "modal").text("Close"))
+										.append(save)
+
+								)
+						)
+					);
+
+		$("body").append(modal);
+
+		save.on("click", function() {
+			VideoEvents.trigger("upload-recorded-data", {
+				url: "server-side/save.php",
+				info: { // this will be merged with the <info> structure
+					about: {
+						title: titleInput.val(),
+						description: descriptionTextarea.val(),
+						author: authorInput.val()
+					}
+				}
+			});
+		});
 	};
 
 	var prepareColorPanel = function(panel) {

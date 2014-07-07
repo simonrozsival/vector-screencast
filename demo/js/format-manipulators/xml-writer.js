@@ -19,7 +19,7 @@ var XmlWriter = (function() {
 
 	var createinfoElement = function(info, name) {
 		if(name == undefined) {
-			name = "info-data"; // the root elem.
+			name = "info"; // the root elem.
 		}
 
 		var root = createElem(name);
@@ -60,12 +60,12 @@ var XmlWriter = (function() {
 						break;
 					case "color-change":
 						var c = createElem("c");
-						c.value = item.color;
+						c.attr("value", item.color);
 						cursor.append(c);
 						break;
 					case "brush-size-change":
 						var s = createElem("s");
-						s.value = item.size;
+						s.attr("value", item.size);
 						cursor.append(s);
 						break;						
 				}

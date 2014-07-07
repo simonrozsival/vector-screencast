@@ -20,11 +20,14 @@ var Recorder = (function(){
 	var defaultSize = 3;
 
 	// tmp data
-	var lastChunkStart = 0;
+	var lastTime = 0;
 	var chunkLength;
 	var currentColor, currentSize;
 
-	function Recorder(opts) {
+	// board
+	var width, height, background;
+
+	function Recorder(opts, board) {
 				
 		if(opts != undefined && opts.hasOwnProperty("chunkLength")) {
 			chunkLength = opts.chunkLength;
@@ -44,6 +47,12 @@ var Recorder = (function(){
 			currentSize = defaultSize;
 		}
 
+		if(board != undefined) {
+			width = board.width();
+			height = board.height();
+			background = board.css("backgroundColor");
+		}
+
 		var recording = false;
 
 		VideoEvents.on("start", function() {
@@ -60,36 +69,50 @@ var Recorder = (function(){
 		VideoEvents.on("new-state", function(e, state) {
 			if(recording == true) {
 				// add data
+				state.type = "cursor-movement";
 				addState(state);
 			}
 		});
 
-		VideoEvents.on("color-change", function(e, state) {
-			currentColor = state.value; // color can be changed at any time
+		VideoEvents.on("color-change", function(e, color) {
+			currentColor = color; // color can be changed at any time
 
 			if(recording == true) {
 				addState({
 					type: "color-change",
-					value: state.value
+					color: color
 				});
 			}
 		});
 
-		VideoEvents.on("brush-size-change", function(e, state) {
-			currentSize = state.value;
+		VideoEvents.on("brush-size-change", function(e, size) {
+			currentSize = size;
 
 			if(recording == true) {
 				addState({
 					type: "brush-size-change",
-					value: state.value
+					size: size
 				});
 			}
 		});
 
-		VideoEvents.on("upload-recorded-data", function(e, url) {
-			console.log("info", info);
-			console.log("data", data);
+		VideoEvents.on("upload-recorded-data", function(e, params) {
 
+			if(params.hasOwnProperty("info")) {
+				$.extend(true, info, params.info);
+			}
+
+			// update info according to recorded data
+			info.length = lastTime;
+			info.chunksCount = data.length;
+
+			// board data
+			info.board.width = width;
+			info.board.height = height;
+			info.board.background = background;
+
+
+			// get the XML
 			var animation = XmlWriter.write(info, data);
 			var rawXml = $("<hack />").append(animation).html();
 			// html() returns string of it's INNER content
@@ -101,16 +124,18 @@ var Recorder = (function(){
 				rawData: rawXml
 			};
 
-			console.log("request data", request);
-
 			$.ajax({
 				type: "POST",
-				url: url,
+				url: params.url,
 				data: request,
 				success: function(e) {
-					console.log("request success", e);
+					if(e.hasOwnProperty("path")) {
+						var url = "index.html?file=" + e.path;
+						window.location.replace(url);
+					}
 				},
 				error: function(e) {
+					alert("Could not save the data.");
 					console.log("request error", e);
 				}
 			});
@@ -125,9 +150,9 @@ var Recorder = (function(){
 		if (state.hasOwnProperty("time") && chunk.start + chunkLength < state.time) {
 			// color changes and brush size changes do not have exact timing
 			addChunk(state.time);
+			lastTime = state.time;
 		}
 
-		lastChunkStart = 0;
 		chunk.cursor.push(state);
 	};
 
@@ -152,7 +177,7 @@ var Recorder = (function(){
 		},
 		length: 0,
 		chunkLength: 2000,
-		chunkCount: 0,
+		chunksCount: 0,
 		board: {
 			width: 800,
 			height: 400,
