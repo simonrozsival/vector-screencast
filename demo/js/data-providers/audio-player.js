@@ -92,6 +92,7 @@ var AudioPlayer = (function() {
 		});
 
 		VideoEvents.on("skip-to", function(e, progress) {
+			reachedEnd = false; // if I was at the end and I changed the position, I am not at the end any more!
 			changePosition(audio.duration * progress);
 		});
 	};

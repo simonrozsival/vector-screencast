@@ -151,7 +151,7 @@ var RecorderUI = (function() {
 
 		save.on("click", function() {
 			VideoEvents.trigger("upload-recorded-data", {
-				url: "server-side/save.php",
+				url: "save.php", // @todo pass the url by the user as a parameter
 				info: { // this will be merged with the <info> structure
 					about: {
 						title: titleInput.val(),

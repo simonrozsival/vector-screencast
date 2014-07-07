@@ -125,11 +125,11 @@
 				// visual data provider
 				var settings = new BasicSettings();
 				var file = getParameterByName("file");
-				file = file == "" ? "data/data.xml" : file;
+				file = file == "" ? "data/demo.xml" : file;
 				var dataProvider = new XmlDataProvider(file, board);
 
 				// audio data provider
-				if(file == "data/data.xml") { // this is just a tmp hook
+				if(file == "data/demo.xml") { // this is just a tmp hook
 					var audioPlayer = new AudioPlayer({
 						"mpeg": "data/demo.mp3"
 					});

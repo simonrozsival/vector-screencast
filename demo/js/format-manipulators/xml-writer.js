@@ -96,7 +96,6 @@ var XmlWriter = (function() {
 
 			var rootEl = createRootElement("dev");
 			var infoEl = createinfoElement(info);
-			console.log("info: ", infoEl);
 			var dataEl = createDataElement(data);
 
 			rootEl.append(infoEl).append(dataEl);

@@ -1,6 +1,6 @@
 <?php
 
-$dir = "../data/" . date("Y-m-d_H-i-s");
+$dir = "data/" . date("Y-m-d_H-i-s");
 mkdir($dir);
 $filePath = $dir . "/data." . $_REQUEST["format"];
 $fp = fopen($filePath, "w+");
