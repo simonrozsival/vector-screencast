@@ -100,6 +100,10 @@
 		<script type="text/javascript" src="js/ui/cursor.js"></script>
 		<script type="text/javascript" src="js/ui/recorder-ui.js"></script>
 
+		<!-- Audio Recording -->
+		<script type="text/javascript" src="js/audio-recording/libs/recordjs/recorder.js"></script>
+		<script type="text/javascript" src="js/audio-recording/audio-recorder.js"></script>
+
 		<!-- the object that puts everything together: -->
 		<script type="text/javascript" src="js/recorder.js"></script>
 
@@ -129,6 +133,11 @@
 					colorsPanel: $("#colors-panel"),
 					brushSizesPanel: $("sizes-panel"),
 					buttonsContainer: $("#button-container")
+				});
+
+				// audio
+				var audioRecorder = new AudioRecorder({
+					
 				});
 
 				var recorder = new Recorder({

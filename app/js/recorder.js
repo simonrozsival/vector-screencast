@@ -24,6 +24,10 @@ var Recorder = (function(){
 	var chunkLength;
 	var currentColor, currentSize;
 
+	// data upload info
+	var uploadedVideo = false, uploadedSound = false;
+	var redirectUrl;
+
 	// board
 	var width, height, background;
 
@@ -120,6 +124,7 @@ var Recorder = (function(){
 
 			var request = {
 				type: "video",
+				fileName: params.fileName,
 				format: "xml",
 				rawData: rawXml
 			};
@@ -129,9 +134,13 @@ var Recorder = (function(){
 				url: params.url,
 				data: request,
 				success: function(e) {
+					uploadedVideo = true;
 					if(e.hasOwnProperty("path")) {
-						var url = "index.html?file=" + e.path;
-						window.location.replace(url);
+						redirectUrl = "index.html?file=" + e.path;
+					}
+
+					if(uploadedSound) {
+						finishRecording();
 					}
 				},
 				error: function(e) {
@@ -144,15 +153,22 @@ var Recorder = (function(){
 		VideoEvents.on("update-info", function(e, infoData) {
 			setinfoData(infoData);
 		});
+
+		VideoEvents.on("finsihed-mp3-upload", function() {
+			uploadedSound = true;
+			while(!uploadedVideo) { } // @todo - fail after some time...
+			finishRecording();				
+		});
 	};
 
 	var addState = function(state) {
-		if (state.hasOwnProperty("time") && chunk.start + chunkLength < state.time) {
-			// color changes and brush size changes do not have exact timing
-			addChunk(state.time);
+		// color changes and brush size changes do not have exact timing
+		if (state.hasOwnProperty("time")) {
 			lastTime = state.time;
+			if(chunk.start + chunkLength < state.time) {
+				addChunk(state.time);
+			}
 		}
-
 		chunk.cursor.push(state);
 	};
 
@@ -187,6 +203,10 @@ var Recorder = (function(){
 
 	var setinfoData = function(infoData) {
 		$.extend(true, info, data);
+	};
+
+	var finishRecording = function() {
+		window.location.replace(redirectUrl);
 	};
 
 	return Recorder;

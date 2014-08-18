@@ -85,17 +85,12 @@ var XmlDataProvider = (function(){
 		}
 
 		if(next == undefined) {
-			if (lastState.time < getInfo().length) {
-				// there is a gap between the last cursor movement and the end of the video
-				// create a dummy state, so the progressbar will work just fine
-				 
-				next = {
-					time: getInfo().length,
-					x: -1,
-					y: -1,
-					pressure: 0
-				};
-			}
+			next = {
+				time: getInfo().length,
+				x: -1,
+				y: -1,
+				pressure: 0
+			};
 
 			reachedEnd = true;
 			stop();
@@ -108,6 +103,10 @@ var XmlDataProvider = (function(){
 	};
 
 	var correctCoords = function(state) {
+		if(state == undefined) {
+			console.log(state);
+		}
+
 		state.x = state.x / info.board.width * boardInfo.width;
 		state.y = state.y / info.board.height * boardInfo.height;
 
@@ -150,6 +149,7 @@ var XmlDataProvider = (function(){
 		if(running) {
 			VideoEvents.trigger("next-state-peek", state);
 			var timeGap = state.time - lastState.time;
+			console.log(lastState.time);
 
 			timeout = setTimeout(function() {
 				VideoEvents.trigger("new-state", state);
