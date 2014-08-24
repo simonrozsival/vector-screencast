@@ -19,10 +19,12 @@ var BasicSettings = (function() {
 	}
 
 	var setColor = function(color) {
+		console.log("changing color to ", color);
 		settings.color = color;
 	};
 
 	var setSize = function(size) {
+		console.log("changing size to ", size);
 		settings.size = size;
 	};
 

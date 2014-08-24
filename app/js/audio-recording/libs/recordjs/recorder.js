@@ -91,7 +91,7 @@ var MicrophoneRecorder = (function(window){
                 encoderWorker.postMessage({ cmd: 'finish'});
                 encoderWorker.onmessage = function(e) {
                     if (e.data.cmd == 'data') {              
-                        console.log("Done converting to Mp3");                        
+                        console.log("Done converting to Mp3");
                         var url = 'data:audio/mp3;base64,'+encode64(e.data.buf);
                         VideoEvents.trigger("save-audio/mp3", url);        
                     }

@@ -134,6 +134,8 @@ var Recorder = (function(){
 				url: params.url,
 				data: request,
 				success: function(e) {
+					VideoEvents.trigger("saved-xml-data");
+
 					uploadedVideo = true;
 					if(e.hasOwnProperty("path")) {
 						redirectUrl = "index.html?file=" + e.path;
@@ -154,7 +156,7 @@ var Recorder = (function(){
 			setinfoData(infoData);
 		});
 
-		VideoEvents.on("finsihed-mp3-upload", function() {
+		VideoEvents.on("finsihed-audio-upload", function() {
 			uploadedSound = true;
 			while(!uploadedVideo) { } // @todo - fail after some time...
 			finishRecording();				
@@ -206,7 +208,10 @@ var Recorder = (function(){
 	};
 
 	var finishRecording = function() {
-		window.location.replace(redirectUrl);
+		VideoEvents.trigger("recording-finished");
+		if(confirm("Do you want to view your recorded video?")) {
+			window.location.replace(redirectUrl);
+		}
 	};
 
 	return Recorder;

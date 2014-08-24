@@ -16,12 +16,13 @@ var RecorderUI = (function() {
 		defaultSize: "normal",
 		buttonsCotainer: undefined,
 		colorsPanel: undefined,
-		brushSizesPanel: undefined
+		brushSizesPanel: undefined,
+		board: undefined
 	};
 	var currentSettings;
 
 	var playing;
-	var btn, uploadBtn, modal;
+	var btn, uploadBtn, modal, board;
 	var uploadModal;
 	var progress;
 
@@ -41,6 +42,8 @@ var RecorderUI = (function() {
 
 		// create the panels for sellecting colors and sizes
 		prepareColorPanel.call(this, settings.colorsPanel);
+
+		board = options.board;
 	}
 
 	var prepareButtons = function(container) {
@@ -80,6 +83,7 @@ var RecorderUI = (function() {
 		UIFactory.changeButton(btn, "danger"); // danger = red -> recording is ON
 		VideoEvents.trigger("start");
 		uploadBtn.attr("disabled", "disabled");
+		board.addClass("no-pointer");
 
 		var time = 0;
 		tick = setInterval(function() {
@@ -92,6 +96,7 @@ var RecorderUI = (function() {
 	var stop = function() {
 		UIFactory.changeButton(btn, "success"); // success = green -> recording is OFF, can start again
 		progressSpan.text("REC");
+		board.removeClass("no-pointer");
 		uploadBtn.removeAttr("disabled");
 		VideoEvents.trigger("pause");
 
@@ -107,6 +112,35 @@ var RecorderUI = (function() {
 
 		// button
 		var save = $("<button>").attr("type", "button").addClass("btn btn-primary").text("Save video");
+
+		// uploading status - @todo list
+		var dataStatus = UIFactory.glyphicon("unchecked");		
+        VideoEvents.on("saved-xml-data", function() {
+        	UIFactory.changeIcon.call(dataStatus, "check");
+        });
+
+        var dataTodo = $("<li></li>").html("video description and vedctor data are saved &mdash; ").append(dataStatus);
+
+		var convertedStatus = UIFactory.glyphicon("unchecked");		
+        VideoEvents.on("finsihed-audio-converting", function() {
+        	UIFactory.changeIcon.call(convertedStatus, "check");
+        });
+        var convertedTodo = $("<li></li>").html("audio is compressed &mdash; ").append(convertedStatus);
+
+        var audioUploadStatus = UIFactory.glyphicon("unchecked");		
+        VideoEvents.on("finsihed-audio-upload", function() {
+        	UIFactory.changeIcon.call(audioUploadStatus, "check");
+        });
+        var audioUploadTodo = $("<li></li>").html("audio is uploaded &mdash; ").append(audioUploadStatus);
+
+        var statusList = $("<ul />")
+        					.append(dataTodo)
+        					.append(convertedTodo)
+        					.append(audioUploadTodo);
+        var uploadInfo = $("<div />")
+        					.css("display", "none")
+        					.append("<p />").addClass("alert alert-info").text("Please be patient. Converting and uploading video usualy takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window.")
+        					.append(statusList);
 
 		modal = $("<div />").addClass("modal fade").append(
 						$("<div />").addClass("modal-dialog").append(
@@ -134,8 +168,7 @@ var RecorderUI = (function() {
 										).append(
 											$("<p />").addClass("form-group")
 												.append(descriptionTextarea)
-										)
-
+										).append(uploadInfo)
 
 								).append(
 									// MODAL FOOTER
@@ -150,9 +183,15 @@ var RecorderUI = (function() {
 		$("body").append(modal);
 
 		save.on("click", function() {
+
+			// inform the user..
+			$(this).attr("disabled", "disabled");
+			$(this).text("Started uploading...");
+			uploadInfo.slideToggle();
+
 			VideoEvents.trigger("upload-recorded-data", {
 				url: "save.php",
-				mp3url: "upload-mp3.php",
+				audioUpload: "upload-audio.php",
 				fileName: new Date().getTime(),
 				info: { // this will be merged with the <info> structure
 					about: {
@@ -162,6 +201,10 @@ var RecorderUI = (function() {
 					}
 				}
 			});
+		});
+
+		VideoEvents.on("recording-finished", function() {
+			save.text("Video was successfully uploaded.");
 		});
 	};
 

@@ -5,6 +5,10 @@ var PlayerUI = (function() {
 	var playing = false, reachedEnd = false;
 	var videoLegnth = 0;
 
+	// UI elements
+	var btn, icon;
+	var bar, preloaded;
+
 	function PlayerUI(options) {
 
 		// prepare UI and bind events
@@ -21,8 +25,8 @@ var PlayerUI = (function() {
 	var preparePlayPauseButton = function(container) {
 
 		// create the button
-		var btn = UIFactory.button("success").attr("disabled", "disabled");
-		var icon = UIFactory.glyphicon("play");
+		btn = UIFactory.button("success").attr("disabled", "disabled");
+		icon = UIFactory.glyphicon("play");
 		btn.append(icon);
 		container.append(btn);	
 
@@ -50,8 +54,10 @@ var PlayerUI = (function() {
 		
 		btn.on("click", playPause);
 
-		var spacebar = 32; // key constant
-		$("body").on("keydown", function(e) {
+		// keyboard
+		var spacebar = 32; // key constant		
+
+		$("body").on("keyup", function(e) {
 			if (e.keyCode == spacebar) {
 				playPause();
 			}
@@ -72,19 +78,26 @@ var PlayerUI = (function() {
 	};
 
 	var prepareProgressBar = function(container) {
-		var bar = UIFactory.progressbar("success", 0);
-		var preloaded = UIFactory.progressbar("info", 0);
+		bar = UIFactory.progressbar("success", 0);
+		preloaded = UIFactory.progressbar("info", 0);
 
 		container.append(bar).append(preloaded);
 
 		// skip after clicking on the progress bar
-		var skip = function(progress) {
+		var skip = function(progress) {			
 			UIFactory.changeProgress(bar, progress * 100);
+			if (reachedEnd && progress < 1) {
+				UIFactory.changeIcon.call(icon, "play");
+			}
 		};
 
 		container.on("click", function(event) {
 			var progress = (event.pageX - container.offset().left) / container.width();
+
+			if(playing == true) VideoEvents.trigger("pause"); // avoid rendering errors			
 			VideoEvents.trigger("skip-to", progress);
+			if(playing == true) VideoEvents.trigger("start"); // resume playback
+
 			skip(progress);
 		});
 

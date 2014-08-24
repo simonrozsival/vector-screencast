@@ -102,7 +102,7 @@
 	</xs:sequence>
 
 	<xs:attribute name="start" type="xs:nonNegativeInteger" />
-	<xs:attribute name="currentColor" type="colorType" />
+	<xs:attribute name="current-color" type="colorType" />
 	<xs:attribute name="currentBrushSize" type="xs:positiveInteger" />
 </xs:complexType>
 

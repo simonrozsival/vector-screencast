@@ -18,7 +18,7 @@
 		</board>
 	</info>
 	<data>
-		<chunk start="0" currentColor="#fbff06" currentBrushSize="3">
+		<chunk start="0" current-color="#fbff06" currentBrushSize="3">
 			<m x="652" y="319" pressure="0" time="1226" /> 
 			<m x="647" y="312" pressure="0" time="1232" /> 
 			<m x="637" y="299" pressure="0" time="1240" /> 
@@ -50,7 +50,7 @@
 			<m x="497" y="179" pressure="0" time="1484" /> 
 			<m x="496" y="179" pressure="0" time="1834" /> 
 		</chunk> 
-		<chunk start="2000" currentColor="#fbff06" currentBrushSize="3"> 
+		<chunk start="2000" current-color="#fbff06" currentBrushSize="3"> 
 			<m x="496" y="180" pressure="0" time="2142" /> 
 			<m x="496" y="181" pressure="0" time="2156" /> 
 			<m x="496" y="191" pressure="0" time="2164" /> 
@@ -148,7 +148,7 @@
 			<m x="713" y="192" pressure="0" time="3986" /> 
 			<m x="705" y="185" pressure="0" time="3994" /> 
 		</chunk> 
-		<chunk start="4000" currentColor="#fbff06" currentBrushSize="3"> 
+		<chunk start="4000" current-color="#fbff06" currentBrushSize="3"> 
 			<m x="693" y="178" pressure="0" time="4000" /> 
 			<m x="684" y="174" pressure="0" time="4008" /> 
 			<m x="676" y="171" pressure="0" time="4016" /> 
@@ -326,7 +326,7 @@
 			<m x="448" y="285" pressure="0" time="5990" /> 
 			<m x="470" y="285" pressure="0" time="5998" /> 
 		</chunk> 
-		<chunk start="4000" currentColor="#ffffff" currentBrushSize="3"> 
+		<chunk start="4000" current-color="#ffffff" currentBrushSize="3"> 
 			<m x="483" y="285" pressure="0" time="6004" /> 
 			<m x="494" y="285" pressure="0" time="6012" /> 
 			<m x="499" y="285" pressure="0" time="6020" /> 
@@ -484,7 +484,7 @@
 			<m x="800" y="312" pressure="0" time="7986" /> 
 			<m x="802" y="317" pressure="0" time="7992" /> 
 		</chunk> 
-		<chunk start="4000" currentColor="#ffffff" currentBrushSize="3"> 
+		<chunk start="4000" current-color="#ffffff" currentBrushSize="3"> 
 			<m x="802" y="319" pressure="0" time="8000" /> 
 			<m x="802" y="320" pressure="0" time="8008" /> 
 			<m x="802" y="318" pressure="0" time="8034" /> 

@@ -142,8 +142,8 @@ var XmlReader = (function() {
 			
 			var data = {
 				start: chunk.attr("start"),
-				currentColor: chunk.attr("currentColor"),
-				currentBrushSize: chunk.attr("currentBrushSize"),
+				currentColor: chunk.attr("current-color"),
+				currentBrushSize: chunk.attr("current-brush-size"),
 				cursor: [],
 				prerendered: chunk.children("svg")
 			};
@@ -209,13 +209,15 @@ var XmlReader = (function() {
 	};
 
 	var rewind = function() {
-		jumTo(0, 0);
+		jumpTo(0, 0);
 	};
 
-	var jumTo = function(chunk, step) {
+	var jumpTo = function(chunk, step) {
 		currentChunk = chunk; // the first chunk
 		currentStep = step; // the first "step" of the first chunk
 
+		console.log("current chunk ", currentChunk);
+		console.log("current chunk ", chunks[currentChunk]);
 		VideoEvents.trigger("color-change", chunks[currentChunk].currentColor);
 		VideoEvents.trigger("brush-size-change", chunks[currentChunk].currentBrushSize);
 	}

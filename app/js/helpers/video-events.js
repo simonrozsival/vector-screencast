@@ -22,7 +22,7 @@ var VideoEvents = (function() {
         	args.shift(); // the first argument is the "event"
         	// "arguments" now doesn't contain the first arg.
             
-        	el.trigger(formProperEventName(event), args);
+            el.trigger(formProperEventName(event), args);
         },
 
         on: function(event, callback) {

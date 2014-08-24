@@ -8,19 +8,18 @@ var XmlDataProvider = (function(){
 	var timeout;
 
 	function XmlDataProvider(fileName, board) {
+		var _this = this;
 		videoInfo = new XmlReader();
 		videoInfo.loadFile({
 			file: fileName,
 			success: function() {
 				rewind();
-
-				// this is not XmlDataProvider in this context
 				info = getInfo();
 				VideoEvents.trigger("data-ready", info);
 
 				// init other things
-				initEvents.call(this)
-				initBoard.call(this, board);
+				initEvents.call(_this)
+				initBoard.call(_this, board);
 			},
 			error: function(msg) {
 				// some other process will take care of the error and display it properly
@@ -44,12 +43,13 @@ var XmlDataProvider = (function(){
 			rewind();
 		});
 
+		var _this = this;
 		VideoEvents.on("skip-to", function(e, progress) {
 			var time = progress * info.length;
 			if (time > currentState.time) {
-				skipForward.call(this, time);
+				skipForward.call(_this, time);
 			} else {
-				skipBackwards.call(this, time);
+				skipBackwards.call(_this, time);
 			}
 		});
 
@@ -74,6 +74,7 @@ var XmlDataProvider = (function(){
 
 			switch(next.type) {
 				case "color-change":
+					console.log("Change color to ", next.color);
 					VideoEvents.trigger("color-change", next.color);
 					break;
 				case "brush-size-change":
@@ -149,7 +150,6 @@ var XmlDataProvider = (function(){
 		if(running) {
 			VideoEvents.trigger("next-state-peek", state);
 			var timeGap = state.time - lastState.time;
-			console.log(lastState.time);
 
 			timeout = setTimeout(function() {
 				VideoEvents.trigger("new-state", state);

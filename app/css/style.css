@@ -38,7 +38,7 @@ body {
 		height: 100%;
 	}
 
-	canvas {
+	.no-pointer canvas {
 		cursor: none;
 	}
 

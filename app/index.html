@@ -125,10 +125,15 @@
 				// visual data provider
 				var settings = new BasicSettings();
 				var file = getParameterByName("file");
-				xmlFile = file == "" ? "data/demo.xml" : file + ".xml";
-				var dataProvider = new XmlDataProvider(xmlFile, board);
+				if(file == "") {
+					file = "data/demo";
+				}
+
+				
+				var dataProvider = new XmlDataProvider(file + ".xml", board);
 				var audioPlayer = new AudioPlayer({
-					"mpeg": file + ".mp3"
+					"mpeg": file + ".mp3",
+					"ogg": file + ".ogg"
 				});
 
 				// line drawing tool

@@ -42,7 +42,7 @@ var SimpleLines = (function() {
 						) {//|| lastState.inside == false) {
 						startLine.call(_this, state.x, state.y, state.pressure);
 					} else {
-						drawSegment.call(_this, state.x, state.y, state.pressure);
+						continueLine.call(_this, state.x, state.y, state.pressure);
 					}
 				//}
 			} else if (lastState.pressure > 0) {
@@ -57,19 +57,44 @@ var SimpleLines = (function() {
 
 		});
 
-	}
-
-	var startLine = function(x, y, pressure) {
-		this.x = x;
-		this.y = y;
-		this.pressure = pressure;
 	};
 
-	var drawSegment = function(x, y, presure) {
+	var startLine = function(x, y, pressure) {
+		drawDot(x, y, pressure);
+
+		// save the data
+		this.x = x;
+		this.y = y;
+	};
+
+	var continueLine = function(x, y, pressure) {
+		drawSegment.call(this, x, y, pressure);
+
+		// save the data
+		this.x = x;
+		this.y = y;
+	};
+
+	var drawDot = function(x, y, pressure) {		
+		var c = context;
+
+		// load current settings
+		var current = settings.getCurrentSettings();
+		var radius = (current.brushSize * pressure) / 2;
+		c.fillStyle = current.color;
+
+		// draw a dot
+		c.beginPath();
+		c.arc(x, y, radius, 0, Math.PI*2, true); 
+		c.closePath();
+		c.fill();
+	};
+
+	var drawSegment = function(x, y, pressure) {
 		var c = context;
 
 		var current = settings.getCurrentSettings();
-		c.lineWidth = current.brushSize * presure;
+		c.lineWidth = current.brushSize * pressure;
 		c.strokeStyle = current.color;
 
 		// draw path from the prev point to this one
@@ -78,14 +103,10 @@ var SimpleLines = (function() {
 		c.lineTo(x, y);
 		c.stroke();
 		c.closePath();
-
-		// save the data
-		this.x = x;
-		this.y = y;
 	};
 
 	var endLine = function(x, y, pressure) {
-
+		drawDot(x, y, pressure);
 	};
 
 	var clearAll = function() {

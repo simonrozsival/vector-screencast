@@ -21,7 +21,7 @@
 		</board>
 	</info>
 	<data>
-		<chunk start="0" currentColor="#fbff06" currentBrushSize="3">
+		<chunk start="0" current-color="#fbff06" currentBrushSize="3">
 			<cursor>
 				<m x="944" y="111" p="0" t="649" />
 				<m x="929" y="111" p="0" t="666" />
@@ -72,7 +72,7 @@
 				<!-- -->
 			</svg>
 		</chunk>
-		<chunk start="2000" currentColor="#fbff06" currentBrushSize="3">
+		<chunk start="2000" current-color="#fbff06" currentBrushSize="3">
 			<cursor>
 				<m x="682" y="101" p="0" t="2006" />
 				<m x="677" y="108" p="0" t="2023" />
@@ -196,7 +196,7 @@
 				<!-- -->
 			</svg>
 		</chunk>
-		<chunk start="4000" currentColor="#fbff06" currentBrushSize="3">
+		<chunk start="4000" current-color="#fbff06" currentBrushSize="3">
 			<cursor>
 				<m x="697" y="109" p="0" t="4011" />
 				<m x="695" y="111" p="0" t="4028" />
@@ -321,7 +321,7 @@
 				<!-- -->
 			</svg>
 		</chunk>
-		<chunk start="6000" currentColor="#ffffff" currentBrushSize="3">
+		<chunk start="6000" current-color="#ffffff" currentBrushSize="3">
 			<cursor>
 				<m x="768" y="52" p="1" t="6015" />
 				<m x="764" y="53" p="1" t="6032" />
@@ -435,7 +435,7 @@
 				<!-- -->
 			</svg>
 		</chunk>
-		<chunk start="8000" currentColor="#fbff06" currentBrushSize="3">
+		<chunk start="8000" current-color="#fbff06" currentBrushSize="3">
 			<cursor>
 				<m x="775" y="144" p="0" t="8006" />
 				<m x="787" y="147" p="0" t="8023" />

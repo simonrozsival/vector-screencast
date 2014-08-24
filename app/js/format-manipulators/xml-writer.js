@@ -41,8 +41,8 @@ var XmlWriter = (function() {
 		for (var i = 0; i < data.length; i++) {
 			var chunk = createElem("chunk")
 							.attr("start", data[i].start)
-							.attr("currentColor", data[i].color)
-							.attr("currentBrushSize", data[i].brushSize);
+							.attr("current-color", data[i].color)
+							.attr("current-brush-size", data[i].brushSize);
 			var cursor = createElem("cursor");
 			var cursorData = data[i].cursor;
 			for(var j = 0; j < cursorData.length; j++) {

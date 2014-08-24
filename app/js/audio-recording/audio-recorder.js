@@ -16,6 +16,9 @@ var AudioRecorder = (function(navigator, window) {
 	/** object */
 	var settings;
 
+	/** */
+	var recorder = false;
+
 	function AudioRecorder(config) {
 		
 		// wait until the user starts recording
@@ -115,10 +118,6 @@ var AudioRecorder = (function(navigator, window) {
 				// the recorder will now automatically convert the WAV into MP3
 				// and then trigger event "save-audio/mp3" with the mp3 data URL
 				// as parameter
-				 
-				var a = $("<a>").attr("href", blob).attr("target", "_blank").css("display", "none");
-				$("body").append(a);
-				a.click();
 			});
 		}
 	};
@@ -131,14 +130,14 @@ var AudioRecorder = (function(navigator, window) {
         fd.append('data', mp3data);
         $.ajax({
             type: 'POST',
-            url: settings.mp3url,
+            url: settings.audioUpload,
             data: fd,
             processData: false,
             contentType: false
         }).success(function(data) {
         	// I have sucessfully 
             console.log("mp3 upload was successful");
-            VideoEvents.trigger("finsihed-mp3-upload");
+            VideoEvents.trigger("finsihed-audio-upload");
         }).fail(function(data) {
         	console.log("mp3 upload failed");
         });

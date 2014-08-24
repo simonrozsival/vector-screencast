@@ -27,7 +27,7 @@
 
 			<div class="row">
 				<div class="col-xs-12">
-					<div id="board" class="no-pointer">
+					<div id="board">
 						<canvas width="1140" height="500"></canvas>
 
 						<noscript>
@@ -101,8 +101,16 @@
 		<script type="text/javascript" src="js/ui/recorder-ui.js"></script>
 
 		<!-- Audio Recording -->
+
+		<!-- Recorder.js library - ->
 		<script type="text/javascript" src="js/audio-recording/libs/recordjs/recorder.js"></script>
 		<script type="text/javascript" src="js/audio-recording/audio-recorder.js"></script>
+		<!- - -->
+
+		<!-- RecordRTC library -->		
+        <script src="//cdn.webrtc-experiment.com/RecordRTC.js"> </script>
+		<script src="js/audio-recording/audio-recorder-using-record-rtc.js"></script>		
+		<!-- -->
 
 		<!-- the object that puts everything together: -->
 		<script type="text/javascript" src="js/recorder.js"></script>
@@ -132,13 +140,13 @@
 				var recorderUI = new RecorderUI({
 					colorsPanel: $("#colors-panel"),
 					brushSizesPanel: $("sizes-panel"),
-					buttonsContainer: $("#button-container")
+					buttonsContainer: $("#button-container"),
+					board: board
 				});
 
 				// audio
-				var audioRecorder = new AudioRecorder({
-					
-				});
+				//var audioRecorder = new AudioRecorder();
+				var audioRecorder = new AudioRecorderUsingRecordRTC();
 
 				var recorder = new Recorder({
 					defaultColor: settings.getCurrentSettings().color,
