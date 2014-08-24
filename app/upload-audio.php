@@ -31,7 +31,6 @@ header("Content-type: application/json");
 header("Status: 200 OK");
 echo json_encode([
 	"response"	=> "Data saved to $dir.",
-	"path"	=> $filePath,
-	"data"	=> $data
+	"path"	=> $filePath
 ]);
 exit;

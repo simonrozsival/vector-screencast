@@ -5,6 +5,7 @@ var XmlDataProvider = (function(){
 	var videoInfo, info, boardInfo;
 	var running = false, reachedEnd = false;
 	var currentState, lastState;
+	var startTime;
 	var timeout;
 
 	function XmlDataProvider(fileName, board) {
@@ -125,6 +126,9 @@ var XmlDataProvider = (function(){
 	};
 
 	var start = function() {
+		startTime = Date.now();
+		startTime -= lastState.time; 	// I can start in the middle (when pausing in the middle)
+										// -> I have to "shift" the start time into the past, so it works properly
 		running = true;
 		tick();
 	};
@@ -149,8 +153,7 @@ var XmlDataProvider = (function(){
 		var state = getCurrentCursorState();
 		if(running) {
 			VideoEvents.trigger("next-state-peek", state);
-			var timeGap = state.time - lastState.time;
-
+			var timeGap = state.time - (Date.now() - startTime);			
 			timeout = setTimeout(function() {
 				VideoEvents.trigger("new-state", state);
 				tick();

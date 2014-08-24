@@ -208,6 +208,7 @@ var AudioRecorderUsingRecordRTC = (function(navigator, window) {
 	        var fd = new FormData();
 	        fd.append('fileName', settings.fileName);
 	        fd.append('data', dataUrl);
+
 	        $.ajax({
 	            type: 'POST',
 	            url: settings.audioUpload,
