@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Vector screencast - RECORDING DEMO</title>
+		
+		<!-- Libraries -->
+		<!--link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"-->
+		<link rel="stylesheet" media="screen" href="css/bootstrap.min.css">
+		
+		<!-- Open Sans font -->
+		<!--link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'-->
+
+		<link rel="stylesheet" href="css/style.css">
+
+
+	</head>
+	<body>
+		<div id="recorder"></div>
+
+		<!-- JS libraries (CDN): -->
+		<!--script src="http://code.jquery.com/jquery.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script-->
+
+		<!-- JS libraries (non-CDN): -->
+		<script src="js/libs/jquery.js"></script>
+		<script src="js/libs/bootstrap.min.js"></script>
+
+
+
+		<!--
+
+			Khan Academy Vector Video Recorder
+			==================================
+
+		-->
+		<!-- (in the production version, these JS files will be compressed into one) -->
+
+		<!-- helpers: -->
+		<script type="text/javascript" src="js/helpers/helper-functions.js"></script>
+		<script type="text/javascript" src="js/helpers/video-events.js"></script>
+		<script type="text/javascript" src="js/helpers/video-timer.js"></script>
+
+		<!-- settings: -->
+		<script type="text/javascript" src="js/settings/basic-settings.js"></script>
+
+		<!-- data provider (recording -> user input): -->
+		<script type="text/javascript" src="js/data-providers/base-data-provider.js"></script>
+		<script type="text/javascript" src="js/data-providers/user-input-data-provider.js"></script>
+		<script type="text/javascript" src="js/format-manipulators/xml-writer.js"></script>
+
+		<!-- wacom tablet support -->
+
+	    <!--[if IE]>
+	    <object id='wtPlugin' classid='CLSID:092dfa86-5807-5a94-bf3b-5a53ba9e5308'></object>
+	    <![endif]--><!--[if !IE]> <-->
+	    <object id="wtPlugin" type="application/x-wacomtabletplugin"></object>
+	    <!--> <![endif]-->
+
+		<!-- line drawer type: -->
+		<!--script type="text/javascript" src="js/drawers/simple-lines.js"></script-->
+		<script type="text/javascript" src="js/drawers/rounded-lines.js"></script>
+
+		<!-- UI -->
+		<script type="text/javascript" src="js/ui/ui-factory.js"></script>
+		<script type="text/javascript" src="js/ui/cursor.js"></script>
+		<script type="text/javascript" src="js/ui/recorder-ui.js"></script>
+
+		<!-- Audio Recording -->
+
+		<!-- Recorder.js library -->
+		<script type="text/javascript" src="js/audio-recording/libs/recordjs/recorder.js"></script>
+		<script type="text/javascript" src="js/audio-recording/audio-recorder.js"></script>
+		<!-- -->
+
+		<!-- RecordRTC library - ->		
+        <script src="//cdn.webrtc-experiment.com/RecordRTC.js"> </script>
+		<script src="js/audio-recording/audio-recorder-using-record-rtc.js"></script>		
+		<!- - -->
+
+		<!-- the object that puts everything together: -->
+		<script type="text/javascript" src="js/recorder.js"></script>
+
+		<!-- this script will be refactored later and put into a separate file: -->
+		<script type="text/javascript">
+			$(function(){ // document.ready jQuery shortcut - all the JS files must be loaded before this script runs!!
+				var recorder = new Recorder();
+			});
+		</script>
+
+	
+
+	</body>
+</html>
