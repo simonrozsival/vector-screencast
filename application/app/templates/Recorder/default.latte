@@ -15,7 +15,7 @@
 
 {block #scripts}
 <script src="{$baseUrl}/js/libs/recordjs/recorder.js"></script>
-<script src="{$baseUrl}/js/libs/vector-video.min.js"></script>
+<script src="{$baseUrl}/js/libs/vector-video.js"></script>
 
 <script>
 
@@ -27,7 +27,7 @@ $(function() {
 		url: {
 			uploadAudio: {link uploadAudio!},
 			uploadVideo: {link uploadXml!},
-			redirect: {link Homepage:}
+			getLink: {link getLink!}
 		}
 	});
 

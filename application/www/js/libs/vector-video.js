@@ -1425,11 +1425,15 @@ var Recorder = (function(){
 		}
 	};
 
+	// ui object
 	var ui;
 
 	var state = {
 		recording: false
 	};
+
+	// ID of database row
+	var recordingId;
 
 	function Recorder(options) {
 
@@ -1536,6 +1540,7 @@ var Recorder = (function(){
 				url: settings.url.uploadVideo,
 				data: request,
 				success: function(e) {
+					recordingId = e.recordingId;
 					VideoEvents.trigger("recording-id", e.recordingId);
 					VideoEvents.trigger("tool-finished", "video-recorder");
 				},
@@ -1619,7 +1624,19 @@ var Recorder = (function(){
 	var finishRecording = function() {
 		VideoEvents.trigger("recording-finished");
 		if(confirm(settings.localization.redirectPrompt)) {
-			window.location.replace(settings.url.redirect);
+			$.ajax({
+				url: settings.url.getLink,
+				type: "GET",
+				data: {
+					recordingId: recordingId
+				},
+				success: function(data) {						
+					window.location.replace(data.url);
+				},
+				error: function() {
+					alert(settings.localization.redirectFailiure);
+				}
+			});
 		}
 	};
 
@@ -2218,7 +2235,7 @@ var RecorderUI = (function() {
 
         // uploqe progress
         var uploadBar = UIFactory.progressbar("info", 0).text("0% uploaded").addClass("active progress-striped");
-        var uploadProgress = $("<div />").addClass("progress").append(uploadBar);
+        var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
 
         VideoEvents.on("upload-progress", function(e, percent) {
         	UIFactory.changeProgress(uploadBar, percent);
@@ -2275,6 +2292,7 @@ var RecorderUI = (function() {
 			$(this).attr("disabled", "disabled");
 			$(this).text("Started uploading...");
 			uploadInfo.slideToggle();
+			uploadProgress.slideToggle();
 
 			VideoEvents.trigger("upload-recorded-data", {
 				fileName: new Date().getTime(),

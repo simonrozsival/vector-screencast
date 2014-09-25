@@ -96,4 +96,14 @@ class RecorderPresenter extends BasePresenter {
 		$this->sendResponse(new Responses\JsonResponse([ "error" => "Upload failed." ]));
 	}
 
+	/**
+	 * Respond with a JSON containing link to given recording 
+	 * @param  int $recordingId
+	 */
+	public function handleGetLink($recordingId) {
+		$this->sendResponse(new Responses\JsonResponse([
+			"url" => $this->link("Player:", $recordingId)
+		]));
+	}
+
 }

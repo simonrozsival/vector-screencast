@@ -197,7 +197,7 @@ var RecorderUI = (function() {
 
         // uploqe progress
         var uploadBar = UIFactory.progressbar("info", 0).text("0% uploaded").addClass("active progress-striped");
-        var uploadProgress = $("<div />").addClass("progress").append(uploadBar);
+        var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
 
         VideoEvents.on("upload-progress", function(e, percent) {
         	UIFactory.changeProgress(uploadBar, percent);
@@ -254,6 +254,7 @@ var RecorderUI = (function() {
 			$(this).attr("disabled", "disabled");
 			$(this).text("Started uploading...");
 			uploadInfo.slideToggle();
+			uploadProgress.slideToggle();
 
 			VideoEvents.trigger("upload-recorded-data", {
 				fileName: new Date().getTime(),
