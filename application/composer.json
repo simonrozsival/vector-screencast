@@ -16,11 +16,11 @@
 	],
 	"require": {
 		"php": ">= 5.3.7",
-		"nette/nette": "~2.2.0",
+		"nette/nette": "~2.3@dev",
 		"dg/adminer-custom": "~1.5"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0"
 	},
-	"minimum-stability": "stable"
+	"minimum-stability": "dev"
 }

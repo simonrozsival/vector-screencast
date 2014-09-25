@@ -1,0 +1,37 @@
+{* 
+
+	The player is here.
+
+	Variables:
+
+	@var Nette\Database\Selection\ActiveRow 	$recording 		Contains the information about the video to play
+
+*}
+
+
+{block #content}
+<div id="recorder"></div> {* #recorder is the default selector for the player - I don't have to specify the container when creating the player *}
+{/block}
+
+{block #scripts}
+<script src="{$baseUrl}/js/libs/recordjs/recorder.js"></script>
+<script src="{$baseUrl}/js/libs/vector-video.min.js"></script>
+
+<script>
+
+$(function() {
+
+	// create the recorder
+	var recorder = new Recorder({
+		// for more information about configuration see documentation (https://github.com/rozsival/vector-video)
+		url: {
+			uploadAudio: {link uploadAudio!},
+			uploadVideo: {link uploadXml!},
+			redirect: {link Homepage:}
+		}
+	});
+
+});
+
+</script>
+{/block}

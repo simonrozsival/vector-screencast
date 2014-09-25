@@ -22,6 +22,15 @@ nette:
 
 
 services:
-	- App\Model\UserManager
+	- App\Model\Recording
+	- App\Model\Audio
 	- App\RouterFactory
 	router: @App\RouterFactory::createRouter
+
+
+database:
+	dsn: "mysql:host=localhost;dbname=video"
+	user: "root"
+	password:
+	options:
+		lazy: yes
