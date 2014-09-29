@@ -25,9 +25,14 @@ $(function() {
 	var recorder = new Recorder({
 		// for more information about configuration see documentation (https://github.com/rozsival/vector-video)
 		url: {
-			uploadAudio: {link uploadAudio!},
 			uploadVideo: {link uploadXml!},
 			getLink: {link getLink!}
+		},
+		audio: {
+			uploadAudio: {link uploadAudio!},
+			recordJs: {
+				workerPath: {$baseUrl} + "/js/libs/recordjs/recorderWorker.js"
+			}
 		}
 	});
 

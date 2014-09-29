@@ -29,8 +29,8 @@ services:
 
 
 database:
-	dsn: "mysql:host=localhost;dbname=video"
-	user: "root"
-	password:
+	dsn: "mysql:host=uvds183.active24.cz;dbname=rozsivalco"
+	user: "rozsivalco"
+	password: "M84LmxQR"
 	options:
 		lazy: yes

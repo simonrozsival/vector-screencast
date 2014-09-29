@@ -40,8 +40,11 @@ var Recorder = (function(){
 		},
 		url: {
 			uploadVideo: "",
-			uploadAudio: "",
 			redirect: ""
+		},
+		audio: {
+			uploadAudio: "",
+			recordJs: {}
 		}
 	};
 
@@ -71,7 +74,7 @@ var Recorder = (function(){
 		var dataProvider = new UserInputDataProvider();
 		var settingsProvider = new BasicSettings();
 		var lineDrawer = new RoundedLines(settingsProvider);
-		var audioRecorder = new AudioRecorder(settings.url);
+		var audioRecorder = new AudioRecorder(settings.audio);
 
 		// [3] - UI
 		ui = new RecorderUI({

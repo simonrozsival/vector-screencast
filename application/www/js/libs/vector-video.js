@@ -22,14 +22,16 @@ var AudioRecorder = (function(navigator, window) {
 	/** object */
 	var settings = {
 		fileName: "",
-		uploadAudio: ""
+		uploadAudio: "",
+		recordJs: {
+			workerPath: "/js/libs/recordjs/recorderWorker.js"			
+		}
 	};
 
 	/** RecordJS library object */
 	var recorder = false;
 
 	function AudioRecorder(config) {
-		
 		$.extend(true, settings, config);
 
 		// wait until the user starts recording
@@ -39,7 +41,7 @@ var AudioRecorder = (function(navigator, window) {
 		var _this = this;
 
 		// init the api
-		init.call(this, config);
+		init.call(this);
 
 		VideoEvents.on("start", function() {
 			start.call(_this);
@@ -57,7 +59,7 @@ var AudioRecorder = (function(navigator, window) {
 		VideoEvents.trigger("register-tool", "audio-recorder");
 	}
 
-	var init = function(cfg) {
+	var init = function() {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		window.URL = window.URL || window.webkitURL;
 		navigator.getUserMedia = (navigator.getUserMedia ||
@@ -86,9 +88,7 @@ var AudioRecorder = (function(navigator, window) {
 					console.log("Input sample rate: " + input.context.sampleRate);
 
 					// init the Recorder.js library
-					recorder = new MicrophoneRecorder(input, {
-						workerPath: "/js/libs/recordjs/recorderWorker.js"
-					});
+					recorder = new MicrophoneRecorder(input, settings.recordJs);
 					console.log("Recodrer.js library is initialized.");
 				},
 
@@ -1487,8 +1487,11 @@ var Recorder = (function(){
 		},
 		url: {
 			uploadVideo: "",
-			uploadAudio: "",
 			redirect: ""
+		},
+		audio: {
+			uploadAudio: "",
+			recordJs: {}
 		}
 	};
 
@@ -1518,7 +1521,7 @@ var Recorder = (function(){
 		var dataProvider = new UserInputDataProvider();
 		var settingsProvider = new BasicSettings();
 		var lineDrawer = new RoundedLines(settingsProvider);
-		var audioRecorder = new AudioRecorder(settings.url);
+		var audioRecorder = new AudioRecorder(settings.audio);
 
 		// [3] - UI
 		ui = new RecorderUI({
@@ -2182,8 +2185,7 @@ var RecorderUI = (function() {
 		widths: {
 			narrow: 5, // in pixels!!
 			normal: 10,
-			wide: 15,
-			xxl: 30
+			wide: 15
 		},
 		
 		default: {

@@ -18,6 +18,7 @@ class Recording extends BaseModel {
 		COLUMN_TITLE = 'title',
 		COLUMN_AUTHOR = 'author',
 		COLUMN_DESCRIPTION = 'description',
+		COLUMN_RECORDED_ON = 'recorded_on',
 		COLUMN_FILE_PATH = 'file_path';
 
 	public function add($title, $author, $description, $filePath) {
@@ -26,6 +27,7 @@ class Recording extends BaseModel {
 			self::COLUMN_AUTHOR		=> $author,
 			self::COLUMN_DESCRIPTION 	=> $description,
 			self::COLUMN_FILE_PATH	=> $filePath,
+			self::COLUMN_RECORDED_ON=> new \DateTime,
 		]);
 	}
 		

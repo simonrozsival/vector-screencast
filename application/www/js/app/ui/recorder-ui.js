@@ -29,8 +29,7 @@ var RecorderUI = (function() {
 		widths: {
 			narrow: 5, // in pixels!!
 			normal: 10,
-			wide: 15,
-			xxl: 30
+			wide: 15
 		},
 		
 		default: {
