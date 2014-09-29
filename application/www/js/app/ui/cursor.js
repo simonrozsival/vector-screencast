@@ -16,17 +16,19 @@ var Cursor = (function(){
 		color: "#fff"
 	};
 
+	var offset = 0;
+
 	function Cursor(options) {
 		// load the settings
 		$.extend(true, settings, options);
 
 		// position the cursor
 		this.element = UIFactory.createCursorCanvas.call(this, settings.size, settings.color);
-		this.offset = settings.size / 2;
+		offset = settings.size / 2;
 
 		// move the cursor whenever a new state is available
 		var _this = this;
-		$("body").on("video/new-state", function(e, state) {
+		VideoEvents.on("new-state", function(e, state) {
 			if(state != undefined) {
 				moveTo.call(_this, state.x, state.y);
 			}
@@ -34,8 +36,8 @@ var Cursor = (function(){
 	}
 
 	var moveTo = function (x, y) {
-		this.element.style.left = (x - this.offset) + "px";
-		this.element.style.top = (y - this.offset) + "px";
+		this.element.style.left = (x - offset) + "px";
+		this.element.style.top = (y - offset) + "px";
 	};
 
 	return Cursor;

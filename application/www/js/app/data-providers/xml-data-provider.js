@@ -153,15 +153,27 @@ var XmlDataProvider = (function(){
 		}
 	};
 
+	// sometimes the rendering is too slow - do not set timeouts at all
+	var debt = 0; // always a non-positive number
+
 	var tick = function() {
 		getNextCursorState();
 		if(state.running) {
 			VideoEvents.trigger("next-state-peek", state.current);
-			var timeGap = state.current.time - (Date.now() - startTime);			
-			timeout = setTimeout(function() {
-				VideoEvents.trigger("new-state", state.current);
+			var timeGap = state.current.time - (Date.now() - startTime) - debt;			
+			debt = 0; // I have paid off the debt
+
+			if (timeGap > 0) {
+				// if there was a dept, I have paid it off I have paid off the debt
+				timeout = setTimeout(function() {
+					VideoEvents.trigger("new-state", state.current);
+					tick();
+				}, timeGap);				
+			} else {
+				debt = timeGap; // I have a time debt!
+				console.log("debt: ", debt);
 				tick();
-			}, timeGap);
+			}
 		}
 	};
 

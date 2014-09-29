@@ -28,7 +28,7 @@ var Player = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		VideoEvents.init(el);
+		//VideoEvents.init(el);
 
 		// [2] - prepare the UI
 		var ui = new PlayerUI({

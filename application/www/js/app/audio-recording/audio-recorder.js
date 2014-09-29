@@ -1,13 +1,19 @@
 /**
+ * Khanova Škola - vektorové video
+ *
+ * AUDIO RECORDER
  * This recorder uses the HTML5 API to record sound from microphone
  * and produces an MP3 file as an output.
  * 
- * @author Šimon Rozsíval
+ * @author:		Šimon Rozsíval (simon@rozsival.com)
+ * @project:	Vector screencast for Khan Academy (Bachelor thesis)
+ * @license:	MIT
  */
+
 
 var AudioRecorder = (function(navigator, window) {
 	
-	/** AudioContext */
+	/** HTML5 AudioContext */
 	var context;
 
 	/** Audio stream source */
@@ -19,7 +25,7 @@ var AudioRecorder = (function(navigator, window) {
 		uploadAudio: ""
 	};
 
-	/** */
+	/** RecordJS library object */
 	var recorder = false;
 
 	function AudioRecorder(config) {
@@ -116,12 +122,26 @@ var AudioRecorder = (function(navigator, window) {
 		if(recorder) {
 			VideoEvents.on("recording-id", function(e, recordingId) {
 				recorder.exportWAV(function(blob) {		        
+
+					// 
+					// blob contains proper WAV file
+					// 
+					
+					VideoEvents.on("save-data", function() {
+						Saver.saveWav(blob);
+					});
+					
+					// pretend to submit multipart form data...
 			        var fd = new FormData();
 			        fd.append('id', settings.fileName);
-			        fd.append('recordingId', recordingId);
+			        fd.append('recordingId', recordingId); // the ID of the recording in the database
 			        fd.append('fileName', settings.fileName);
 			        fd.append('wav', blob);
 
+			        //
+			        // POST ajax request
+			        //
+			         
 			        $.ajax({
 			            type: 'POST',
 			            url: settings.uploadAudio,
@@ -143,8 +163,8 @@ var AudioRecorder = (function(navigator, window) {
 				            VideoEvents.trigger("tool-finished", "audio-recorder");
 				        },
 			        	fail: function(data) {
-				        	console.log("audio upload failed");
 				        	console.log(data);
+				        	VideoEvents.trigger("tool-failed", "audio-recorder");
 			        	}
 					});
 				});

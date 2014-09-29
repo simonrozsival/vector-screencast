@@ -1,9 +1,21 @@
+/**
+* Khanova Škola - vektorové video
+*
+* RECORDER UI
+* This object creates the whole UI of recorder and takes care of user interaction.
+*
+* @author:		Šimon Rozsíval (simon@rozsival.com)
+* @project:		Vector screencast for Khan Academy (Bachelor thesis)
+* @license:		MIT
+*/
 
 var RecorderUI = (function() {
 
 	// private variables
 	var settings = {
 		
+		// color pallete
+		// the pair is "name: (css color constant or hex color value)"
 		pallete: {
 			white: "#ffffff",
 			yellow: "#fbff06",
@@ -12,10 +24,13 @@ var RecorderUI = (function() {
 			blue: "#59a0fa"
 		},
 		
+		// brush sizes
+		// the pair is "name: size in pixels"
 		widths: {
 			narrow: 5, // in pixels!!
 			normal: 10,
-			wide: 15
+			wide: 15,
+			xxl: 30
 		},
 		
 		default: {
@@ -43,13 +58,13 @@ var RecorderUI = (function() {
 
 	};
 
+	// current ui state
 	var state = {
 		recording: false
 	};
 
-	var btn, uploadBtn, modal, board;
-	var uploadModal;
-	var progress;
+	// ui elements
+	var btn, uploadBtn, modal, board, progress;
 
 	function RecorderUI(options) {
 		$.extend(true, settings, options);
@@ -200,8 +215,9 @@ var RecorderUI = (function() {
         var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
 
         VideoEvents.on("upload-progress", function(e, percent) {
+        	console.log(percent);
         	UIFactory.changeProgress(uploadBar, percent);
-        	uploadBar.text(percent + "% uploaded");
+        	uploadBar.text(Math.floor(percent) + "% uploaded");
         });
 
         //

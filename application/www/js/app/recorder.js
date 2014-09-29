@@ -2,7 +2,8 @@
 * Khanova Škola - vektorové video
 *
 * THE VIDEO RECORDER OBJECT
-* This is the base stylesheet that contains the basic layout and appearance of the board.
+* This is the main recorder object. It creates instances of all objects needed
+* for the tool to run properly.
 *
 * @author:		Šimon Rozsíval (simon@rozsival.com)
 * @project:	Vector screencast for Khan Academy (Bachelor thesis)
@@ -11,6 +12,7 @@
 
 var Recorder = (function(){
 
+	// recorded data
 	var data = [];
 	var chunk = null;
 
@@ -21,6 +23,7 @@ var Recorder = (function(){
 		size: 3
 	};
 
+	// default settings
 	var settings = {
 		chunkLength: 2000,
 		container: {
@@ -30,12 +33,10 @@ var Recorder = (function(){
 			size: 3,
 			color: "#fff"
 		},
-		cursor: {
-			size: 20,
-			color: "#fff"
-		},
+		cursor: {}, // cursor has it's own defaults
 		localization: {
-			redirectPrompt: "Do you want to view your recorded video?"
+			redirectPrompt: "Do you want to view your recorded video?",
+			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?"
 		},
 		url: {
 			uploadVideo: "",
@@ -44,9 +45,10 @@ var Recorder = (function(){
 		}
 	};
 
-	// ui object
+	// the UI object
 	var ui;
 
+	// current state of the Recorder
 	var state = {
 		recording: false
 	};
@@ -61,7 +63,7 @@ var Recorder = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		VideoEvents.init(el);
+		//VideoEvents.init(el);
 		bindEvents.call(this);
 			
 		// [2] - recorder
@@ -75,6 +77,7 @@ var Recorder = (function(){
 		ui = new RecorderUI({
 			container: el
 		});
+
 	}
 
 	var bindEvents = function() {
@@ -141,7 +144,12 @@ var Recorder = (function(){
 			var animation = XmlWriter.write(info, data);
 			var rawXml = $("<hack />").append(animation).html();
 			// html() returns string of it's INNER content
-			// - I want to include the root element, so I use this "hack"
+			// - I want to include the root element, so I use this "hack" 
+			
+			// if I need saving the data to local computer in the future
+			VideoEvents.on("save-data", function() {
+				Saver.saveXml(rawXml);
+			});
 
 			var request = {
 				type: "video",
@@ -168,12 +176,15 @@ var Recorder = (function(){
 					console.log("request error", e);
 				}
 			});
+
 		});
 
 		VideoEvents.on("update-info", function(e, infoData) {
 			setInfoData(infoData);
 		});
 
+		// array of all registered tools
+		// recorder waits until all registered tools finish their job (either successfully or unsuccessfully) before finishing recording
 		var tools = [];
 
 		VideoEvents.on("register-tool", function(e, which) {
@@ -181,17 +192,29 @@ var Recorder = (function(){
 			tools.push(which);
 		});
 
+		// were all subtasks successful?
+		var success = true;
+
 		VideoEvents.on("tool-finished", function(e, which) {
-			console.log("unregistered tool: ", which);
-			var i = tools.indexOf(which);
+			unregisterTool(which);
+		});
+
+		VideoEvents.on("tool-failed", function(e, which) {
+			success = false;
+			unregisterTool(which);
+		});
+		
+		var unregisterTool = function(tool) {
+			console.log("unregistered tool: ", tool);
+			var i = tools.indexOf(tool);
 			if(i > -1) {
 				tools.splice(i, 1);
 			}
 
 			if(tools.length == 0) { // all the tools have finished doing their job - finish the recording
-				finishRecording();
-			}
-		});
+				finishRecording(success);
+			}			
+		};
 
 		VideoEvents.trigger("register-tool", "video-recorder");
 	};
@@ -220,6 +243,10 @@ var Recorder = (function(){
 		};
 	};
 
+	//
+	// Video information
+	//
+
 	var info = {
 		about: {
 			author: "",
@@ -240,22 +267,36 @@ var Recorder = (function(){
 		$.extend(true, info, data);
 	};
 
-	var finishRecording = function() {
+
+	/**
+	 * Redirect the user after successfully finishing recording.
+	 * @param  {bool} success Was the whole process successful?
+	 * @return {void}         Nothing is returned, if everything is OK and the user agrees 
+	 *                        then user is redirected to the player to check his recording.
+	 */
+	var finishRecording = function(success) {
 		VideoEvents.trigger("recording-finished");
-		if(confirm(settings.localization.redirectPrompt)) {
-			$.ajax({
-				url: settings.url.getLink,
-				type: "GET",
-				data: {
-					recordingId: recordingId
-				},
-				success: function(data) {						
-					window.location.replace(data.url);
-				},
-				error: function() {
-					alert(settings.localization.redirectFailiure);
-				}
-			});
+
+		if(success === true) {			
+			if(confirm(settings.localization.redirectPrompt)) {
+				$.ajax({
+					url: settings.url.getLink,
+					type: "GET",
+					data: {
+						recordingId: recordingId
+					},
+					success: function(data) {						
+						window.location.replace(data.url);
+					},
+					error: function() {
+						alert(settings.localization.redirectFailiure);
+					}
+				});
+			}
+		} else {
+			if(confirm(settings.localization.failureApology)) {
+				VideoEvents.trigger("save-data");
+			}
 		}
 	};
 

@@ -23,6 +23,7 @@ class RecorderPresenter extends BasePresenter {
 	/**
 	 * DI - inject recording model
 	 * @param  Model\Recording $rm
+	 * @return void
 	 */
 	public function injectRecordingModel(Model\Recording $rm) {
 		if ($this->recordingModel === NULL) {
@@ -33,6 +34,7 @@ class RecorderPresenter extends BasePresenter {
 	/**
 	 * DI - inject audio model
 	 * @param  Model\Audio $am
+	 * @return void
 	 */
 	public function injectAudioModel(Model\Audio $am) {
 		if ($this->audioModel === NULL) {
@@ -43,6 +45,7 @@ class RecorderPresenter extends BasePresenter {
 	/**
 	 * Prepare the video player - load data from the DB and make sure it is ready.
 	 * @param  int $id 		ID of the recording to be played
+	 * @return void
 	 */
 	public function actionDefault() {
 		// define path to files
@@ -51,6 +54,7 @@ class RecorderPresenter extends BasePresenter {
 
 	/**
 	 * Provide xml stream of recording's data as HTTP response.
+	 * @return void
 	 */
 	public function handleUploadXml() {
 		$filePath = DATA_DIR . $_REQUEST["id"];
@@ -67,19 +71,26 @@ class RecorderPresenter extends BasePresenter {
 			}
 
 			// if the file was written and an error occured, make sure it doesn't exist
-			@unlink($filePath);
+			@unlink($filePath); // do not show any errors - the file probably doesn't exist after all
 		}
 
 		$this->getHttpResponse()->setCode(Nette\Http\IResponse::S500_INTERNAL_SERVER_ERROR);
-		$this->sendResponse(new Responses\JsonResponse([ "error" => "Upload failed." ]));
+		$this->sendResponse(new Responses\JsonResponse([
+			"error" => "Upload failed."
+		]));
 	}
 
 
 	/**
 	 * Provide audio stream of recording's audio track as HTTP response.
 	 * @param  string $type 	File type of the requested audio track, that is related to currently played video recording. 	
+	 * @return void
 	 */
 	public function handleUploadAudio() {
+		// this variable will be used just for user's feedback
+		// and only if something goes wrong
+		$failiureReason = "Unknown.";
+
 		if(isset($_FILES["wav"]) && !$_FILES["wav"]["error"]) {
 			$id = $_REQUEST["id"];
 			$recordingId = $_REQUEST["recordingId"];
@@ -88,17 +99,51 @@ class RecorderPresenter extends BasePresenter {
 
 			if($recording !== FALSE) {				
 				$this->getHttpResponse()->setCode(Nette\Http\IResponse::S200_OK);
-				$this->sendResponse(new Responses\JsonResponse([ "succcess" => TRUE ]));
+				$this->sendResponse(new Responses\JsonResponse([
+					"succcess" 			=> TRUE,
+					"message"			=> "Audio recording was successfully uploaded and saved.",
+					"audioConversion"	=> $recording->type !== "wav"
+				 ]));
+			} else {
+				$failiureReason = "Database error.";
 			}
-		}		
+		} else if(isset($_FILES["wav"])) {
+			// the upload did not go well - report the reason of failiure
+			switch ($_FILES["wav"]["error"]) {
+				case UPLOAD_ERR_INI_SIZE:
+					$failiureReason = "The file is larger than maximum allowed by the server.";
+					break;
+				case UPLOAD_ERR_PARTIAL: 
+					$failiureReason = "The file was only partialy uploaded.";
+					break;
+				case UPLOAD_ERR_NO_FILE:
+					$failiureReason = "No file was uploaded.";
+					break;
+				case UPLOAD_ERR_NO_TMP_DIR:
+					$failiureReason = "Missing temporary folder.";
+					break;
+				case UPLOAD_ERR_CANT_WRITE:
+					$failiureReason = "Can't write to disk.";
+				default:
+					$failiureReason = "Unspecified upload error.";
+			}
+		} else {
+			$failiureReason = "Server has received no audio data.";
+			\Tracy\Debugger::log($_FILES);
+		}	
 
+		// If anything went wrong, the 200 response wasn't sent
 		$this->getHttpResponse()->setCode(Nette\Http\IResponse::S500_INTERNAL_SERVER_ERROR);
-		$this->sendResponse(new Responses\JsonResponse([ "error" => "Upload failed." ]));
+		$this->sendResponse(new Responses\JsonResponse([
+			"error" 	=> "Upload failed.",
+			"message"	=> $failiureReason
+		]));
 	}
 
 	/**
 	 * Respond with a JSON containing link to given recording 
 	 * @param  int $recordingId
+	 * @return void
 	 */
 	public function handleGetLink($recordingId) {
 		$this->sendResponse(new Responses\JsonResponse([

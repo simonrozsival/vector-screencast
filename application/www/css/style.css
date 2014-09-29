@@ -156,9 +156,9 @@ body {
 /* make the plugin invisible */
 #wtPlugin {
 	position: absolute;
-	top: 0;
-	left: 0;
-	width: 1;
-	height: 1;
+	top: -1px;
+	left: -1px;
+	width: 1px;
+	height: 1px;
 	opacity: 0;
 }

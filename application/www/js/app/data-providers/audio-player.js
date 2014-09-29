@@ -106,12 +106,18 @@ var AudioPlayer = (function() {
 			changePosition(audio.duration * progress);
 		});
 
+		// Has the browser preloaded something since last time?
+		// Change the css styles only if needed.
+		var lastEnd = null;
 		var checkPreloaded = setInterval(function() {
 			if(audio.canPlayThrough) {
 				clearInterval(checkPreloaded);
 			} else {
-				var end = audio.buffered.end(audio.buffered.length - 1); // @todo - this won't be precise all the time
-				VideoEvents.trigger("buffered-until", end);
+				var end = audio.buffered.end(audio.buffered.length - 1); 
+				if(end !== lastEnd) {
+					VideoEvents.trigger("buffered-until", end);
+					lastEnd = end;
+				}
 			}
 		}, 1000); // every second check, how much is preloaded
 	};

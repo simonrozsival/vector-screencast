@@ -21,7 +21,7 @@ class Audio extends BaseModel {
 
 	public function upload($recordingId, $filePath, $tmpName) {
 
-		if(FALSE && $this->detectFFmpeg()) {
+		if($this->detectFFmpeg()) {
 			$data = [
 				self::COLUMN_RECORDING_ID	=> $recordingId,
 				self::COLUMN_FILE_PATH		=> "$filePath/recording.mp3",

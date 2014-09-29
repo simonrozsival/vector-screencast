@@ -1,13 +1,19 @@
 /**
+ * Khanova Škola - vektorové video
+ *
+ * AUDIO RECORDER
  * This recorder uses the HTML5 API to record sound from microphone
  * and produces an MP3 file as an output.
  * 
- * @author Šimon Rozsíval
+ * @author:		Šimon Rozsíval (simon@rozsival.com)
+ * @project:	Vector screencast for Khan Academy (Bachelor thesis)
+ * @license:	MIT
  */
+
 
 var AudioRecorder = (function(navigator, window) {
 	
-	/** AudioContext */
+	/** HTML5 AudioContext */
 	var context;
 
 	/** Audio stream source */
@@ -19,7 +25,7 @@ var AudioRecorder = (function(navigator, window) {
 		uploadAudio: ""
 	};
 
-	/** */
+	/** RecordJS library object */
 	var recorder = false;
 
 	function AudioRecorder(config) {
@@ -116,12 +122,26 @@ var AudioRecorder = (function(navigator, window) {
 		if(recorder) {
 			VideoEvents.on("recording-id", function(e, recordingId) {
 				recorder.exportWAV(function(blob) {		        
+
+					// 
+					// blob contains proper WAV file
+					// 
+					
+					VideoEvents.on("save-data", function() {
+						Saver.saveWav(blob);
+					});
+					
+					// pretend to submit multipart form data...
 			        var fd = new FormData();
 			        fd.append('id', settings.fileName);
-			        fd.append('recordingId', recordingId);
+			        fd.append('recordingId', recordingId); // the ID of the recording in the database
 			        fd.append('fileName', settings.fileName);
 			        fd.append('wav', blob);
 
+			        //
+			        // POST ajax request
+			        //
+			         
 			        $.ajax({
 			            type: 'POST',
 			            url: settings.uploadAudio,
@@ -143,8 +163,8 @@ var AudioRecorder = (function(navigator, window) {
 				            VideoEvents.trigger("tool-finished", "audio-recorder");
 				        },
 			        	fail: function(data) {
-				        	console.log("audio upload failed");
 				        	console.log(data);
+				        	VideoEvents.trigger("tool-failed", "audio-recorder");
 			        	}
 					});
 				});
@@ -262,12 +282,18 @@ var AudioPlayer = (function() {
 			changePosition(audio.duration * progress);
 		});
 
+		// Has the browser preloaded something since last time?
+		// Change the css styles only if needed.
+		var lastEnd = null;
 		var checkPreloaded = setInterval(function() {
 			if(audio.canPlayThrough) {
 				clearInterval(checkPreloaded);
 			} else {
-				var end = audio.buffered.end(audio.buffered.length - 1); // @todo - this won't be precise all the time
-				VideoEvents.trigger("buffered-until", end);
+				var end = audio.buffered.end(audio.buffered.length - 1); 
+				if(end !== lastEnd) {
+					VideoEvents.trigger("buffered-until", end);
+					lastEnd = end;
+				}
 			}
 		}, 1000); // every second check, how much is preloaded
 	};
@@ -632,15 +658,27 @@ var XmlDataProvider = (function(){
 		}
 	};
 
+	// sometimes the rendering is too slow - do not set timeouts at all
+	var debt = 0; // always a non-positive number
+
 	var tick = function() {
 		getNextCursorState();
 		if(state.running) {
 			VideoEvents.trigger("next-state-peek", state.current);
-			var timeGap = state.current.time - (Date.now() - startTime);			
-			timeout = setTimeout(function() {
-				VideoEvents.trigger("new-state", state.current);
+			var timeGap = state.current.time - (Date.now() - startTime) - debt;			
+			debt = 0; // I have paid off the debt
+
+			if (timeGap > 0) {
+				// if there was a dept, I have paid it off I have paid off the debt
+				timeout = setTimeout(function() {
+					VideoEvents.trigger("new-state", state.current);
+					tick();
+				}, timeGap);				
+			} else {
+				debt = timeGap; // I have a time debt!
+				console.log("debt: ", debt);
 				tick();
-			}, timeGap);
+			}
 		}
 	};
 
@@ -1275,35 +1313,63 @@ function getParameterByName(name) {
         results = regex.exec(location.search);
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+/**
+ * Khanova Škola - vektorové video
+ *
+ * SAVING HELPER
+ * This static object provides simple way to save WAV and XML data.
+ * 
+ * @author:		Šimon Rozsíval (simon@rozsival.com)
+ * @project:	Vector screencast for Khan Academy (Bachelor thesis)
+ * @license:	MIT
+ */
 
+var Saver = (function() {
+
+	var saveBlob = function(blob, name) {
+		var a = $("<a>").hide();
+		$("body").append(a);
+		var url = URL.createObjectURL(blob);
+		a.attr("href", url);
+		a.attr("download", name);
+		console.log(a);
+		a[0].click(); // click on the link - it is more straighforward without jQuery
+		URL.revokeObjectURL(url);
+	};
+
+	return {
+		saveWav: function(blob) {
+			saveBlob(blob, "recording.wav");
+		},
+
+		saveXml: function(text) {
+			var blob = new Blob([text], { type: "text/xml" });
+			saveBlob(blob, "data.xml");
+		}
+	};
+})();
 
 var VideoEvents = (function() {
     
-    var el;
-
-    var formProperEventName = function(event) {
-        return "video/" + event; // prefixes the event name
-    };
+    var events = {};
 
     return {
-        init: function(element) {
-            if(el == undefined) {
-                el = element;
+
+        trigger: function(event) {
+            e = events[event] || false
+            if(e !== false) {                                    
+                for(var e in events[event]) {
+                    events[event][e].apply(this, arguments);
+                }
             }
         },
 
-        trigger: function(event) {
-        	// if this method is called with more than one argument
-        	// than the other arguments will be passed to the event
-            var args = Array.prototype.slice.call(arguments); // I have to covnert arguments object to an array
-        	args.shift(); // the first argument is the "event"
-        	// "arguments" now doesn't contain the first arg.
-            
-            el.trigger(formProperEventName(event), args);
-        },
-
         on: function(event, callback) {
-    	   el.on(formProperEventName(event), callback);
+            if(!events.hasOwnProperty(event)) {
+                events[event] = [];
+            }
+
+            events[event].push(callback);
         }
     };
 
@@ -1362,7 +1428,7 @@ var Player = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		VideoEvents.init(el);
+		//VideoEvents.init(el);
 
 		// [2] - prepare the UI
 		var ui = new PlayerUI({
@@ -1383,7 +1449,8 @@ var Player = (function(){
 * Khanova Škola - vektorové video
 *
 * THE VIDEO RECORDER OBJECT
-* This is the base stylesheet that contains the basic layout and appearance of the board.
+* This is the main recorder object. It creates instances of all objects needed
+* for the tool to run properly.
 *
 * @author:		Šimon Rozsíval (simon@rozsival.com)
 * @project:	Vector screencast for Khan Academy (Bachelor thesis)
@@ -1392,6 +1459,7 @@ var Player = (function(){
 
 var Recorder = (function(){
 
+	// recorded data
 	var data = [];
 	var chunk = null;
 
@@ -1402,6 +1470,7 @@ var Recorder = (function(){
 		size: 3
 	};
 
+	// default settings
 	var settings = {
 		chunkLength: 2000,
 		container: {
@@ -1411,12 +1480,10 @@ var Recorder = (function(){
 			size: 3,
 			color: "#fff"
 		},
-		cursor: {
-			size: 20,
-			color: "#fff"
-		},
+		cursor: {}, // cursor has it's own defaults
 		localization: {
-			redirectPrompt: "Do you want to view your recorded video?"
+			redirectPrompt: "Do you want to view your recorded video?",
+			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?"
 		},
 		url: {
 			uploadVideo: "",
@@ -1425,9 +1492,10 @@ var Recorder = (function(){
 		}
 	};
 
-	// ui object
+	// the UI object
 	var ui;
 
+	// current state of the Recorder
 	var state = {
 		recording: false
 	};
@@ -1442,7 +1510,7 @@ var Recorder = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		VideoEvents.init(el);
+		//VideoEvents.init(el);
 		bindEvents.call(this);
 			
 		// [2] - recorder
@@ -1456,6 +1524,7 @@ var Recorder = (function(){
 		ui = new RecorderUI({
 			container: el
 		});
+
 	}
 
 	var bindEvents = function() {
@@ -1522,7 +1591,12 @@ var Recorder = (function(){
 			var animation = XmlWriter.write(info, data);
 			var rawXml = $("<hack />").append(animation).html();
 			// html() returns string of it's INNER content
-			// - I want to include the root element, so I use this "hack"
+			// - I want to include the root element, so I use this "hack" 
+			
+			// if I need saving the data to local computer in the future
+			VideoEvents.on("save-data", function() {
+				Saver.saveXml(rawXml);
+			});
 
 			var request = {
 				type: "video",
@@ -1549,12 +1623,15 @@ var Recorder = (function(){
 					console.log("request error", e);
 				}
 			});
+
 		});
 
 		VideoEvents.on("update-info", function(e, infoData) {
 			setInfoData(infoData);
 		});
 
+		// array of all registered tools
+		// recorder waits until all registered tools finish their job (either successfully or unsuccessfully) before finishing recording
 		var tools = [];
 
 		VideoEvents.on("register-tool", function(e, which) {
@@ -1562,17 +1639,29 @@ var Recorder = (function(){
 			tools.push(which);
 		});
 
+		// were all subtasks successful?
+		var success = true;
+
 		VideoEvents.on("tool-finished", function(e, which) {
-			console.log("unregistered tool: ", which);
-			var i = tools.indexOf(which);
+			unregisterTool(which);
+		});
+
+		VideoEvents.on("tool-failed", function(e, which) {
+			success = false;
+			unregisterTool(which);
+		});
+		
+		var unregisterTool = function(tool) {
+			console.log("unregistered tool: ", tool);
+			var i = tools.indexOf(tool);
 			if(i > -1) {
 				tools.splice(i, 1);
 			}
 
 			if(tools.length == 0) { // all the tools have finished doing their job - finish the recording
-				finishRecording();
-			}
-		});
+				finishRecording(success);
+			}			
+		};
 
 		VideoEvents.trigger("register-tool", "video-recorder");
 	};
@@ -1601,6 +1690,10 @@ var Recorder = (function(){
 		};
 	};
 
+	//
+	// Video information
+	//
+
 	var info = {
 		about: {
 			author: "",
@@ -1621,22 +1714,36 @@ var Recorder = (function(){
 		$.extend(true, info, data);
 	};
 
-	var finishRecording = function() {
+
+	/**
+	 * Redirect the user after successfully finishing recording.
+	 * @param  {bool} success Was the whole process successful?
+	 * @return {void}         Nothing is returned, if everything is OK and the user agrees 
+	 *                        then user is redirected to the player to check his recording.
+	 */
+	var finishRecording = function(success) {
 		VideoEvents.trigger("recording-finished");
-		if(confirm(settings.localization.redirectPrompt)) {
-			$.ajax({
-				url: settings.url.getLink,
-				type: "GET",
-				data: {
-					recordingId: recordingId
-				},
-				success: function(data) {						
-					window.location.replace(data.url);
-				},
-				error: function() {
-					alert(settings.localization.redirectFailiure);
-				}
-			});
+
+		if(success === true) {			
+			if(confirm(settings.localization.redirectPrompt)) {
+				$.ajax({
+					url: settings.url.getLink,
+					type: "GET",
+					data: {
+						recordingId: recordingId
+					},
+					success: function(data) {						
+						window.location.replace(data.url);
+					},
+					error: function() {
+						alert(settings.localization.redirectFailiure);
+					}
+				});
+			}
+		} else {
+			if(confirm(settings.localization.failureApology)) {
+				VideoEvents.trigger("save-data");
+			}
 		}
 	};
 
@@ -1777,17 +1884,19 @@ var Cursor = (function(){
 		color: "#fff"
 	};
 
+	var offset = 0;
+
 	function Cursor(options) {
 		// load the settings
 		$.extend(true, settings, options);
 
 		// position the cursor
 		this.element = UIFactory.createCursorCanvas.call(this, settings.size, settings.color);
-		this.offset = settings.size / 2;
+		offset = settings.size / 2;
 
 		// move the cursor whenever a new state is available
 		var _this = this;
-		$("body").on("video/new-state", function(e, state) {
+		VideoEvents.on("new-state", function(e, state) {
 			if(state != undefined) {
 				moveTo.call(_this, state.x, state.y);
 			}
@@ -1795,8 +1904,8 @@ var Cursor = (function(){
 	}
 
 	var moveTo = function (x, y) {
-		this.element.style.left = (x - this.offset) + "px";
-		this.element.style.top = (y - this.offset) + "px";
+		this.element.style.left = (x - offset) + "px";
+		this.element.style.top = (y - offset) + "px";
 	};
 
 	return Cursor;
@@ -1819,6 +1928,7 @@ var PlayerUI = (function() {
 	var bar, preloaded;
 	var currentProgress, bufferedUntil;
 	var progressTimeContainer;
+	var board, canvas;
 
 	// video screen properties
 	var boardInfo = {
@@ -1852,19 +1962,23 @@ var PlayerUI = (function() {
 		var container = settings.container || $(settings.containerSelector);
 
 		// wait until data is loaded and parsed
+		var _this = this;
 		VideoEvents.on("data-ready", function(e, info) {
+			console.log(this);
 			videoLength = info.length; // video lenght in milliseconds
 
 			// prepare the board - create the elements and set the right size (that is why I have to wait until data is loaded)
 			var ratio = info.board.height / info.board.width;
 			createBoard.call(this, container, ratio);
+			_this.board = board; // make board public
 
 			// now I can create the controls too
 			createControls.call(this, container);
+			_this.canvas = canvas;
 
 			// create a cursor and place it inside the board
 			var cursor = new Cursor(settings.cursor);
-			this.board.append(cursor.element);
+			board.append(cursor.element);
 
 			console.log("UI for the player is ready");
 			VideoEvents.trigger("ui-ready");
@@ -1873,7 +1987,7 @@ var PlayerUI = (function() {
 
 	var createBoard = function(container, aspectRatio) {
 		// prepare the board element - and make it as wide as possible
-		var board = this.board = $("<div></div>").attr("id", "board").css("width", "100%");
+		board = $("<div></div>").attr("id", "board").css("width", "100%");
 		container.append(board); // add it to the DOM
 		
 		// calculate the correct dimensions of the board - width is fixed, use given aspect ratio
@@ -1882,7 +1996,7 @@ var PlayerUI = (function() {
 		board.height(height);
 
 		// I have to know final board dimensions by now
-		var canvas = this.canvas = $("<canvas></canvas>").attr("width", width).attr("height", height);
+		var canvas = $("<canvas></canvas>").attr("width", width).attr("height", height);
 		board.append(canvas)
 					.append("<noscript><p>"+  +"</p></noscript>");		
 
@@ -1983,6 +2097,7 @@ var PlayerUI = (function() {
 			UIFactory.changeProgress(bar, progress * 100);
 			if (state.reachedEnd && progress < 1) {
 				UIFactory.changeIcon.call(icon, "play");
+				state.reachedEnd = false;
 			}
 		};
 
@@ -2036,12 +2151,24 @@ var PlayerUI = (function() {
 
 	return PlayerUI;
 
-})();
+})();/**
+* Khanova Škola - vektorové video
+*
+* RECORDER UI
+* This object creates the whole UI of recorder and takes care of user interaction.
+*
+* @author:		Šimon Rozsíval (simon@rozsival.com)
+* @project:		Vector screencast for Khan Academy (Bachelor thesis)
+* @license:		MIT
+*/
+
 var RecorderUI = (function() {
 
 	// private variables
 	var settings = {
 		
+		// color pallete
+		// the pair is "name: (css color constant or hex color value)"
 		pallete: {
 			white: "#ffffff",
 			yellow: "#fbff06",
@@ -2050,10 +2177,13 @@ var RecorderUI = (function() {
 			blue: "#59a0fa"
 		},
 		
+		// brush sizes
+		// the pair is "name: size in pixels"
 		widths: {
 			narrow: 5, // in pixels!!
 			normal: 10,
-			wide: 15
+			wide: 15,
+			xxl: 30
 		},
 		
 		default: {
@@ -2081,13 +2211,13 @@ var RecorderUI = (function() {
 
 	};
 
+	// current ui state
 	var state = {
 		recording: false
 	};
 
-	var btn, uploadBtn, modal, board;
-	var uploadModal;
-	var progress;
+	// ui elements
+	var btn, uploadBtn, modal, board, progress;
 
 	function RecorderUI(options) {
 		$.extend(true, settings, options);
@@ -2238,8 +2368,9 @@ var RecorderUI = (function() {
         var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
 
         VideoEvents.on("upload-progress", function(e, percent) {
+        	console.log(percent);
         	UIFactory.changeProgress(uploadBar, percent);
-        	uploadBar.text(percent + "% uploaded");
+        	uploadBar.text(Math.floor(percent) + "% uploaded");
         });
 
         //

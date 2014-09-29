@@ -16,6 +16,7 @@ var PlayerUI = (function() {
 	var bar, preloaded;
 	var currentProgress, bufferedUntil;
 	var progressTimeContainer;
+	var board, canvas;
 
 	// video screen properties
 	var boardInfo = {
@@ -49,19 +50,23 @@ var PlayerUI = (function() {
 		var container = settings.container || $(settings.containerSelector);
 
 		// wait until data is loaded and parsed
+		var _this = this;
 		VideoEvents.on("data-ready", function(e, info) {
+			console.log(this);
 			videoLength = info.length; // video lenght in milliseconds
 
 			// prepare the board - create the elements and set the right size (that is why I have to wait until data is loaded)
 			var ratio = info.board.height / info.board.width;
 			createBoard.call(this, container, ratio);
+			_this.board = board; // make board public
 
 			// now I can create the controls too
 			createControls.call(this, container);
+			_this.canvas = canvas;
 
 			// create a cursor and place it inside the board
 			var cursor = new Cursor(settings.cursor);
-			this.board.append(cursor.element);
+			board.append(cursor.element);
 
 			console.log("UI for the player is ready");
 			VideoEvents.trigger("ui-ready");
@@ -70,7 +75,7 @@ var PlayerUI = (function() {
 
 	var createBoard = function(container, aspectRatio) {
 		// prepare the board element - and make it as wide as possible
-		var board = this.board = $("<div></div>").attr("id", "board").css("width", "100%");
+		board = $("<div></div>").attr("id", "board").css("width", "100%");
 		container.append(board); // add it to the DOM
 		
 		// calculate the correct dimensions of the board - width is fixed, use given aspect ratio
@@ -79,7 +84,7 @@ var PlayerUI = (function() {
 		board.height(height);
 
 		// I have to know final board dimensions by now
-		var canvas = this.canvas = $("<canvas></canvas>").attr("width", width).attr("height", height);
+		var canvas = $("<canvas></canvas>").attr("width", width).attr("height", height);
 		board.append(canvas)
 					.append("<noscript><p>"+  +"</p></noscript>");		
 
@@ -180,6 +185,7 @@ var PlayerUI = (function() {
 			UIFactory.changeProgress(bar, progress * 100);
 			if (state.reachedEnd && progress < 1) {
 				UIFactory.changeIcon.call(icon, "play");
+				state.reachedEnd = false;
 			}
 		};
 

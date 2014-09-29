@@ -23,6 +23,7 @@ class PlayerPresenter extends BasePresenter {
 	/**
 	 * DI - inject the model
 	 * @param  Model\Recording $rm
+	 * @return void
 	 */
 	public function injectRecordingModel(Model\Recording $rm) {
 		if ($this->recordingModel === NULL) {
@@ -34,6 +35,7 @@ class PlayerPresenter extends BasePresenter {
 	/**
 	 * Prepare the video player - load data from the DB and make sure it is ready.
 	 * @param  int $id 		ID of the recording to be played
+	 * @return void
 	 */
 	public function actionDefault($id) {
 		$this->recording = $this->recordingModel->get($id);
@@ -49,6 +51,7 @@ class PlayerPresenter extends BasePresenter {
 	/**
 	 * The main place of the app. The video is played!
 	 * @param  int $id 		ID of the recording to be played
+	 * @return void
 	 */
 	public function renderDefault($id) {
 		$this->template->recording = $this->recording;
@@ -56,12 +59,9 @@ class PlayerPresenter extends BasePresenter {
 
 	/**
 	 * Provide xml stream of recording's data as HTTP response.
+	 * @return void
 	 */
 	public function handleDownloadXml() {
-		//header("Content-type: text/xml");
-		//readfile($this->recording->file_path);
-		//exit;
-
 		$this->sendResponse(new Responses\FileResponse($this->recording->file_path, "data.xml", "text/xml"));
 		// file response throws BadRequestException if the file doesn't exist (or is a directory)
 	}
@@ -70,6 +70,7 @@ class PlayerPresenter extends BasePresenter {
 	/**
 	 * Provide audio stream of recording's audio track as HTTP response.
 	 * @param  string $type 	File type of the requested audio track, that is related to currently played video recording. 	
+	 * @return void
 	 */
 	public function handleDownloadAudio($type) {
 		$audio = $this->recording->related("audio")->where("type", $type)->fetch();
