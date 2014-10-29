@@ -10,10 +10,7 @@ Projekt vektorového screencastu má za cíl dát uživateli nástroj pro vytvá
 ### Spuštění aplikace
 Aplikace běží na webovém serveru a pro přístup k ní je třeba využít webový prohlížeč, který splňuje minimální požadavky aplikace (viz příslušná sekce). Pro spuštění aplikace zadejte do adresního řádku prohlížeče adresu videa – např. http://www.rozsival.com/khan-academy a stiskněte klávesu enter.
 Spuštění nástrojů pro tvorbu a přehrávání videa
-Na úvodní straně vidíte seznam všech videí dostupných videí, které můžete spustit kliknutím na zelené tlačítko nebo smazat kliknutím na červené tlačítko (viz. fig. 1).
-
-(@todo obrázek) 
-fig. 1 – tlačítka pro přehrání a smazání videa
+Na úvodní straně vidíte seznam všech videí dostupných videí, které můžete spustit kliknutím na zelené tlačítko nebo smazat kliknutím na červené tlačítko.
 
 Na úvodní stránce je také tlačítko pro spuštění nástroje pro záznam videa.
 
@@ -72,7 +69,7 @@ Nyní by již měla být aplikace spustitelná po zadání adresy Vašeho server
 Pokud chcete využít komprimace audia na straně serveru, ujistěte se, že máte povolen php příkaz *exec* a na serveru nainstalovaný program FFmpeg.
 
 ### Použité JavaScriptové knihovny mimo ukázkovou aplikaci
-Pro použití knihovny uvnitř HTML dokumentu je třeba před ukončovací značku *</body>* přidat odkaz na JavaScriptové knihovny jQuery, Twitter Bootstrap 3 a na samotnou knihovnu vektorového videa.
+Pro použití knihovny uvnitř HTML dokumentu je třeba před ukončovací značku *body* přidat odkaz na JavaScriptové knihovny jQuery, Twitter Bootstrap 3 a na samotnou knihovnu vektorového videa.
 
         <script src="//code.jquery.com/jquery.js"></script>
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
