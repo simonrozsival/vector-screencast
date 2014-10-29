@@ -137,7 +137,7 @@ Pro přehrávání v příslušném HTML dokumentu obdobně označíme místo, k
 
         <div id="player"></div>
 
-Poté na konci dokumentu před značku *</body>* přidáme JavaScriptový kód, který inicializuje přehrávání, např.:
+Poté na konci dokumentu před uzavírací značku *body* přidáme JavaScriptový kód, který inicializuje přehrávání, např.:
 
         <script>
             $(function() {
