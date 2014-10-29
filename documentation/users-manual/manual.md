@@ -89,7 +89,7 @@ Pro nahrávání v příslušném HTML dokumentu označíme místo, kam budete c
 
         <div id="recorder"></div>
 
-Poté na konci dokumentu před značku *</body>* přidáme JavaScriptový kód, který inicializuje nahrávání, např.:
+Poté na konci dokumentu před značku *body* přidáme JavaScriptový kód, který inicializuje nahrávání, např.:
 
         <script>
             $(function() {
