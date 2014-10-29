@@ -71,50 +71,62 @@ Pokud chcete využít komprimace audia na straně serveru, ujistěte se, že má
 ### Použité JavaScriptové knihovny mimo ukázkovou aplikaci
 Pro použití knihovny uvnitř HTML dokumentu je třeba před ukončovací značku *body* přidat odkaz na JavaScriptové knihovny jQuery, Twitter Bootstrap 3 a na samotnou knihovnu vektorového videa.
 
-        <script src="//code.jquery.com/jquery.js"></script>
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+```HTML
+<script src="//code.jquery.com/jquery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 
-        <!-- Samotná knihovna -->
-        <script src="js/libs/vector-video.min.js"></script>
-        <!-- Pro nahrávání je třeba přidat i odkaz na knihovnu RecordJS -->
-        <script src="js/libs/recordjs/recorder.js"></script>
+<!-- Samotná knihovna -->
+<script src="js/libs/vector-video.min.js"></script>
+<!-- Pro nahrávání je třeba přidat i odkaz na knihovnu RecordJS -->
+<script src="js/libs/recordjs/recorder.js"></script>
+```
 
 Pro správné zobrazování je vhodné přidat do hlavičky dokumentu také odkaz na kaskádové styly knihovny Twitter Boostrap a na styly knihovny vektorového videa:
 
-        <link rel="stylesheet" href="css/style.css"> <!-- url souboru style.css bude množná nutné upravit tak, aby odkazovala na správný soubor dle vašeho umístění souborů v root adresáři serveru -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+```HTML
+<link rel="stylesheet" href="css/style.css"> <!-- url souboru style.css bude množná nutné upravit tak, aby odkazovala na správný soubor dle vašeho umístění souborů v root adresáři serveru -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+```
 
 #### Konfigurace Nahrávače
 Pro nahrávání v příslušném HTML dokumentu označíme místo, kam budete chtít nahrávání umístit, např.:
 
-        <div id="recorder"></div>
+```HTML
+<div id="recorder"></div>
+```
 
 Poté na konci dokumentu před značku *body* přidáme JavaScriptový kód, který inicializuje nahrávání, např.:
 
-        <script>
-            $(function() {
-                var recorder = new Recorder({
-                    url: {
-                        uploadVideo: "upload-video.php",
-                        getLink: "get-result-link.php"
-                    },
-                    audio: {
-                        uploadAudio: "upload-audio.php",
-                        recordJs: {
-                            workerPath: "/js/libs/recordjs/recorderWorker.js"
-                        }
-                    }
-                });
-            });
-        </script>
+```HTML
+<script>
+    $(function() {
+        var recorder = new Recorder({
+            url: {
+                uploadVideo: "upload-video.php",
+                getLink: "get-result-link.php"
+            },
+            audio: {
+                uploadAudio: "upload-audio.php",
+                recordJs: {
+                    workerPath: "/js/libs/recordjs/recorderWorker.js"
+                }
+            }
+        });
+    });
+</script>
+```
 
 Je důležité, aby byl objekt *Recorder* vytvořen až ve chvíli, kdy je celý dokument načtený. O to se v ukázce stará *jQuery* konstrukce 
 
-        $(function() { ... });
+```JavaScript
+$(function() { ... });
+```
 
 což je jen zkratka za
 
-        $(document).on("ready", function() { ... })
+```JavaScript
+$(document).on("ready", function() { ... })
+```
 
 Objekt *Recorder* přijímá v konstruktoru jediný parametr a tím je konfigurační objekt. Ten může obsahovat následující parametry:
 
@@ -135,29 +147,33 @@ Objekt *Recorder* přijímá v konstruktoru jediný parametr a tím je konfigura
 #### Konfigurace Přehrávače
 Pro přehrávání v příslušném HTML dokumentu obdobně označíme místo, kam budete chtít přehrávač umístit, např.:
 
-        <div id="player"></div>
+```HTML
+<div id="player"></div>
+```
 
 Poté na konci dokumentu před uzavírací značku *body* přidáme JavaScriptový kód, který inicializuje přehrávání, např.:
 
-        <script>
-            $(function() {
-                var player = new Player({                    
-                    xml: {
-                        file: "data.xml",
-                    },
-                    audio: [
-                        {
-                            file: "data.mp3",
-                            type: "mp3"
-                        },
-                        {
-                            file: "data.ogg",
-                            type: "ogg"
-                        }
-                    ]
-                });
-            });
-        </script>
+```HTML
+<script>
+    $(function() {
+        var player = new Player({                    
+            xml: {
+                file: "data.xml",
+            },
+            audio: [
+                {
+                    file: "data.mp3",
+                    type: "mp3"
+                },
+                {
+                    file: "data.ogg",
+                    type: "ogg"
+                }
+            ]
+        });
+    });
+</script>
+```
 
 Stejně jako u nahrávání, i nyní je důležité, aby byl objekt *Player* vytvořen až ve chvíli, kdy je celý dokument načtený.
 
@@ -196,16 +212,16 @@ Po přijetí zprávy o úspěchu uploadu XML je zahájen i upload audio dat. Jed
 
 - **id:** identifikátor videa (čas zahájení uploadu) - shoduje se s *id* odeslaným při uploadu XML,
 - **recordingId:** ID získané z odpovědi serveru,
-- **wav:** nekomprimovaná audio data ve [formátu WAVE]:https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+- **wav:** nekomprimovaná audio data ve [formátu WAVE](https://ccrma.stanford.edu/courses/422/projects/WaveFormat/)
 
 Není žádný předepsaný formát odpovědi. Při úspěchu však musí být odeslána odpoveď s kódem 200 OK, při neúspěchu s kódem 500.
 
-Inspirovat se můžete obslužnými metodami *handleUploadXml()* a *handleUploadAudio()* třídy *RecorderPresenter* v souboru *app/presenters/RecorderPresenter.php*. Při uložení audia je vhodné na straně serveru provést rovněž vhodnou komprimaci - např. převod do formátu MP3. Vhodné je k tomu použít například program [FFmpeg]:https://www.ffmpeg.org/ obdobně, jako je tomu v ukázce v PHP třídě *App\Model\Audio* v souboru *app/model/Audio.php*.
+Inspirovat se můžete obslužnými metodami *handleUploadXml()* a *handleUploadAudio()* třídy *RecorderPresenter* v souboru *app/presenters/RecorderPresenter.php*. Při uložení audia je vhodné na straně serveru provést rovněž vhodnou komprimaci - např. převod do formátu MP3. Vhodné je k tomu použít například program [FFmpeg](https://www.ffmpeg.org/) obdobně, jako je tomu v ukázce v PHP třídě *App\Model\Audio* v souboru *app/model/Audio.php*.
 
 ## Implementace JavaScriptové knihovny
 
 ### Event driven development
-Celá knihovna je založena na [vyvolávání a obsluhování událostí]:http://en.wikipedia.org/wiki/Event-driven_programming. Tento přístup je v JavaScriptových knihovnách běžný a přirozený.
+Celá knihovna je založena na [vyvolávání a obsluhování událostí](http://en.wikipedia.org/wiki/Event-driven_programming). Tento přístup je v JavaScriptových knihovnách běžný a přirozený.
 
 ### Popis objektů
 K dispozici jsou kromě minifikovaného javascriptového souboru *vector-video.min.js* také jednotlivé soubory, které obsahují příslušné objekty a ze kterých je snadno čitelná jejich implementace. Tyto soubory naleznete ve složce *js/app*.
@@ -349,28 +365,28 @@ Při vykreslení čáry mezi dvěma body je na obou koncích vykreslen kruh o po
 #### 9. Nahrávání zvuku
 
 ##### 9.1 AudioRecorder
-Pro přístup k mikrofonu je použito *MediaStream API* (více info například v [draftu W3C]:http://w3c.github.io/mediacapture-main/getusermedia.html nebo na webu [HTML5 Rocks]:http://www.html5rocks.com/en/tutorials/getusermedia/intro/), která je podporovaná většinou současných moderních prohlížečů.
+Pro přístup k mikrofonu je použito *MediaStream API* (více info například v [draftu W3C](http://w3c.github.io/mediacapture-main/getusermedia.html) nebo na webu [HTML5 Rocks](http://www.html5rocks.com/en/tutorials/getusermedia/intro/)), která je podporovaná většinou současných moderních prohlížečů.
 
-Při nahrávání je využívána také knihovna [RecorderJS]:https://github.com/mattdiamond/Recorderjs.
+Při nahrávání je využívána také knihovna [RecorderJS](https://github.com/mattdiamond/Recorderjs).
 
 *AudioRecorder* detekuje podporu *getUserMedia()* v prohlížeči a v případě, že uspěje, vytváří instanci objektu knihovny RecorderJS a přidává obsluhu událostí pro zahájení/ukončení nahrávání a uploadování nahraných dat.
 
 Pro konfiguraci chování lze předat konstruktoru jeden objekt, obsahující tyto položky:
 
--**uploadAudio**: URL, na kterou má směřovat HTTP požadavek s nahranými daty; **bez správně uvedené URL nebude nahrávání zvuku fungovat**
--**recordJS**: konfigurační objekt knihovny RecorderJS, který upřesňuje cestu k souboru *js/libs/recordjs/recorderWorker.js* v parametru **workerPath**.
+- **uploadAudio**: URL, na kterou má směřovat HTTP požadavek s nahranými daty; **bez správně uvedené URL nebude nahrávání zvuku fungovat**
+- **recordJS**: konfigurační objekt knihovny RecorderJS, který upřesňuje cestu k souboru *js/libs/recordjs/recorderWorker.js* v parametru **workerPath**.
 
 ###### Možnosti budoucího vylepšení nahrávání zvuku
 Data nejsou při záznamu nijak komprimována, což má za důsledek velký objem dat, který je nutné přenést od uživatele na server. Upload výsledného záznamu tedy trvá i při kvalitním připojení k Internetu poměrně dlouhou dobu.
 
-Řešením by mohlo být průběžné odesílání dat na server již během nahrávání. K tomu by mohla sloužit technologie [WebRTC]:http://www.webrtc.org/.
+Řešením by mohlo být průběžné odesílání dat na server již během nahrávání. K tomu by mohla sloužit technologie [WebRTC](http://www.webrtc.org/).
 
 ### Použité JavaScriptové knihovny
 Pro lepší zajištění přenositelnosti mezi prohlížeči, přehlednější zápis kódu a přímočařejší práci s HTML DOM elementy byly použity tyto knihovny:
 
-- [jQuery v1.11.1]:http://www.jquery.com
-- [Twitter Bootstrap v3.1.0]:http://getbootstrap.com/
-- [RecordJS]:https://github.com/mattdiamond/Recorderjs
+- [jQuery v1.11.1](http://www.jquery.com)
+- [Twitter Bootstrap v3.1.0](http://getbootstrap.com/)
+- [RecordJS](https://github.com/mattdiamond/Recorderjs)
 
 
 
