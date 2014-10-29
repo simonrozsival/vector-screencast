@@ -72,7 +72,8 @@ Pokud chcete využít komprimace audia na straně serveru, ujistěte se, že má
 Pro použití knihovny uvnitř HTML dokumentu je třeba před ukončovací značku *body* přidat odkaz na JavaScriptové knihovny jQuery, Twitter Bootstrap 3 a na samotnou knihovnu vektorového videa.
 
 ```HTML
-<script src="//code.jquery.com/jquery.js"></script>
+
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 
 <!-- Samotná knihovna -->
