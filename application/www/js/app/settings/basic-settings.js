@@ -2,8 +2,8 @@
 var BasicSettings = (function() {
 
 	var settings = {
-		color: "#fbff06", // yellow
-		brushSize: 25,
+		color: "",
+		brushSize: 0,
 		correctionRatio: 1
 	};
 

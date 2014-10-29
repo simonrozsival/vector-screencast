@@ -29,14 +29,11 @@ var Recorder = (function(){
 		container: {
 			selector: "#recorder",
 		},
-		brush: {
-			size: 3,
-			color: "#fff"
-		},
 		cursor: {}, // cursor has it's own defaults
 		localization: {
 			redirectPrompt: "Do you want to view your recorded video?",
-			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?"
+			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?",
+			ui: {}
 		},
 		url: {
 			uploadVideo: "",
@@ -66,7 +63,6 @@ var Recorder = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		//VideoEvents.init(el);
 		bindEvents.call(this);
 			
 		// [2] - recorder
@@ -78,7 +74,8 @@ var Recorder = (function(){
 
 		// [3] - UI
 		ui = new RecorderUI({
-			container: el
+			container: el,
+			localization: settings.localization.ui
 		});
 
 	}
@@ -154,10 +151,11 @@ var Recorder = (function(){
 				Saver.saveXml(rawXml);
 			});
 
+			// the data of the request
+			// 
 			var request = {
 				type: "video",
 				id: params.fileName,
-				fileName: params.fileName,
 				format: "xml",
 				rawData: rawXml,
 				title: info.about.title,

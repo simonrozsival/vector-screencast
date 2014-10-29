@@ -135,7 +135,7 @@ var PlayerUI = (function() {
 			// change the icon
 			if(state.playing == true) {
 				VideoEvents.trigger("pause");
-				UIFactory.changeIcon.call(icon, "play");
+				UIFactory.changeIcon(icon, "play");
 				btn.attr("title", settings.localization.play);
 			} else {
 				if(state.reachedEnd == true) {
@@ -145,7 +145,7 @@ var PlayerUI = (function() {
 				}
 
 				VideoEvents.trigger("start");
-				UIFactory.changeIcon.call(icon, "pause");
+				UIFactory.changeIcon(icon, "pause");
 				btn.attr("title", settings.localization.pause);
 			}
 
@@ -166,7 +166,7 @@ var PlayerUI = (function() {
 		VideoEvents.on("reached-end", function() {
 			state.playing = false;
 			state.reachedEnd = true;
-			UIFactory.changeIcon.call(icon, "repeat");
+			UIFactory.changeIcon(icon, "repeat");
 			btn.attr("title", settings.localization.replay);
 		});
 
@@ -184,7 +184,7 @@ var PlayerUI = (function() {
 		var skip = function(progress) {			
 			UIFactory.changeProgress(bar, progress * 100);
 			if (state.reachedEnd && progress < 1) {
-				UIFactory.changeIcon.call(icon, "play");
+				UIFactory.changeIcon(icon, "play");
 				state.reachedEnd = false;
 			}
 		};

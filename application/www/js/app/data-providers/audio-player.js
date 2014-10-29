@@ -124,6 +124,7 @@ var AudioPlayer = (function() {
 	
 
 	var attachEvents = function(events) {
+		events = events || [];
 		for (var eventName in events) {
 			$audio.on(eventName, events[eventName]);
 		}

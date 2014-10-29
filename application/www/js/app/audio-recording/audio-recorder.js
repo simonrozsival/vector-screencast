@@ -135,7 +135,6 @@ var AudioRecorder = (function(navigator, window) {
 			        var fd = new FormData();
 			        fd.append('id', settings.fileName);
 			        fd.append('recordingId', recordingId); // the ID of the recording in the database
-			        fd.append('fileName', settings.fileName);
 			        fd.append('wav', blob);
 
 			        //

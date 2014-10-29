@@ -29,6 +29,10 @@ var RoundedLines = (function() {
 	// current settings - color and size
 	var settings;
 
+	/**
+	 * Create the drawer of "rounded" lines
+	 * @param {BasicSettings} settingsObject Instance of BasicSettings
+	 */
 	function RoundedLines(settingsObject) {
 
 		VideoEvents.on("canvas-ready", function(e, $canvas) {
@@ -131,7 +135,9 @@ var RoundedLines = (function() {
 		c.closePath();
 		c.fill();
 
-		drawDot(x, y, radius);
+		if(radius > 1) {
+			drawDot(x, y, radius);			
+		}
 	};
 
 	var calculatePathPoints = function(x, y, radius) {

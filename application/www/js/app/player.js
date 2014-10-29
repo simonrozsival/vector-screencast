@@ -12,6 +12,9 @@
 var Player = (function(){
 
 	var settings = {
+		xml: {
+			file: ""
+		},
 		container: {
 			selector: "#player",
 		},
@@ -19,7 +22,10 @@ var Player = (function(){
 			size: 20,
 			color: "#fff"
 		},
-		audio: []
+		audio: [],
+		localization: {
+			ui: {}
+		}
 	};
 
 	function Player(options) {
@@ -27,15 +33,13 @@ var Player = (function(){
 		$.extend(true, settings, options);
 		var el = $(settings.container.selector);
 
-		// [1] - init events
-		//VideoEvents.init(el);
-
-		// [2] - prepare the UI
+		// [1] - prepare the UI
 		var ui = new PlayerUI({
-			container: el
+			container: el,
+			localization: settings.localization.ui
 		});
 
-		// [3] - prepare the player
+		// [2] - prepare the player
 		var settingsMonitor = new BasicSettings();		
 		var lineDrawer = new RoundedLines(settingsMonitor);
 		var dataProvider = new XmlDataProvider(options.xml.file);

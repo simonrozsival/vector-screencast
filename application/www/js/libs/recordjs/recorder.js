@@ -1,6 +1,6 @@
 var MicrophoneRecorder = (function(window){
 
-    var WORKER_PATH = "khan-academy/js/libs/recordjs/recorderWorker.js";
+    var WORKER_PATH = "js/libs/recordjs/recorderWorker.js";
 
     var Recorder = function(source, cfg) {
         var config = cfg || {};

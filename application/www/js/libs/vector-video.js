@@ -300,6 +300,7 @@ var AudioPlayer = (function() {
 	
 
 	var attachEvents = function(events) {
+		events = events || [];
 		for (var eventName in events) {
 			$audio.on(eventName, events[eventName]);
 		}
@@ -343,39 +344,6 @@ var AudioPlayer = (function() {
 
 })();
 
-// Abstract class
-
-var BaseDataProvider = {
-
-	ready: function() {
-		VideoEvents.trigger("data-ready");
-	},
-
-	init: function() {
-		var _this = this;
-		VideoEvents.on("start", function() {
-			_this.start();
-		});
-
-		VideoEvents.on("pause", function() {
-			_this.pause();
-		});
-	},
-
-	start: function() {
-		this.running = true;
-	},
-
-	pause: function() {
-		this.running = false;
-	},
-
-	reportAction: function(state) {
-		if(state != undefined && state != {}) {
-			VideoEvents.trigger("new-state", state);
-		}
-	}
-};
 var UserInputDataProvider = (function() {
 
 	// private variables	
@@ -728,6 +696,10 @@ var RoundedLines = (function() {
 	// current settings - color and size
 	var settings;
 
+	/**
+	 * Create the drawer of "rounded" lines
+	 * @param {BasicSettings} settingsObject Instance of BasicSettings
+	 */
 	function RoundedLines(settingsObject) {
 
 		VideoEvents.on("canvas-ready", function(e, $canvas) {
@@ -830,7 +802,9 @@ var RoundedLines = (function() {
 		c.closePath();
 		c.fill();
 
-		drawDot(x, y, radius);
+		if(radius > 1) {
+			drawDot(x, y, radius);			
+		}
 	};
 
 	var calculatePathPoints = function(x, y, radius) {
@@ -1105,7 +1079,7 @@ var XmlReader = (function() {
 
 
 	XmlReader.prototype.getPrerenderedData = function(from, to) {
-		
+		/** @todo */
 	};
 
 	var rewind = function() {
@@ -1240,21 +1214,6 @@ var XmlWriter = (function() {
  */
 
 /**
- * Does this object implement needed functions?
- * @param  {object}  obj The examined object;
- * @return {bool}     Returns true when the object has all the functions, otherwise returns false;
- */
-var hasMethods = function(obj /*, method list as strings */){
-    var i = 1, methodName;
-    while((methodName = arguments[i++])){
-        if(typeof obj[methodName] != 'function') {
-            return false;
-        }
-    }
-    return true;
-};
-
-/**
  * Converts an integer value of seconds to a human-readable time format - "0:00"
  * @param  {integer} s seconds
  * @return {string}    Human readable time
@@ -1276,44 +1235,7 @@ var secondsToString = function(s) {
  */
 var millisecondsToString = function(ms) {
     return secondsToString(Math.floor(ms / 1000));
-};
-
-
-/**
- * Get HEX color value of an object.
- * @type {jQuery object}
- */
-$.cssHooks.backgroundColor = {
-    get: function(elem) {
-        if (elem.currentStyle)
-            var bg = elem.currentStyle["backgroundColor"];
-        else if (window.getComputedStyle)
-            var bg = document.defaultView.getComputedStyle(elem,
-                null).getPropertyValue("background-color");
-        if (bg.search("rgb") == -1)
-            return bg;
-        else {
-            bg = bg.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            function hex(x) {
-                return ("0" + parseInt(x).toString(16)).slice(-2);
-            }
-            return "#" + hex(bg[1]) + hex(bg[2]) + hex(bg[3]);
-        }
-    }
-}
-
-/**
- * Get a parametr form the URL
- * @param  {string} name Name of the parameter.
- * @return {string}      Value of the parameter. Empty string there is none.
- */
-function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-/**
+};/**
  * Khanova Škola - vektorové video
  *
  * SAVING HELPER
@@ -1347,6 +1269,7 @@ var Saver = (function() {
 			saveBlob(blob, "data.xml");
 		}
 	};
+	
 })();
 
 var VideoEvents = (function() {
@@ -1412,6 +1335,9 @@ var VideoTimer = (function() {
 var Player = (function(){
 
 	var settings = {
+		xml: {
+			file: ""
+		},
 		container: {
 			selector: "#player",
 		},
@@ -1419,7 +1345,10 @@ var Player = (function(){
 			size: 20,
 			color: "#fff"
 		},
-		audio: []
+		audio: [],
+		localization: {
+			ui: {}
+		}
 	};
 
 	function Player(options) {
@@ -1427,15 +1356,13 @@ var Player = (function(){
 		$.extend(true, settings, options);
 		var el = $(settings.container.selector);
 
-		// [1] - init events
-		//VideoEvents.init(el);
-
-		// [2] - prepare the UI
+		// [1] - prepare the UI
 		var ui = new PlayerUI({
-			container: el
+			container: el,
+			localization: settings.localization.ui
 		});
 
-		// [3] - prepare the player
+		// [2] - prepare the player
 		var settingsMonitor = new BasicSettings();		
 		var lineDrawer = new RoundedLines(settingsMonitor);
 		var dataProvider = new XmlDataProvider(options.xml.file);
@@ -1476,14 +1403,11 @@ var Recorder = (function(){
 		container: {
 			selector: "#recorder",
 		},
-		brush: {
-			size: 3,
-			color: "#fff"
-		},
 		cursor: {}, // cursor has it's own defaults
 		localization: {
 			redirectPrompt: "Do you want to view your recorded video?",
-			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?"
+			failureApology: "We are sorry, but your recording could not be uploaded to the server. Do you want to save the recorded data to your computer?",
+			ui: {}
 		},
 		url: {
 			uploadVideo: "",
@@ -1513,7 +1437,6 @@ var Recorder = (function(){
 		var el = $(settings.container.selector);
 
 		// [1] - init events
-		//VideoEvents.init(el);
 		bindEvents.call(this);
 			
 		// [2] - recorder
@@ -1525,7 +1448,8 @@ var Recorder = (function(){
 
 		// [3] - UI
 		ui = new RecorderUI({
-			container: el
+			container: el,
+			localization: settings.localization.ui
 		});
 
 	}
@@ -1757,8 +1681,8 @@ var Recorder = (function(){
 var BasicSettings = (function() {
 
 	var settings = {
-		color: "#fbff06", // yellow
-		brushSize: 25,
+		color: "",
+		brushSize: 0,
 		correctionRatio: 1
 	};
 
@@ -1794,82 +1718,7 @@ var BasicSettings = (function() {
 
 	return BasicSettings;
 
-})();
-var RecordingSettings = (function() {
-
-
-	// javascript inheritance from BasicSettings (./basic-settings.js)
-	RecordingSettings.prototype = BasicSettings;
-	RecordingSettings.prototype.constructor = RecordingSettings;
-
-	// private variables
-	var settings = {
-		pallete: {
-			white: "#ffffff",
-			yellow: "#fbff06"
-		},
-		widths: {
-			narrow: 5, // in pixels!!
-			normal: 15,
-			wide: 25
-		},
-		defaultColor: "yellow",
-		defaultSize: "normal",
-		colorsPanel: undefined,
-		brushSizesPanel: undefined
-	};
-
-	var currentSettings;
-	
-
-	function RecordingSettings(options) {
-
-		$.extend(true, settings, options);
-
-		// set settings before creating the panels - so default settings can by highlighted
-		currentSettings = {
-			color: settings.pallete[settings.defaultColor],
-			brushSize: settings.widths[settings.defaultSize]
-		};
-
-		// create the panels for sellecting 
-		preparePanels.call(this);
-	}
-
-	RecordingSettings.prototype.getCurrentSettings = function() {
-		return settings;
-	};
-
-
-	var preparePanels = function() {
-		if(settings.colorsPanel != undefined) {
-			var panel = $(settings.colorsPanel);
-			for (var color in settings.pallete) {
-				var btn = addColorButton(panel, color, settings.pallete[color]);
-			}
-
-			// dynamically added elements, i have to attach the event to some other element - like the body, that is always present in a HTML document
-			$("body").on("click", settings.colorsPanel + " button", function(e) {
-				$(this).addClass("active").siblings().removeClass("active");
-				settings.color = $(this).data("color");
-			});
-		}		
-
-		// @todo the same with sizes
-	};
-
-	var addColorButton = function(panel, colorName, colorValue) {
-		var btn = $("<button></button>").data("color", colorValue).css("background-color", colorValue).attr("title", colorName);
-		if(colorValue == settings.color) {
-			btn.addClass("active");
-		}
-		panel.append(btn);
-	};
-
-	return RecordingSettings;
-
-})();
-/**
+})();/**
  * Khanova Škola - vektorové video
  *
  * CURSOR OBJECT
@@ -2050,7 +1899,7 @@ var PlayerUI = (function() {
 			// change the icon
 			if(state.playing == true) {
 				VideoEvents.trigger("pause");
-				UIFactory.changeIcon.call(icon, "play");
+				UIFactory.changeIcon(icon, "play");
 				btn.attr("title", settings.localization.play);
 			} else {
 				if(state.reachedEnd == true) {
@@ -2060,7 +1909,7 @@ var PlayerUI = (function() {
 				}
 
 				VideoEvents.trigger("start");
-				UIFactory.changeIcon.call(icon, "pause");
+				UIFactory.changeIcon(icon, "pause");
 				btn.attr("title", settings.localization.pause);
 			}
 
@@ -2081,7 +1930,7 @@ var PlayerUI = (function() {
 		VideoEvents.on("reached-end", function() {
 			state.playing = false;
 			state.reachedEnd = true;
-			UIFactory.changeIcon.call(icon, "repeat");
+			UIFactory.changeIcon(icon, "repeat");
 			btn.attr("title", settings.localization.replay);
 		});
 
@@ -2099,7 +1948,7 @@ var PlayerUI = (function() {
 		var skip = function(progress) {			
 			UIFactory.changeProgress(bar, progress * 100);
 			if (state.reachedEnd && progress < 1) {
-				UIFactory.changeIcon.call(icon, "play");
+				UIFactory.changeIcon(icon, "play");
 				state.reachedEnd = false;
 			}
 		};
@@ -2512,20 +2361,40 @@ var RecorderUI = (function() {
 
 var UIFactory = {
 	
+	/**
+	 * Creates a jQuery object representing a span element with classes specific for Twitter Bootstrap 3 icon.
+	 * @param  {string} type Icon type - sufix of class name - "glyphicon-<type>". See http://bootstrapdocs.com/v3.2.0/docs/components#glyphicons for the list of icons.
+	 * @return {object}      jQuery object, needs to be pushed into the DOM
+	 */
 	glyphicon: function(type) {
 		return $("<span></span>").addClass("glyphicon glyphicon-" + type).attr("data-icon-type", type);
 	},
 
-	changeIcon: function(type) {
-		var icon = this;
+	/**
+	 * Changes icon type.
+	 * @param  {object} jQuery icon object.
+	 * @param  {[type]} type New icon type - glyphicon class sufix.
+	 * @return {void}
+	 */
+	changeIcon: function(icon, type) {
 		var old = icon.data("icon-type");
 		icon.removeClass("glyphicon-" + old).addClass("glyphicon-" + type).data("icon-type", type);
 	},
 
+	/**
+	 * Creates a jQuery object representing a button element with classes specific for Twitter Bootstrap 3 button.
+	 * @param  {string} type Button type - suffix of class name - "btn-<type>". See http://bootstrapdocs.com/v3.2.0/docs/css/#buttons for list of button types.
+	 * @return {[type]}      [description]
+	 */
 	button: function(type) {
 		return $("<button></button>").addClass("btn btn-" + type).data("type", type);	
 	},
 
+	/**
+	 * Changes icon type. *this* should be the jQuery object of the icon. Function useage: *UIFactory. changeIcon(icon, "new-type")*
+	 * @param  {string} type New icon type - glyphicon class sufix.
+	 * @return {void}
+	 */
 	changeButton: function(button, type) {
 		return button.removeClass("btn-" + button.data("type")).addClass("btn-" + type).data("type", type);
 	},
@@ -2534,6 +2403,11 @@ var UIFactory = {
 	// Progress bars
 	//
 
+	/**
+	 * Creates a jQuery object representing a div element with classes specific for Twitter Bootstrap 3 progress bar.
+	 * @param  {string} type Progressbar type - suffix of class name - "progress-bar-<type>". See http://bootstrapdocs.com/v3.2.0/docs/css/#progressbars for list of button types.
+	 * @return {[type]}      [description]
+	 */
 	progressbar: function(type, initialProgress) {
 		return $("<div></div>")
 					.addClass("progress-bar progress-bar-" + type)
@@ -2542,6 +2416,13 @@ var UIFactory = {
 					.css("width", initialProgress + "%");
 	},
 
+	/**
+	 * Changes progressbar type and progress.
+	 * @param  {object} bar      Progress bar object.
+	 * @param  {int} 	progress Progress in percents.
+	 * @param  {int}	time     Time in milliseconds - how long will it take to animate the progress change.
+	 * @return {void}
+	 */
 	changeProgress: function(bar, progress, time) {
 
 		// the progress might be
@@ -2568,6 +2449,12 @@ var UIFactory = {
 	// Cursor cross ... -|-
 	//
 
+	/**
+	 * Create canvas element with a cross on transparent background.
+	 * @param  {int}	size  Width and height of the cross in pixels.
+	 * @param  {string} color Css color atribute. Specifies the color of the cross.
+	 * @return {DOMObject}    The cavnas element.
+	 */
 	createCursorCanvas:  function(size, color) {
 		var canvas = document.createElement("canvas");
 		canvas.width = size;
@@ -2576,7 +2463,7 @@ var UIFactory = {
 		var offset = size / 2;
 
 		// draw the "+"
-		context.lineWidth = size * 0.1; // 10% of the size
+		context.lineWidth = size * 0.1; // 10% of the size is the line
 		context.strokeStyle = color;
 		context.beginPath();
 

@@ -129,7 +129,6 @@ class RecorderPresenter extends BasePresenter {
 			}
 		} else {
 			$failiureReason = "Server has received no audio data.";
-			\Tracy\Debugger::log($_FILES);
 		}	
 
 		// If anything went wrong, the 200 response wasn't sent
