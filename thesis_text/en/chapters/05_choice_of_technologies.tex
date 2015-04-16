@@ -1,0 +1,53 @@
+\chapter{Analysis}
+
+\subsection{Technical requirements}
+The overall project consists of two separate tools --- the recorder and the player. Each of these tools behaves differently and will be used by different people. While the video player will be used by general audience, the recorder will be used by a much narrower group of content creators.
+
+The recording tool will capture the movement of a virtual chalk and lines drawn on a virtual blackboard, as well as voice of the author using a microphone. The recorder data will be then sent to the server, where it should be stored. The video player will receive previousely recorded data and display the movement of the chalk and lines created by the author while playing the voice comment. It is required that the video player will placed in a web page and it must run well in a all modern web browsers without requiring installation of any non-standard plugins or codecs and thus making it easy for a potential viewer to watch contents of the video.
+
+For the purposes of recording, the tool must be able to capture the input from a microphone, track mouse movement and left mouse button state, collect information from Wacom graphics tablet devices and draw lines on screen. What the creator sees should be the same as what the end user will watch later.
+
+\subsection{Available techonologies}
+Web is a huge and fast growing environment. In only a few years, it has become a universal place for exchanging and presenting information. This put the web in the focus of many software companies and organizations and as a result, many different technologies for developing rich interactive applications (RIA) have been created. Some of them have already faded into obscurity, other are just emerging. One of the main limitations in the selection of the right technology for developing web application is their compatibility with operating systems and web browsers.
+
+\subsubsection{Java applets}
+Java applets are used for creating interactive applications withing web browser. Java applets meet all the specified technical requirements of both video player and recording tool.
+
+Java applets are written in any language, that can be compiled into bytecode, this bytecode is then downloaded to the web browser and then run using Java Virtual Machine (JVM). This means that to be able to run a Java applet, user needs to have JVM installed on the device and an installed and allowed Java plugin in user's browser. This isn't a problem for desktop systems as Java is open source, but there is no support for mobile operating systems such as iOS and Android \cite{}. 
+
+\subsubsection{Adobe Flash}
+Adobe Flash is a multimedia and software platform used for creating vector graphics, animations and games. Flash has all required features: vector graphics manipulation, working with XML, mouse input capturing, microphone input, and audio streaming \cite{}. 
+
+To view Flash animations or to execute Flash applications, Adobe Flash Player is needed. Adobe Flash Player is available and being developed for all major operating systems, although that is not true for mobile platforms. There was never any support for Apple iOS \cite{} and in 2012 deveolpment of Flash for Android was discontinued \cite{}. Using Adobe Flash would mean to exclude most users of tablets and smartphones \cite{}, which is a large disadvantage of this technology.
+
+\subsubsection{Microsoft Silverlight}
+Microsoft Silverlight \cite{} a development tool for creating web applications. It is based on the .NET Framework and it is similar to Java applets and Adobe Flash. It was Microsoft's attempt to compete Adobe Flash, but wasn't well adopted.
+
+Silverlight comes as a plugin for web browsers. It is free, altough the list of supported browsers is even smaller \cite{} than the one of Adobe Flash consisting of exclusively desktop operating systems. Development of Silverlight was also discontinued by Microsoft in 2012 and the combination of these facts makes it unsuitable for this project.
+
+\subsubsection{HTML5}
+HTML5 is the fifth revision of Hypertext Markup Language (HTML) standard of World Wide Web Consortium (W3C). It has been given the Recommendation status in the end of 2014 and a significant part of it's new features is already implemented in modern web browsers.
+
+Can I perform all needed tasks using this technology?
+Player:
+Audio - http://caniuse.com/#search=audio%20element
+SVG - http://caniuse.com/#search=svg
+
+Recorder: 
+getUserMedia/Stream API - http://caniuse.com/#search=getUserMedia
+Web Sockets - http://caniuse.com/#search=web%20sockets
+
+\subsection{Conclusion}
+The bottleneck of most of the technologies is their support in mobile devices. These devices don't allow some of the above mentioned technologies to run inside them. As the popularity and market share of mobile devices grows, supporting them is a priority. This eventually leads to only one option, and that is HTML5. All major web browsers have the features needed to create the video player, including the versions of browsers for mobile devices.
+
+The specification of HTML5 is finished since  and support of all it's features isn't implemented in all today's web browsers. This situation is getting better with every release of a new version of all web browsers.
+
+
+
+
+\subsection{Possible issues and known limitations}
+About browser speed. Memory limitations. Network speed.
+
+Mobile OS browsers limitations - audio recording.
+
+Audio recording - large ammount of data - uncompressed - which approach of upload to choose? The most simple - create wav in browser and upload it via multipart form. The more complicated approach - continuous stream using WebSockets or WebRTC - need of specific web server process implementation.

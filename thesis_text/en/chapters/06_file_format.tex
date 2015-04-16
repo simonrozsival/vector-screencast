@@ -1,0 +1,23 @@
+\chapter{Vector Screencast file format}
+What are the possibilities to encode the video.
+
+\section{Audio}
+Audio - standard Mp3 or Ogg Vorbis - I am not possibly able to come with something better.
+
+\section{Video}
+\subsection{Binary format}
+Video - wrap into Matroska or WebM? What are the pros and cons?
+
+\subsection{Text format}
+This is only about the video.
+
+\subsubsection{SVG}
+- opensource standard for vector graphics.
+Needs to be prerendered - I can't just specify sequence of points with pressures - I need to specify exactely the quadrilaterals - rendering method might change in the future.
+No support for drawing-lines-like animation.
+
+\subsubsection{Custom XML-based format}
+Raw data in some sturctured file format, based on SVG or somehow wrapping SVG.
+
+\section{Conclusion}
+Which one I have chosen and why. Internal storage (MKV/WebM), immediate (XML)?
