@@ -1,0 +1,77 @@
+/**
+ *	This file contains color definitions.
+ *	@author Šimon Rozsíval
+ *	@theme 	Default theme
+ */
+.modal-bg {
+  position: absolute;
+  left: 0;
+  top: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+.modal-bg .modal {
+  width: 30%;
+  background: #626262;
+  color: #ffffff;
+  position: absolute;
+  left: 35%;
+  padding: 40px;
+  box-shadow: 0 3px 0 #000000;
+  border-radius: 5px;
+  opacity: 0;
+  transition: all 0.3s;
+  top: -100%;
+  z-index: 150;
+}
+.modal-bg .modal button.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 20pt;
+}
+.modal-bg .modal button.close-btn:hover {
+  transform: scale(1.2);
+}
+.modal-bg .modal .modal-body {
+  position: relative;
+}
+.modal-bg .modal .modal-body .alert.alert-info {
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #2e2b2b;
+}
+.modal-bg .modal .modal-body .form-control {
+  border: none;
+  box-shadow: 0 2px 0 #000000;
+  background: #ffffff;
+  border-radius: 1px;
+  padding: 0 15px;
+  display: block;
+}
+.modal-bg .modal .modal-body .form-control:focus {
+  outline: none;
+}
+.modal-bg .modal .modal-body input.form-control {
+  height: 32px;
+  line-height: 32px;
+}
+.modal-bg .modal .modal-body textarea.form-control {
+  height: 96px;
+  padding: 10px 15px;
+}
+.modal-bg.active {
+  opacity: 1;
+  top: 0;
+}
+.modal-bg.active > .modal {
+  opacity: 1;
+  top: 10%;
+}

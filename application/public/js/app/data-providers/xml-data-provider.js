@@ -215,7 +215,7 @@ var XmlDataProvider = (function(){
 
 	var tick = function() {
 		getNextCursorState();
-		if(state.running) {
+		while(state.running) {
 			VideoEvents.trigger("next-state-peek", state.current);
 			var timeGap = state.current.time - (Date.now() - startTime) - debt;			
 			debt = 0; // I have paid off the debt

@@ -9,9 +9,15 @@
  */
 var HTML = {
 
-    createElement: function(name, attributes) {
+    createElement: function(name, attributes, children) {
         var el = document.createElement(name);
         HTML.setAttributes(el, attributes);
+        if(!!children && Array.isArray(children)) {
+            for(var i in children) {
+                el.appendChild(children[i]);
+            }
+        }
+
         return el;
     },
 

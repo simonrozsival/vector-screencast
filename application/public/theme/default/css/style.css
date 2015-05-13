@@ -1,0 +1,324 @@
+/**
+ *	This file contains color definitions.
+ *	@author Šimon Rozsíval
+ *	@theme 	Default theme
+ */
+html {
+  height: 100%;
+}
+body {
+  font-family: "Open Sans";
+  font-size: 12pt;
+  height: 100%;
+  margin: 0;
+}
+#player,
+#recorder {
+  width: 100%;
+  height: 100%;
+  /** player **/
+  /** recorder **/
+}
+#player .container,
+#recorder .container {
+  width: 100%;
+  display: block;
+  overflow: hidden;
+}
+#player .row,
+#recorder .row {
+  margin-left: -7.91666667%;
+  width: 100%;
+  float: left;
+  overflow: hidden;
+}
+#player .col-1,
+#recorder .col-1 {
+  width: 5%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-2,
+#recorder .col-2 {
+  width: 17.91666667%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-3,
+#recorder .col-3 {
+  width: 30.83333333%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-4,
+#recorder .col-4 {
+  width: 43.75%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-5,
+#recorder .col-5 {
+  width: 56.66666667%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-6,
+#recorder .col-6 {
+  width: 69.58333333%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-7,
+#recorder .col-7 {
+  width: 82.5%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-8,
+#recorder .col-8 {
+  width: 95.41666667%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-9,
+#recorder .col-9 {
+  width: 108.33333333%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-10,
+#recorder .col-10 {
+  width: 121.25%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-11,
+#recorder .col-11 {
+  width: 134.16666667%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player .col-12,
+#recorder .col-12 {
+  width: 147.08333333%;
+  float: left;
+  margin-left: 7.91666667%;
+}
+#player #board,
+#recorder #board {
+  background: #2e2b2b;
+  min-height: 100%;
+  height: 500px;
+  width: 100%;
+  position: relative;
+  overflow: scroll;
+}
+#player #controls,
+#recorder #controls {
+  padding: 20px 0;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: #626262;
+}
+#player #controls button,
+#recorder #controls button {
+  transition: all 0.2s;
+  margin-right: 10px;
+  cursor: pointer;
+}
+#player #controls button:hover,
+#recorder #controls button:hover,
+#player #controls button.active,
+#recorder #controls button.active {
+  transform: scale(1.2);
+  border: 2px solid #2e2b2b;
+}
+#player #controls button:active,
+#recorder #controls button:active,
+#player #controls button:focus,
+#recorder #controls button:focus {
+  outline: none;
+}
+#player #controls button.option,
+#recorder #controls button.option {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
+  position: relative;
+  margin: 2px 22px 2px 2px;
+}
+#player #controls button.btn,
+#recorder #controls button.btn {
+  border: none;
+  padding: 0 20px;
+  line-height: 40px;
+  background-color: #ffffff;
+  color: #2e2b2b;
+  font-weight: bold;
+  font-size: 12pt;
+}
+#player #controls button.btn.btn-success,
+#recorder #controls button.btn.btn-success {
+  background-color: #5ec72d;
+  color: #e7ffd0;
+}
+#player #controls button.btn.btn-danger,
+#recorder #controls button.btn.btn-danger {
+  background-color: #c7282f;
+  color: #ffc3cb;
+}
+#player #video-progress,
+#recorder #video-progress {
+  line-height: 100%;
+}
+#player #video-progress .progress,
+#recorder #video-progress .progress {
+  margin: 7px 0;
+  position: relative;
+}
+#player #video-progress .progress-bar,
+#recorder #video-progress .progress-bar {
+  transition: none;
+  -webkit-transition: none;
+  -moz-transition: none;
+  position: absolute;
+  left: 0;
+}
+#player #video-time,
+#recorder #video-time {
+  height: 34px;
+  line-height: 34px;
+}
+#player #time,
+#recorder #time {
+  line-height: 1em;
+}
+#player #button-container,
+#recorder #button-container,
+#player #video-time,
+#recorder #video-time {
+  width: 15%;
+  text-align: center;
+  float: left;
+}
+#player #video-progress,
+#recorder #video-progress {
+  width: 70%;
+  float: left;
+}
+#player #rec-button-container,
+#recorder #rec-button-container {
+  width: 25%;
+  text-align: center;
+  float: left;
+}
+#player #colors-panel,
+#recorder #colors-panel {
+  width: 50%;
+  float: left;
+}
+#player #brushes-panel,
+#recorder #brushes-panel {
+  width: 25%;
+  float: left;
+}
+#player #brushes-panel button .dot,
+#recorder #brushes-panel button .dot {
+  background: transparent;
+  border: 2px solid #2e2b2b;
+  display: inline-block;
+}
+#player #canvas-container,
+#recorder #canvas-container {
+  width: 100%;
+  height: 100%;
+}
+#player .no-pointer *,
+#recorder .no-pointer * {
+  cursor: none;
+}
+.modal-bg {
+  position: absolute;
+  left: 0;
+  top: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+.modal-bg .modal {
+  width: 30%;
+  background: #626262;
+  color: #ffffff;
+  position: absolute;
+  left: 35%;
+  padding: 40px;
+  box-shadow: 0 3px 0 #000000;
+  border-radius: 5px;
+  opacity: 0;
+  transition: all 0.3s;
+  top: -100%;
+  z-index: 150;
+}
+.modal-bg .modal button.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 20pt;
+}
+.modal-bg .modal button.close-btn:hover {
+  transform: scale(1.2);
+}
+.modal-bg .modal .modal-body {
+  position: relative;
+}
+.modal-bg .modal .modal-body .alert.alert-info {
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #2e2b2b;
+}
+.modal-bg .modal .modal-body .form-control {
+  border: none;
+  box-shadow: 0 2px 0 #000000;
+  background: #ffffff;
+  border-radius: 1px;
+  padding: 0 15px;
+  display: block;
+}
+.modal-bg .modal .modal-body .form-control:focus {
+  outline: none;
+}
+.modal-bg .modal .modal-body input.form-control {
+  height: 32px;
+  line-height: 32px;
+}
+.modal-bg .modal .modal-body textarea.form-control {
+  height: 96px;
+  padding: 10px 15px;
+}
+.modal-bg.active {
+  opacity: 1;
+  top: 0;
+}
+.modal-bg.active > .modal {
+  opacity: 1;
+  top: 10%;
+}
+/* make the Wacom plugin invisible */
+#wtPlugin {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}

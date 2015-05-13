@@ -49,7 +49,7 @@ var RecorderUI = (function() {
 			upload: "Upload",
 			changeColor: "Change brush color",
 			changeSize: "Change brush size",
-			waitingText: "Please be patient. Converting and uploading video usualy takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window."
+			waitingText: "Please be patient. Uploading video usually takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window."
 		},
 
 		container: undefined,
@@ -64,12 +64,12 @@ var RecorderUI = (function() {
 	};
 
 	// ui elements
-	var btn, uploadBtn, modal, board, progress;
+	var btn, uploadBtn, modal, board, progressSpan;
 
 	function RecorderUI(options) {
 		$.extend(true, settings, options);
 
-		var container = settings.container || $(settings.containerSelector);
+		var container = settings.container;
 
 		// create the board and canvas
 		var board = createBoard.call(this, container);
@@ -78,83 +78,100 @@ var RecorderUI = (function() {
 		var controls = createControls.call(this, container);
 
 		// maximize height of the elements
-		container.append(controls);
-		this.board.css("height", "100%");
-		//this.board.css("height", this.board.height());
-
+		container.appendChild(controls);
+		this.board.style.height = "100%";
 
 		// attach board to the container - but make it over the controls
-		container.prepend(board);
+		container.insertBefore(board, container.firstChild);
 
 		createCanvasContainer.call(this, this.board);
 		VideoEvents.trigger("canvas-container-ready", this.canvas);
 
 		// create the cursor cross and place it inside the board
 		var cursor = new Cursor(settings.cursor)
-		this.board.append(cursor.element);
+		this.board.appendChild(cursor.element);
 
 		// create the modal that will show before uploading recorded data
-		prepareUploadModal.call(this);
+		var modal = prepareUploadModal.call(this);
+		container.appendChild(modal);
 
 		// try to load the Wacom plugin
-		var plugin = $("<object></object>").attr("id", "wtPlugin").attr("type", "application/x-wacomtabletplugin");
-		$("body").append(plugin);
+		var plugin = HTML.createElement("object", {
+			id: "wtPlugin",
+			type: "application/x-wacomtabletplugin"
+		});
+		document.body.appendChild(plugin);
 		VideoEvents.trigger("wacom-plugin-ready", plugin);
 	}
 
 	var createBoard = function() {
-		this.board = $("<div></div>").attr("id", "board")
-						.append("<noscript><p>" + settings.localization.noJS + "</p></noscript>");
+		this.board = HTML.createElement("div", { id: "board" }, [
+			HTML.createElement("noscript", {}, [
+				(function() { var p = HTML.createElement("p"); p.innerHTML = settings.localization.noJS; return p; })()
+			])
+		]);
 
 		return this.board; // add it to the DOM
 	};
 
 	var createCanvasContainer = function(board) {
 		// the canvas - user will paint here
-		this.canvas = $("<div>").attr("id", "canvas-container").attr("width", board.width()).attr("height", board.height());
-		this.board.append(this.canvas);
+		this.canvas = HTML.createElement("div", {
+			id: "canvas-container",
+			width: board.outerWidth,
+			height: board.outerHeight
+		});
+		this.board.appendChild(this.canvas);
 	};
 
 	var createControls = function() {
 		// button
-		var buttonContainer = $("<div></div>").attr("id", "rec-button-container");
+		var buttonContainer = HTML.createElement("div", { id: "rec-button-container" });
 		prepareButtons.call(this, buttonContainer);
 
 		// progress bar
-		colorsPanel = $("<div></div>").attr("id", "colors-panel");
+		var colorsPanel = HTML.createElement("div", { id: "colors-panel" });
 		prepareColorsPanel(colorsPanel);
 		
 		// timer
-		sizesPanel = $("<div></div>").attr("id", "brushes-panel");
+		var sizesPanel = HTML.createElement("div", { id: "brushes-panel" });
 		prepareSizesPanel(sizesPanel);
 
 		// row
-		var controls = $("<div></div>").attr("id", "controls")
-							.append(buttonContainer)
-							.append(colorsPanel)
-							.append(sizesPanel);
+		var controls = HTML.createElement("div", { id: "controls" },
+			[
+				buttonContainer,
+				colorsPanel,
+				sizesPanel
+			]);
 
 		return controls;
 	};
 
+	/**
+	 * Add play/stop and upload buttons to the container.
+	 * @param {HTMLElement} container
+	 */
 	var prepareButtons = function(container) {
 
 		// rec button
-		btn = UIFactory.button("success").attr("title", settings.localization.record);
-		progressSpan = $("<span></span>").text("REC");
-		var glyphicon = UIFactory.glyphicon("record");
-		btn.append(glyphicon).append(progressSpan);
-		container.append(btn);
+		btn = UIFactory.button("success");
+		HTML.setAttributes(btn, { title: settings.localization.record });
+		btn.innerHTML = "REC";
+		container.appendChild(btn);
 
-		// uplaod button
-		uploadBtn = UIFactory.button("default").attr("disabled", "disabled").attr("title", settings.localization.upload);
-		var uploadIcon = UIFactory.glyphicon("upload");
-		uploadBtn.append(uploadIcon).append("<span>" + settings.localization.upload.toUpperCase() + "</span>");
-		container.append(uploadBtn);
+		// upload button
+		uploadBtn = UIFactory.button("default");
+		HTML.setAttributes(uploadBtn, {
+			disabled: "disabled",
+			title: settings.localization.upload
+		});
+		uploadBtn.innerHTML = settings.localization.upload.toUpperCase();
+		container.appendChild(uploadBtn);
 
 		state.recording = false;
 		var _this = this;
-		btn.on("click", function(e) {
+		btn.addEventListener("mouseup", function(e) {
 			e.preventDefault();
 			if(state.recording === false) {
 				if(state.paused) {
@@ -163,19 +180,24 @@ var RecorderUI = (function() {
 					start.call(_this);
 				}
 				state.paused = false;
-				btn.attr("title", settings.localization.pause);
+				HTML.setAttributes(btn, {
+					title: settings.localization.pause
+				});
 			} else {
 				state.paused = true;
 				pause.call(_this);
-				btn.attr("title", settings.localization.record);
+				HTML.setAttributes(btn, {
+					title: settings.localization.record
+				});
 			}
 
 			state.recording = !state.recording;
 		});
 
-		uploadBtn.on("click", function(e) {
+		uploadBtn.addEventListener("mouseup", function(e) {
 			e.preventDefault();
-			modal.modal();
+			var modal = document.getElementsByClassName("modal-bg");
+			modal.className = "modal-bg active"; // activate modal
 		});
 	};
 
@@ -193,20 +215,20 @@ var RecorderUI = (function() {
 
 	var recording = function() {
 		UIFactory.changeButton(btn, "danger"); // danger = red -> recording is ON
-		uploadBtn.attr("disabled", "disabled");
-		this.board.addClass("no-pointer");
+		HTML.setAttributes(uploadBtn, { disabled: "disabled" });
+		this.board.className += " no-pointer";
 
 		var time = 0;
 		tick = setInterval(function() {
 			time += 1;
-			progressSpan.text(secondsToString(time));
+			btn.innerHTML = secondsToString(time);
 		}, 1000);
 	};
 
 	var pause = function() {
 		UIFactory.changeButton(btn, "success"); // success = green -> recording is OFF, can start again
-		this.board.removeClass("no-pointer");
-		uploadBtn.removeAttr("disabled");
+		this.board.className.replace("no-pointer", "");
+		uploadBtn.removeAttribute("disabled");
 		VideoEvents.trigger("pause");
 
 		clearInterval(tick);
@@ -215,78 +237,83 @@ var RecorderUI = (function() {
 	var prepareUploadModal = function() {
 
 		// input objects
-		var titleInput = $("<input>").attr("type", "text").attr("name", "title").attr("placeholder", "video's title").addClass("form-control");
-		var authorInput = $("<input>").attr("type", "text").attr("name", "author").attr("placeholder", "your name").addClass("form-control");
-		var descriptionTextarea = $("<textarea />").attr("name", "description").attr("placeholder", "video description").addClass("form-control");
+		var titleInput = HTML.createElement("input", {
+			type: "text",
+			name: "title",
+			placeholder: "video's title",
+			class: "form-control"
+		});
+		var authorInput = HTML.createElement("input", {
+			type: "text",
+			name: "author",
+			placeholder: "your name",
+			class: "form-control"
+		});
+		var descriptionTextarea = HTML.createElement("textarea", {
+			name: "description",
+			placeholder: "video description",
+			class: "form-control"
+		});
 
 		// button
-		var save = $("<button>").attr("type", "button").addClass("btn btn-primary").text("Save video");
-        var uploadInfo = $("<div />")
-        					.css("display", "none")
-        					.append("<p />").addClass("alert alert-info").text(settings.localization.waitingText);
+		var save = HTML.createElement("button", {
+			type: "button",
+			class: "btn btn-primary"
+		});
+		save.innerHTML = "Save video";
 
-        // uploqe progress
-        var uploadBar = UIFactory.progressbar("info", 0).text("0% uploaded").addClass("active progress-striped");
-        var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
+		//
+		var infoAlert = HTML.createElement("p", { class: "alert alert-info" });
+		infoAlert.innerHTML = settings.localization.waitingText;
+        var uploadInfo = HTML.createElement("div", { style: "display: none;" }, [ infoAlert ]);
 
-        VideoEvents.on("upload-progress", function(e, percent) {
+		VideoEvents.on("upload-progress", function(e, percent) {
         	console.log(percent);
-        	UIFactory.changeProgress(uploadBar, percent);
-        	uploadBar.text(Math.floor(percent) + "% uploaded");
         });
 
-        //
-        // This is a Twitter Bootstrap 3 modal window
-        // see www.bootstrapdocs.com/v3.2.0/docs/
-        //
-		modal = $("<div />").addClass("modal fade").append(
-						$("<div />").addClass("modal-dialog").append(
-							$("<div />").addClass("modal-content")
-								.append(
-									// MODAL HEADER
-									$("<div />").addClass("modal-header")
-										.append(
-											$("<button>").attr("type", "button").addClass("close").attr("data-dismiss", "modal")
-												.append($("<span>").attr("aria-hidden", "true").html("&times;"))
-												.append($("<span>").addClass("sr-only").text("Close"))
-										).append(
-											$("<h4>Save captured video</h4>").addClass("modal-title")
-										)
-								).append(
-									// MODAL BODY
-									$("<div />").addClass("modal-body")
-										.append(
-											// name input
-											$("<p />").addClass("form-group")
-												.append(titleInput)
-										).append(
-											$("<p />").addClass("form-group")
-												.append(authorInput)
-										).append(
-											$("<p />").addClass("form-group")
-												.append(descriptionTextarea)
-										).append(uploadInfo).append(uploadProgress)
+		var closeBtn = HTML.createElement("button", { class: "close-btn" });
+		closeBtn.innerHTML = "&times";
+		closeBtn.addEventListener("mouseup", function(e) {
+			e.preventDefault();
+			var wrapper = document.getElementsByClassName("modal-bg");
+			wrapper.className = ""; // remove "active"
+			wrapper.className = "modal-bg";
+		});
 
-								).append(
-									// MODAL FOOTER
-									$("<div />").addClass("modal-footer")
-										.append($("<button>").attr("type", "button").addClass("btn btn-default").attr("data-dismiss", "modal").text("Close"))
-										.append(save)
+		var title = HTML.createElement("h4");
+		title.innerHTML = "Save captured video";
 
-								)
-						)
-					);
+		var modalBody = HTML.createElement("div", { class: "modal-body" },
+			[
+				HTML.createElement("p", { class: "form-group" }, [ titleInput ]),
+				HTML.createElement("p", { class: "form-group" }, [ authorInput ]),
+				HTML.createElement("p", { class: "form-group" }, [ descriptionTextarea ]),
+				uploadInfo
+			]);
 
-		$("body").append(modal);
+		var modalFooter = HTML.createElement("div", { class: "modal-footer" },
+			[
+				closeBtn,
+				save
+			]);
 
-		save.on("click", function(e) {
+		modal = HTML.createElement("div", { class: "modal" },
+			[
+				closeBtn,
+				title,
+				modalBody,
+				modalFooter
+			]);
+
+		save.addEventListener("mouseup", function(e) {
 			e.preventDefault();
 
 			// inform the user..
-			$(this).attr("disabled", "disabled");
-			$(this).text("Started uploading...");
+			HTML.setAttributes(save, {
+				disabled: "disabled"
+			});
+			save.innerHTML = "Starting upload...";
 			uploadInfo.slideToggle();
-			uploadProgress.slideToggle();
 
 			VideoEvents.trigger("stop", {
 				info: { // this will be merged with the <info> structure
@@ -300,8 +327,10 @@ var RecorderUI = (function() {
 		});
 
 		VideoEvents.on("recording-finished", function() {
-			save.text("Video was successfully uploaded.");
+			save.innerHTML = "Video was successfully uploaded.";
 		});
+
+		return HTML.createElement("div", { class: "modal-bg" }, [ modal ]);
 	};
 
 	/**
@@ -310,37 +339,51 @@ var RecorderUI = (function() {
 	 */
 	var prepareColorsPanel = function(panel) {
 		var changeColor = function(button) {
-			button.addClass("active").siblings().removeClass("active");
-			VideoEvents.trigger("color-change", button.data("color"));
+			var children = button.parentNode.childNodes;
+			for (var i = 0; i < children.length; ++i) {
+				HTML.setAttributes(children[i], { class: "option" });
+			}
+
+			HTML.setAttributes(button, { class: "option active" });
+			VideoEvents.trigger("color-change", button.getAttribute("data-color"));
 		};
 
 		Object.keys(settings.pallete).forEach(function(color) {
 			var button = addColorButton(panel, color, settings.pallete[color]);
-			button.on("click", function(e) {
+			button.addEventListener("mouseup", function(e) {
 				// prevent default - 
 				e.preventDefault();
-				var btn = $(this);
-				changeColor(btn);
+				changeColor(button);
 			});
 		});
 	};
 
 	/**
 	 * Creates buttons for changing brush size during recording.
-	 * @param  {object} panel Parent element of the buttons.
+	 * @param  {HTMLElement} panel Parent element of the buttons.
 	 */
 	var prepareSizesPanel = function(panel) {
+		/**
+		 * @param {HTMLElement} button
+		 */
 		var changeSize = function(button) {
-			button.addClass("active").siblings().removeClass("active");
-			var size = button.children(".dot").data("size");
+			// reset btns
+			var children = button.parentNode.childNodes;
+			for (var i = 0; i < children.length; ++i) {
+				HTML.setAttributes(children[i], { class: "option" });
+			}
+
+			HTML.setAttributes(button, { class: "option active" });
+			var size = button.firstChild.getAttribute("data-size"); // it has only one child
 			VideoEvents.trigger("brush-size-change", settings.widths[size]);
 		};
 
 		Object.keys(settings.widths).forEach(function(size) {
-			var button = addSizeButton(panel, size, settings.widths[size]).attr("title", settings.localization.changeSize);
-			button.on("click", function(e) {
+			var button = addSizeButton(panel, size, settings.widths[size]);
+			HTML.setAttributes(button, { title: settings.localization.changeSize });
+			button.addEventListener("mouseup", function(e) {
 				e.preventDefault();
-				changeSize($(this));
+				changeSize(button);
 			});
 		});
 	};
@@ -353,12 +396,17 @@ var RecorderUI = (function() {
 	 * @return {object}				The button
 	 */
 	var addColorButton = function(panel, colorName, colorValue) {
-		var button = $("<button></button>").addClass("option").data("color", colorValue).css("background-color", colorValue).attr("title", colorName);
+		var button = HTML.createElement("button", {
+			class: "option",
+			"data-color": colorValue,
+			title: colorName,
+			style: "background-color: " + colorValue
+		});
 		if(colorName == settings.default.color) {
 			VideoEvents.trigger("color-change", colorValue);
-			button.addClass("active");
+			HTML.setAttributes(button, { class: "option active" });
 		}
-		panel.append(button);
+		panel.appendChild(button);
 		return button;
 	};
 
@@ -370,13 +418,29 @@ var RecorderUI = (function() {
 	 * @return {object}				The button
 	 */
 	var addSizeButton = function(panel, sizeName, size) {
-		var dot = $("<span></span>").addClass("dot").data("size", sizeName).width(size).height(size).css("border-radius", size/2 + "px");
-		var button = $("<button></button>").addClass("option").attr("title", size).append(dot);
+		var dot = HTML.createElement("span", {
+			class: "dot",
+			"data-size": sizeName
+		});
+		var borderWidth = 2;
+		dot.style.borderWidth = borderWidth + "px";
+		dot.style.borderRadius = size/2 + "px";
+		dot.style.width = (size - 2*borderWidth) + "px";
+		dot.style.height = (size - 2*borderWidth) + "px";
+
+
+		var button = HTML.createElement("button", {
+			class: "option",
+			title: size
+		}, [ dot ]);
+
 		if(sizeName == settings.default.size) {
 			VideoEvents.trigger("brush-size-change", size);
-			button.addClass("active");
+			HTML.setAttributes(button, { class: "option active" });
 		}
-		panel.append(button);
+
+		panel.appendChild(button);
+
 		return button;
 	};
 

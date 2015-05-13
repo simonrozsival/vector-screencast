@@ -522,6 +522,7 @@ var UserInputDataProvider = (function() {
 	};
 	var timer;
 	var penApi = false;
+	var lastState;
 
 
 	function UserInputDataProvider() {
@@ -552,7 +553,7 @@ var UserInputDataProvider = (function() {
 		} else {
 			return state.mouseDown ? 1 : 0;
 		}
-	}
+	};
 
 	var correctMouseCoords = function(e) {
 		if (e.pageX == undefined || e.pageY == undefined) {
@@ -573,7 +574,11 @@ var UserInputDataProvider = (function() {
 		timer = new VideoTimer();
 
 		VideoEvents.on("canvas-container-ready", function(e, canvasContainer) {
-			offset = canvasContainer.offset();
+			var rect = canvasContainer.getBoundingClientRect();
+			offset = {
+				top: rect.top,
+				left: rect.left
+			};
 		});
 
 		VideoEvents.on("start", start);
@@ -582,9 +587,10 @@ var UserInputDataProvider = (function() {
 		VideoEvents.on("stop", pause);
 
 		// is Wacom tablet ready?
-		VideoEvents.on("wacom-plugin-ready", function(e, $plugin) {
-			var plugin = $plugin[0];
-			if(plugin.version != undefined) {
+		VideoEvents.on("wacom-plugin-ready", function(e, plugin) {
+			console.log("Wacom plugin: ", plugin.version);
+			if(!!plugin === true // plugin is 'undefined' if the tablet isn't installed or plugged in
+				&& !!plugin.version === true) {
 				console.log("Wacom tablet is connected and plugin installed. Plugin version is " + plugin.version + ".");
 				penApi = plugin.penAPI;
 			}
@@ -615,6 +621,7 @@ var UserInputDataProvider = (function() {
 			cursor = correctMouseCoords.call(this, e);
 			var current = getCurrentCursorState();
 			reportAction(current);
+			lastState = current;
 		}
 	};
 
@@ -851,7 +858,7 @@ var XmlDataProvider = (function(){
 
 	var tick = function() {
 		getNextCursorState();
-		if(state.running) {
+		while(state.running) {
 			VideoEvents.trigger("next-state-peek", state.current);
 			var timeGap = state.current.time - (Date.now() - startTime) - debt;			
 			debt = 0; // I have paid off the debt
@@ -886,197 +893,6 @@ var XmlDataProvider = (function(){
 
 	return XmlDataProvider;
 })();/**
- * Khanova Škola - vektorové video
- *
- * BASIC LINE DRAWING OBJECT
- * This is the base script containing basic line drawing
- *
- * @author:		Šimon Rozsíval (simon@rozsival.com)
- * @project:	Vector screencast for Khan Academy (Bachelor thesis)
- * @license:	MIT
- */
-
-
-var RoundedLines = (function() {
-
-	// private variables
-	var canvas, context;
-	var last = {
-		x: 0,
-		y: 0,
-		radius: 0
-	};
-
-	// dimensions of the board
-	var board = {
-		width: 0,
-		height: 0
-	};
-
-	// current settings - color and size
-	var settings;
-
-	/**
-	 * Create the drawer of "rounded" lines
-	 * @param {BasicSettings} settingsObject Instance of BasicSettings
-	 */
-	function RoundedLines(settingsObject) {
-
-		VideoEvents.on("canvas-container-ready", function(e, canvasContainer) {
-			canvas = document.createElement("canvas");
-			canvasContainer.append($(canvas));
-
-			context = canvas.getContext("2d");
-			canvas.width = canvasContainer.width();
-			canvas.height = canvasContainer.height();
-		});
-
-		settings = settingsObject;
-
-		// attach events
-		var _this = this;
-		VideoEvents.on("rewind", function() {
-			clearAll();
-		});
-
-		var lastState = { x: this.x, y: this.y, pressure: this.pressure, inside: true };
-		VideoEvents.on("new-state", function(e, state) {
-			if(state.pressure > 0) {
-				//if(state.inside == true || lastState.inside == true) {
-					if(lastState.pressure == 0
-						) {//|| lastState.inside == false) {
-						startLine.call(_this, state.x, state.y, state.pressure);
-					} else {
-						continueLine.call(_this, state.x, state.y, state.pressure);
-					}
-				//}
-			} else if (lastState.pressure > 0) {
-				endLine.call(_this, state.x, state.y);
-			}
-
-			// save this state for next time
-			lastState = state;
-		});
-
-		VideoEvents.on("skip-to", function(e, progress) {
-
-		});
-
-	};
-
-	var startLine = function(x, y, pressure) {
-		var radius = calculateRadius(pressure);
-		drawDot(x, y, radius);
-
-		// save the data
-		last.x = x;
-		last.y = y;
-		last.radius = radius;
-	};
-
-	var continueLine = function(x, y, pressure) {
-		var radius = calculateRadius(pressure);
-		drawSegment.call(this, x, y, radius);
-
-		// save the data
-		last.x = x;
-		last.y = y;
-		last.radius = radius;
-	};
-
-	var calculateRadius = function(pressure) {
-		return (pressure * current().brushSize) / 2;
-	};
-
-	var current = function() {
-		return settings.getCurrentSettings();
-	};
-
-	var drawDot = function(x, y, radius) {		
-		var c = context;
-
-		// load current settings
-		c.fillStyle = current().color;
-
-		// draw a dot
-		c.beginPath();
-		c.arc(x, y, radius, 0, Math.PI*2, true); 
-		c.closePath();
-		c.fill();
-	};
-
-	var drawSegment = function(x, y, radius) {
-		var c = context;
-
-		var current = settings.getCurrentSettings();
-		c.strokeStyle = current.color;
-
-		// draw path from the prev point to this one
-		c.beginPath();
-
-		var points = calculatePathPoints(x, y, radius);
-		var start = points.shift();
-		c.moveTo(start.x, start.y);
-		for(i in points) {		
-			var point = points[i];
-			c.lineTo(point.x, point.y);
-		}
-		c.closePath();
-		c.fill();
-
-		if(radius > 1) {
-			drawDot(x, y, radius);			
-		}
-	};
-
-	var calculatePathPoints = function(x, y, radius) {
-
-		// calculate the normal vector and normalise it
-		var normalVector = {
-			x: last.y - y,
-			y: x - last.x
-		};
-		var norm = Math.sqrt(normalVector.x*normalVector.x + normalVector.y*normalVector.y);
-		normalVector.x /= norm;
-		normalVector.y /= norm;
-
-		return [
-			// A' point
-			{
-				x: last.x + normalVector.x*last.radius,
-				y: last.y + normalVector.y*last.radius
-			},
-			// A"
-			{
-				x: last.x - normalVector.x*last.radius,
-				y: last.y - normalVector.y*last.radius
-			},
-			// B"
-			{
-				x: x - normalVector.x*radius,
-				y: y - normalVector.y*radius
-			},
-			// B'
-			{
-				x: x + normalVector.x*radius,
-				y: y + normalVector.y*radius
-			}
-		];
-	};
-
-	var endLine = function(x, y, pressure) {
-		// don't draw anything - segment ends with a dot..
-		lastNormalVector = {x: 0, y: 0};
-	};
-
-	var clearAll = function() {
-		context.clearRect(0, 0, board.width, board.height);
-	};
-
-
-	return RoundedLines;
-})();
-/**
  * Created by rozsival on 05/03/15.
  */
 
@@ -1093,11 +909,7 @@ var RoundedLines = (function() {
  */
 var SVGDrawer = (function() {
 
-    // make _this available in all functions without using the .call(this) method (it also isn't always possible)
-    /** @type {SVGDrawer} */
-    var _this;
-
-    // private variables
+    /** @type {HTMLElement} */
     var paper;
 
     /** @type {Vector2} Start point of next segment drawing. */
@@ -1106,12 +918,22 @@ var SVGDrawer = (function() {
     /** @type {Vector2} End point of next segment drawing. */
     var end = null;
 
-    /** @type {{pathA: Vector2, pathB: Vector2 }} Control points of the next start point. */
-    var startControlPoint = null;
-
     /** @type {State} Last state received. */
     var lastState;
 
+    /** @type {number} Next point's radius */
+    var nextRadius;
+
+    /** @type {Vector2} */
+    var prevPoint;
+
+    /** @type {Vector2} */
+    var lastDrawnPosition;
+
+    /** @type {number} */
+    var lastDrawnRadius;
+
+    /** @type {Element} */
     var endDot;
 
     /** @type {Boolean} Was this  */
@@ -1122,8 +944,8 @@ var SVGDrawer = (function() {
 
     /** @type {{a: String, b: String}} */
     var paths = {
-        a: "",
-        b: ""
+        top: "",
+        bottom: ""
     };
     var path;
 
@@ -1133,22 +955,26 @@ var SVGDrawer = (function() {
      * @constructor
      */
     function SVGDrawer(settingsObject) {
-        _this = this;
         settings = settingsObject;
 
-        // attach events
-        VideoEvents.on("canvas-container-ready", setupCanvasContainer);
-        VideoEvents.on("rewind", function() { });
+        // attach events handlers
+        VideoEvents.on("canvas-container-ready", prepareCanvas );
+        //VideoEvents.on("rewind", function() { });
         VideoEvents.on("new-state", processNewState);
-        VideoEvents.on("skip-to", function(e, progress) { });
+        //VideoEvents.on("skip-to", function(e, progress) { });
     }
 
-    var setupCanvasContainer = function(e, container) {
+    /**
+     * Prepare canvas
+     * @param {object}      e           Event object
+     * @param {HTMLElement} container   Canvas container
+     */
+    var prepareCanvas = function(e, container) {
         paper = SVG.createElement("svg", {
-            width:  container.width(),
-            height: container.height()
+            width:  container.offsetWidth,
+            height: container.offsetHeight
         });
-        container.get(0).appendChild(paper);
+        container.appendChild(paper);
     };
 
     /**
@@ -1157,14 +983,15 @@ var SVGDrawer = (function() {
      * @param {State} state
      */
     var processNewState = function(e, state) {
+        var nextPoint = new Vector2(state.x, state.y);
         if(state.pressure > 0) {
             if(!lastState || lastState.pressure === 0) {
-                startLine.call(_this, state.x, state.y, state.pressure);
+                startLine(nextPoint, state.pressure);
             } else {
-                continueLine.call(_this, state.x, state.y, state.pressure);
+                continueLine(nextPoint, state.pressure);
             }
         } else if (lastState && lastState.pressure > 0) {
-            endLine.call(_this, state.x, state.y);
+            endLine(nextPoint);
         }
 
         lastState = state;
@@ -1172,43 +999,44 @@ var SVGDrawer = (function() {
 
     /**
      * Start drawing a line.
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Number} pressure
+     * @param {Vector2} point       Starting point of the line
+     * @param {number}  pressure    Brush pressure
      */
-    var startLine = function (x, y, pressure) {
+    var startLine = function (point, pressure) {
         isOnlyClick = true;
 
-        // start every line with a dot to make the start nicely round
+        // start every line with a dot to make it nicely round
         var radius = calculateRadius(pressure);
-        var dot = SVG.dot(x, y, radius, current().color);
+        var dot = SVG.dot(point, radius, current().color);
         paper.appendChild(dot);
 
-        // start a new path and prepare both top and bottom path strings
-        path = SVG.createElement("path", {
-            fill: current().color,
-            stroke: "transparent",
-            "stroke-linecap": "round",
-            "stroke-linejoin": "round"
-        });
-        paper.appendChild(path);
-
-        paths.a = "M " + x + "," + y + " ";
-        paths.b = "L " + x + "," + y;
-
-        // reset the data
-        resetLastState(x, y);
+        // prepare values for following line segments
+        prevPoint = point.clone();
+        start = point.clone();
+        nextRadius = radius;
+        lastDrawnPosition = point.clone();
+        lastDrawnRadius = radius;
     };
 
-    var continueLine = function(x, y, pressure) {
+    /**
+     *
+     * @param {Vector2} nextPoint   Next point of the line
+     * @param {number}  pressure    Brush pressure
+     */
+    var continueLine = function(nextPoint, pressure) {
         var radius = calculateRadius(pressure);
         if(isOnlyClick) {
-            isOnlyClick = false;
-            endDot = SVG.dot(x, y, radius, current().color);
-            paper.appendChild(endDot);
+            // this is the second point of the line - only a dot was drawn so far
+            if(preparePath(nextPoint)) {
+                end = nextPoint.clone();
+                isOnlyClick = false;
+                endDot = SVG.dot(end, radius, current().color);
+                paper.appendChild(endDot);
+            }
+        } else {
+            // just draw another segment of the line
+            drawSegment(nextPoint, radius, false);
         }
-
-        drawSegment.call(this, x, y, radius);
     };
 
     /**
@@ -1228,54 +1056,105 @@ var SVGDrawer = (function() {
         return settings.getCurrentSettings();
     };
 
-    /** @type {number} cardinal spline parameter */
-    var a = 0.3;
-
     /**
      *
-     * @param {number} x
-     * @param {number} y
-     * @param {number} radius
+     * @param   {Vector2}   nextPoint   The point where the path will start
+     * @returns {boolean}   True if preparations went well, false otherwise.
      */
-    var drawSegment = function(x, y, radius) {
-        var nextPoint = new Vector2(x, y);
+    var preparePath = function(nextPoint) {
+        // calculate starting points
+        var direction = nextPoint.subtract(start);
+        if(direction.getX() === 0 && direction.getY()  === 0) {
+            return false; // mouse hasn't moved a bit
+        }
+        var normal = getScaledNormal(direction, lastDrawnRadius); // control point "b" indicates the direction of the line in the next step
+
+        // start a new path and prepare both top and bottom path strings
+        path = SVG.createElement("path", {
+            fill: current().color,
+            stroke: "transparent"
+        });
+        paper.appendChild(path);
+
+        // position the start points
+        paths.top       = "M " + (start.getX() + normal.getX()) + "," + (start.getY()  + normal.getY() ) + " ";
+        paths.bottom    = "L " + (start.getX() - normal.getX()) + "," + (start.getY()  - normal.getY() ) + " Z";
+
+        return true;
+    };
+
+    /**
+     * Draw the following sement of the line
+     * @param {Vector2} nextPoint   Next mouse position
+     * @param {number}  radius      Brush radius according to brush pressure
+     * @param {boolean} closePath   True if the path won't continue further
+     */
+    var drawSegment = function(nextPoint, radius, closePath) {
+        // swap radius for next radius
+        var tmp = nextRadius;
+        nextRadius = radius;
+        radius = tmp;
 
         // calculate normal vector
-        var direction = new Vector2(nextPoint.x - start.x, nextPoint.y - start.y);
+        var direction = end.subtract(start);
         var normal = getScaledNormal(direction, radius); // control point "b" indicates the direction of the line in the next step
         if(normal === null) {
             return; // can't calculate normal vector => the distance between the last point and this point is zero => nothing to draw
         }
 
-        // calculate control points for cubic bezier curve
-        var controlPoints = getControlPoints(start, end, nextPoint, a, normal);
-        if(controlPoints !== false) {
-            paths.a += "C " + startControlPoint.pathA.x + "," + startControlPoint.pathA.y + " " +
-                                controlPoints.a.pathA.x + "," + controlPoints.a.pathA.y + " " +
-                                (end.x + normal.x) + "," + (end.y + normal.y) + " ";
-            paths.b  = "C " + controlPoints.a.pathB.x + "," + controlPoints.a.pathB.y + " " +
-                                startControlPoint.pathB.x + "," + startControlPoint.pathB.y + " " +
-                                (start.x - normal.x) + "," + (start.y - normal.y) + " " + paths.b;
-
-            // save the correct control points for the next time
-            startControlPoint = controlPoints.b;
+        if(direction.getSize() > radius) {
+            drawCurvedSegment(nextPoint, normal);
         } else {
-            return; // this segment can't be drawn
+            // the points are too close to each other
+            drawStraightSegment(normal);
+        }
+
+        // 'cap' is a tmp connection of the top and bottom parts of the path
+        var cap;
+        if(closePath !== true) {
+            cap = SVG.lineToString(nextPoint.add(normal)) + " " + SVG.lineToString(nextPoint.subtract(normal));
+            moveEndDot(nextPoint, radius);
+        } else {
+            // 'nextPoint' isn't part of the line - don't draw any tmp segment and close the path
+            // with a sharp end instead + move the ending dot to the right position
+            cap = SVG.lineToString(end.subtract(normal));
+            moveEndDot(end, radius);
         }
 
         // update path string
-        var cap = "L " + (end.x - normal.x) + "," + (end.y - normal.y) + " ";
         SVG.setAttributes(path, {
-            "d": paths.a + cap + paths.b
+            "d": paths.top + cap + paths.bottom
         });
 
-        // draw a dot at the last point to make it round
-        moveEndDot(end.x, end.y, radius)
+        lastDrawnPosition = start;
+        lastDrawnRadius = radius;
 
         // do not forget to shift points
-        start = end;
-        end = nextPoint;
+        prevPoint = start.clone();
+        start = end.clone();
+        end = nextPoint.clone();
     };
+
+    var drawCurvedSegment = function(nextPoint, normal) {
+        // calculate control points for cubic bezier curve
+        var spline = calculateSpline(prevPoint, start, end, nextPoint, normal);
+        if(spline !== false) {
+            paths.top += " " + SVG.curveToString(spline.top.startCP, spline.top.endCP, spline.top.end);
+            paths.bottom = SVG.curveToString(spline.bottom.endCP, spline.bottom.startCP, spline.bottom.start) + " " + paths.bottom; // bottom part is drawn "backwards"
+        } else {
+            return; // this segment can't be drawn
+        }
+    };
+
+
+    var drawStraightSegment = function(normal) {
+        // @todo !!!!
+        // calculate control points for cubic bezier curve
+        paths.top += " " + SVG.lineToString(end.add(normal));
+        paths.bottom = SVG.lineToString(start.subtract(normal)) + " " + paths.bottom; // bottom part is drawn "backwards"
+    };
+
+
 
     /**
      *
@@ -1286,54 +1165,35 @@ var SVGDrawer = (function() {
     var getScaledNormal = function(direction, radius) {
         // calculate the normal vector and normalise it
         try {
-            var normal = direction.getNormal()
-            normal.x *= radius;
-            normal.y *= radius;
-            return normal;
+            return direction.getNormal().scale(radius);
         } catch (Exception) {
             return new Vector2(0, 0);
         }
     };
 
     /**
-     * Return control points for point B in a cubic bezier curve going from A to C through point B.
-     * @param {Vector2} a Point A
-     * @param {Vector2} b Point B
-     * @param {Vector2} c Point C
-     * @param {Vector2} t Tension
-     * @param {Vector2} n Normal vector
-     * @returns {{a: {pathA: Vector2, pathB: Vector2}, b: {pathA: Vector2, pathB: Vector2}}}
+     * Calculate path points
+     * @param {Vector2} a   Previous position
+     * @param {Vector2} b   Segment start position
+     * @param {Vector2} c   Segment end position
+     * @param {Vector2} d   Following position
+     * @param {Vector2} n   Normal vector
+     * @returns {{top: {start: Vector2, startCP: Vector2, end: Vector2, endCP: Vector2}, bottom: {start: Vector2, startCP: Vector2, end: Vector2, endCP: Vector2}}}
      */
-    var getControlPoints = function(a, b, c, t, n) {
-        // calculate the distances
-        var dist = {
-            ab: Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2)),
-            bc: Math.sqrt(Math.pow(c.x - b.x, 2) + Math.pow(c.y - b.y, 2))
-        };
-
-        // scaling factors
-        var fa = t * dist.ab / (dist.ab + dist.bc);
-        var fb = t * dist.bc / (dist.ab + dist.bc);
-
-        var cp = {
-            a: {
-                x: b.x - fa * (c.x - a.x),
-                y: b.y - fa * (c.y - a.y)
-            },
-            b: {
-                x: b.x + fb * (c.x - a.x),
-                y: b.y + fb * (c.y - a.y)
-            }
-        };
-
+    var calculateSpline = function(a, b, c, d, n) {
+        var cp = SplineHelper.catmullRomToBezier(a, b, c, d);
         return {
-            a: {
-                pathA: new Vector2(cp.a.x + n.x, cp.a.y + n.y),
-                pathB: new Vector2(cp.a.x - n.x, cp.a.y - n.y)
+            top: {
+                start:  cp.start.add(n),
+                startCP:cp.startCP.add(n),
+                end:    cp.end.add(n),
+                endCP:  cp.endCP.add(n)
             },
-            b: {
-                pathA: new Vector2(cp.b.x + n.x, cp.b.y + n.y),
-                pathB: new Vector2(cp.b.x - n.x, cp.b.y - n.y)
+            bottom: {
+                start:  cp.start.subtract(n),
+                startCP:cp.startCP.subtract(n),
+                end:    cp.end.subtract(n),
+                endCP:  cp.endCP.subtract(n)
             }
         };
     };
@@ -1341,133 +1201,35 @@ var SVGDrawer = (function() {
 
     /**
      * Ends currently drawn line.
-     * @param x
-     * @param y
+     * @param {Vector2} pos Position of mouse when pressure dropped to 0.
      */
-    var endLine = function(x, y) {
+    var endLine = function(pos) {
         if(!isOnlyClick) {
-            // draw the last segment
+            // draw the last missing segment
+            var _end = end;
+            drawSegment(pos, 0, true);
+
             var lastRadius = calculateRadius(lastState.pressure);
-            drawSegment(end.x, end.y, lastRadius);
-
-            // draw a dot at the last point to make it round
-            moveEndDot(end.x, end.y, lastRadius);
+            moveEndDot(_end, lastRadius);
         }
-
-        // reset tmp drawing points
-        paths.a = null;
-        paths.b = null;
-        resetLastState(x, y);
     };
 
     /**
      * Move the dot and resize it according it to current state.
-     * @param {number} x
-     * @param {number} y
-     * @param {number} radius
+     * @param {Vector2} center  Center position
+     * @param {number}  radius  Dot radius.
      */
-    var moveEndDot = function(x, y, radius) {
+    var moveEndDot = function(center, radius) {
         SVG.setAttributes(endDot, {
-            cx: x,
-            cy: y,
-            radius: radius
+            cx: center.getX(),
+            cy: center.getY() ,
+            r: radius
         });
-    };
-
-    /**
-     * Prepares valid data for later use of start, end and startControlPoint
-     * @param  {number} x    X coordinates of pointing device
-     * @param  {number} y    Y coordinates of pointing device
-     */
-    var resetLastState = function (x, y) {
-        start = end = new Vector2(x, y);
-        startControlPoint = {
-            pathA: start,
-            pathB: start
-        };
     };
 
     return SVGDrawer;
 })();
-/**
- * Created by rozsival on 11/04/15.
- */
 
-
-/**
- * SVG helper object.
- * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function}}
- */
-var SVG = {
-
-    /** @type {String} XML namespace of SVG */
-    namespace: "http://www.w3.org/2000/svg",
-
-    /**
-     * Creates a filled circle on the canvas.
-     * @param  {float} x      X position
-     * @param  {float} y      Y position
-     * @param  {float} radius Circle radius
-     * @param  {string} color  CSS compatible color value
-     */
-    dot: function(x, y, radius, color) {
-        if(radius > 0) {
-            return SVG.createElement("circle", {
-                cx:     x,
-                cy:     y,
-                r:      radius,
-                fill:   color,
-                stroke: "transparent"
-            });
-        }
-
-        return null;
-    },
-
-    circle: function(x, y, radius, color) {
-        if(radius > 0) {
-            return SVG.createElement("circle", {
-                cx:     x,
-                cy:     y,
-                r:      radius,
-                stroke:   color,
-                fill: "transparent",
-                "stroke-width": 1
-            });
-        }
-
-        return null;
-    },
-
-    line: function(start, end, width, color) {
-        if(width > 0) {
-            return SVG.createElement("path", {
-                fill: "transparent",
-                stroke: color,
-                "stroke-linecap": "round",
-                "stroke-linejoin": "round",
-                "stroke-width": width,
-                d: "M" + start.x + " " + start.y + " L" + end.x + " " + end.y
-            });
-        }
-
-        return null;
-    },
-
-    createElement: function(name, attributes) {
-        var el = document.createElementNS(SVG.namespace, name);
-        SVG.setAttributes(el, attributes);
-        return el;
-    },
-
-    setAttributes: function(el, attributes) {
-        for (var attr in attributes) {
-            el.setAttributeNS(null, attr, attributes[attr]);
-        }
-    }
-
-
-};
 var XmlReader = (function() {
 
 	// video header
@@ -1825,24 +1587,6 @@ var XmlWriter = (function() {
 	};
 
 })();/**
- * Created by rozsival on 11/04/15.
- */
-
-var Dimensions = (function() {
-
-    function Dimensions(width, height) {
-        if(typeof width === "object") {
-            this.width = width.width;
-            this.height= width.height;
-        } else {
-            this.width = width;
-            this.height = height;
-        }
-    }
-
-    return Dimensions;
-
-})();/**
  * Khanova Škola - vektorové video
  *
  * HELPER FUNCTIONS
@@ -1886,9 +1630,15 @@ var millisecondsToString = function(ms) {
  */
 var HTML = {
 
-    createElement: function(name, attributes) {
+    createElement: function(name, attributes, children) {
         var el = document.createElement(name);
         HTML.setAttributes(el, attributes);
+        if(!!children && Array.isArray(children)) {
+            for(var i in children) {
+                el.appendChild(children[i]);
+            }
+        }
+
         return el;
     },
 
@@ -1935,6 +1685,34 @@ var Saver = (function() {
 	};
 	
 })();/**
+ * Created by rozsival on 16/04/15.
+ */
+
+var SplineHelper = (function() {
+
+    return {
+
+        /**
+         * Convert four consequent points to parameters for cubic Bézier curve.
+         * (http://therndguy.com/papers/curves.pdf)
+         * @param {Vector2} a
+         * @param {Vector2} b
+         * @param {Vector2} c
+         * @param {Vector2} d
+         * @returns {{start: Vector2, startCP: Vector2, end: Vector2, endCP: Vector2}}
+         */
+        catmullRomToBezier: function(a, b, c, d) {
+            return {
+                start:    b,
+                startCP:  new Vector2((-1/6 * a.getX()) + b.getX() + (1/6 * c.getX()), (-1/6 * a.getY()) + b.getY() + (1/6 * c.getY())),
+                end:      c,
+                endCP:    new Vector2((1/6 * b.getX()) + c.getX() + (-1/6 * d.getX()), (1/6 * b.getY()) + c.getY() + (-1/6 * d.getY()))
+            };
+        }
+
+    };
+
+})();/**
  * Created by rozsival on 11/04/15.
  */
 
@@ -1978,7 +1756,142 @@ var State = (function() {
  * Created by rozsival on 11/04/15.
  */
 
+
 /**
+ * SVG helper object.
+ * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function, moveToString: Function, lineToString: Function, curveToString: Function}}
+ */
+var SVG = {
+
+    /** @type {String} XML namespace of SVG */
+    namespace: "http://www.w3.org/2000/svg",
+
+    /**
+     * Creates a filled circle on the canvas.
+     * @param  {Vector2} center     Center of the dot.
+     * @param  {number}  radius     Circle radius
+     * @param  {string}  color      CSS compatible color value
+     * @return {null|HTMLElement}
+     */
+    dot: function(center, radius, color) {
+        if(radius > 0) {
+            return SVG.createElement("circle", {
+                cx:     center.getX(),
+                cy:     center.getY(),
+                r:      radius,
+                fill:   color,
+                stroke: "transparent"
+            });
+        }
+
+        return null;
+    },
+
+    /**
+     * Create a circle with a specific center, radius and stroke color.
+     * @param {Vector2} center  Circle of the circle.
+     * @param {number} radius   Circle radius
+     * @param {string} color    Circumference stroke color
+     * @returns {null|HTMLElement}
+     */
+    circle: function(center, radius, color) {
+        if(radius > 0) {
+            return SVG.createElement("circle", {
+                cx:     center.getX(),
+                cy:     center.getY(),
+                r:      radius,
+                stroke:   color,
+                fill: "transparent",
+                "stroke-width": 1
+            });
+        }
+
+        return null;
+    },
+
+    /**
+     * Create line element.
+     * @param {Vector2} start   Start vector
+     * @param {Vector2} end
+     * @param {number}  width
+     * @param {string}  color
+     * @returns {*}
+     */
+    line: function(start, end, width, color) {
+        if(width > 0) {
+            return SVG.createElement("path", {
+                fill: "transparent",
+                stroke: color,
+                "stroke-width": width,
+                d: SVG.moveToString(start) + " " + SVG.lineToString(end)
+            });
+        }
+
+        return null;
+    },
+
+    /**
+     * Creates an element with specified properties.
+     * @param {string} name         Element name
+     * @param {object} attributes   Element properties
+     * @returns {HTMLElement}
+     */
+    createElement: function(name, attributes) {
+        var el = document.createElementNS(SVG.namespace, name);
+        if(attributes) {
+            SVG.setAttributes(el, attributes);
+        }
+        return el;
+    },
+
+    /**
+     * Assign a set of attributes to an element.
+     * @param {HTMLElement} el          Target element
+     * @param {object}      attributes  Properties to be set to the element.
+     */
+    setAttributes: function(el, attributes) {
+        for (var attr in attributes) {
+            el.setAttributeNS(null, attr, attributes[attr]);
+        }
+    },
+
+
+    /**
+     * Move SVG "cursor" to given end point.
+     * @param   {Vector2}   a   End point
+     * @returns {string}        SVG path argument
+     */
+    moveToString: function(a) {
+        return "M " + a.getX() + "," + a.getY();
+    },
+
+    /**
+     * Create a straight line according to given end point.
+     * @param   {Vector2}   a   End point
+     * @returns {string}        SVG path argument
+     */
+    lineToString: function(a) {
+        return "L " + a.getX() + "," + a.getY();
+    },
+
+    /**
+     * Create a cubic bézier curve according to given control points.
+     * @param {Vector2} a   Start control point
+     * @param {Vector2} b   End control point
+     * @param {Vector2} c   End point
+     * @returns {string}    SVG path argument
+     */
+    curveToString: function(a, b, c) {
+        return "C " + a.getX() + "," + a.getY() + " " + b.getX() + "," + b.getY() + " " + c.getX() + "," + c.getY();
+    }
+
+
+};/**
+ * Created by rozsival on 11/04/15.
+ */
+
+/**
+ * Immutable two dimensional vector representation with basic operations.
  * @class
  * @property    {number} x
  * @property    {number} y
@@ -1992,8 +1905,21 @@ var Vector2 = (function() {
      * @constructor
      */
     function Vector2(x, y) {
-        this.x = x;
-        this.y = y;
+        /**
+         * X coordinate getter.
+         * @returns {number}    x
+         */
+        this.getX = function() {
+            return x;
+        };
+
+        /**
+         * Y coordinate getter.
+         * @returns {number}    y
+         */
+        this.getY = function() {
+            return y;
+        };
     }
 
     /**
@@ -2001,7 +1927,16 @@ var Vector2 = (function() {
      * @returns {number}
      */
     Vector2.prototype.getSize = function() {
-        return Math.sqrt(this.x*this.x + this.y*this.y);
+        return Math.sqrt(this.getX()*this.getX() + this.getY()*this.getY());
+    };
+
+    /**
+     * Distance between this and the other point.
+     * @param {Vector2} b
+     * @return number
+     */
+    Vector2.prototype.distanceTo = function(b) {
+        return this.subtract(b).getSize();
     };
 
     /**
@@ -2014,8 +1949,7 @@ var Vector2 = (function() {
             throw new Exception("Can't normalize zero vector.");
         }
 
-        this.x /= size;
-        this.y /= size;
+        return this.scale(1/size);
     };
 
     /**
@@ -2023,60 +1957,172 @@ var Vector2 = (function() {
      * @returns {Vector2}
      */
     Vector2.prototype.getNormal = function() {
-        var n = new Vector2(-this.y, this.x);
-        n.normalize();
-        return n;
+        return new Vector2(-this.getY(), this.getX()).normalize();
+    };
+
+    /**
+     * Create a new two-dimensional vector as a combination of this vector with a specified vector.
+     * @param {Vector2} b   The other vector
+     * @return {Vector2}    Result of addition
+     */
+    Vector2.prototype.add = function(b) {
+        return new Vector2(this.getX() + b.getX(), this.getY() + b.getY());
+    };
+
+    /**
+     * Create a new two-dimensional vector as a combination of this vector with a specified vector.
+     * @param {Vector2} b   The other vector
+     * @return {Vector2}    Result of addition
+     */
+    Vector2.prototype.subtract = function(b) {
+        return new Vector2(this.getX() - b.getX(), this.getY() - b.getY());
+    };
+
+    /**
+     * Create a new two-dimensional vector as a combination of this vector with a specified vector.
+     * @param {number} c    Scaling coeficient
+     * @return {Vector2}    Result of addition
+     */
+    Vector2.prototype.scale = function(c) {
+        return new Vector2(this.getX() * c, this.getY() * c);
+    };
+
+    /**
+     * Make a copy of the vector.
+     * @returns {Vector2} Copy.
+     */
+    Vector2.prototype.clone = function() {
+        return new Vector2(this.getX(), this.getY());
     };
 
     return Vector2;
 
-})();
-
+})();/**
+ * Event Aggregator object.
+ * @author Šimon Rozsíval
+ */
 var VideoEvents = (function() {
-    
+
+    /** @type {(object|{string: callback[]})}   The list of all events. */
     var events = {};
+
+    /**
+     * Triggers a specified event callback asynchronously.
+     * @param {string}  event   Event identificator
+     * @param {number}  i       Callback index
+     */
+    var triggerAsync = function(event, i, _arguments) {
+        setTimeout(function() {
+            events[event][i].apply(this, _arguments);
+        }, 0);
+    };
 
     return {
 
+        /**
+         * Trigger all callbacks subscribed to a specified event.
+         * @param {string} event    Event identificator
+         */
         trigger: function(event) {
-            e = events[event] || false
-            if(e !== false) {                                    
-                for(var e in events[event]) {
-                    events[event][e].apply(this, arguments);
+            if(events.hasOwnProperty(event)) {
+                for(var i = 0; i < events[event].length; ++i) {
+                    triggerAsync.call(this, event, i, arguments);
                 }
             }
         },
 
+        /**
+         * Subscribe for an event.
+         * @param {string}      event       Event identificator
+         * @param {callback}    callback    Callback function
+         */
         on: function(event, callback) {
             if(!events.hasOwnProperty(event)) {
                 events[event] = [];
             }
 
             events[event].push(callback);
+        },
+
+        /**
+         * Unsubscribe for an event.
+         * @param {string}      event       Event identificator
+         * @param {callback}    callback    Subscribed callback to be removed
+         */
+        off: function(event, callback) {            
+            if(events.hasOwnProperty(event)) {
+                var index = events[event].indexOf(callback);
+                if(index !== -1) { // -1 means nothing was found
+                    events[event].splice(index, 1);
+                }
+            }
         }
     };
 
-})();
+})();/**
+ * (High) resolution timer.
+ */
 var VideoTimer = (function() {
 
-	var startTime;
-
+	/**
+	 * Creates a timer with a reset clock.
+	 * @constructor
+	 */
 	function VideoTimer() {
-	    this.resetTimer();
+
+		/** @type {Date|object} */
+		var clock;
+		if(!window.performance) {
+			clock = Date;
+		} else {
+			clock = window.performance; // High resolution timer
+		}
+
+		/**
+		 * Get timer.
+		 * @returns {Date|Object}
+		 */
+		this.getClock = function() {
+			return clock;
+		};
+
+		/** @type {number} System clock at the time of the last timer reset. */
+		var startTime;
+
+		/**
+		 * Get start time;
+		 * @returns {number}
+		 */
+		this.getStartTime = function() {
+			return startTime;
+		}
+
+		/**
+		 * Start measuring time from zero.
+		 */
+		this.resetTimer = function() {
+			startTime = clock.now();
+		};
+
+		/**
+		 * Set timer clock to specific time.
+		 * @param {number}	ms	Time in milliseconds
+		 */
+		this.setTime = function(ms) {
+			this.resetTimer();
+			startTime += ms;
+		};
+
+		this.resetTimer();
 	}
 
-	VideoTimer.prototype.resetTimer = function() {
-	    startTime = 0;
-	    startTime = this.currentTime();
-	};
 
-	VideoTimer.prototype.setTime = function(ms) {
-		this.resetTimer();
-		startTime += ms;
-	};
-
+	/**
+	 * Get elapsed time since last timer reset.
+	 * @returns {number} Elapsed time since last timer reset in milliseconds.
+	 */
 	VideoTimer.prototype.currentTime = function() {
-	    return (new Date()).getTime() - startTime;
+	    return this.getClock().now() - this.getStartTime();
 	};
 
 	return VideoTimer;
@@ -2091,48 +2137,42 @@ var VideoTimer = (function() {
 * @project:	Vector screencast for Khan Academy (Bachelor thesis)
 * @license:	MIT
 */
-
-var Player = (function(){
-
-	var settings = {
-		xml: {
-			file: ""
-		},
-		container: {
-			selector: "#player",
-		},
-		cursor: {
-			size: 20,
-			color: "#fff"
-		},
-		audio: [],
-		localization: {
-			ui: {}
-		}
-	};
-
-	function Player(options) {
-		// [0] - settings
-		$.extend(true, settings, options);
-		var el = $(settings.container.selector);
-
-		// [1] - prepare the UI
-		var ui = new PlayerUI({
-			container: el,
-			localization: settings.localization.ui
-		});
-
-		// [2] - prepare the player
-		var settingsMonitor = new BasicSettings();		
-		//var lineDrawer = new RoundedLines(settingsMonitor);
-		var lineDrawer = new SVGDrawer(settingsMonitor);
-		var dataProvider = new XmlDataProvider(options.xml.file);
-		var audioPlayer = new AudioPlayer(dataProvider.getAudioSources());
-	}
-
-	return Player;
-
-})();/**
+var Player = (function () {
+    var settings = {
+        xml: {
+            file: ""
+        },
+        container: {
+            selector: "#player"
+        },
+        cursor: {
+            size: 20,
+            color: "#fff"
+        },
+        audio: [],
+        localization: {
+            ui: {}
+        }
+    };
+    function Player(options) {
+        // [0] - settings
+        $.extend(true, settings, options);
+        var el = $(settings.container.selector);
+        // [1] - prepare the UI
+        var ui = new PlayerUI({
+            container: el,
+            localization: settings.localization.ui
+        });
+        // [2] - prepare the player
+        var settingsMonitor = new BasicSettings();
+        //var lineDrawer = new RoundedLines(settingsMonitor);
+        var lineDrawer = new SVGDrawer(settingsMonitor);
+        var dataProvider = new XmlDataProvider(options.xml.file);
+        var audioPlayer = new AudioPlayer(dataProvider.getAudioSources());
+    }
+    return Player;
+})();
+/**
 * Khanova Škola - vektorové video
 *
 * THE VIDEO RECORDER OBJECT
@@ -2161,7 +2201,7 @@ var Recorder = (function(){
 	var settings = {
 		chunkLength: 2000,
 		container: {
-			selector: "#recorder"
+			id: "recorder"
 		},
 		cursor: {}, // cursor has it's own defaults
 		localization: {
@@ -2189,7 +2229,7 @@ var Recorder = (function(){
 
 		// [0] - settings
 		$.extend(true, settings, options);
-		var el = $(settings.container.selector);
+		var el = document.getElementById(settings.container.id);
 
 		// [1] - init events
 		bindEvents.call(this);
@@ -2476,6 +2516,99 @@ var BasicSettings = (function() {
 	return BasicSettings;
 
 })();/**
+ * Created by rozsival on 25/04/15.
+ */
+
+var DelayedInvokeQueue = (function() {
+
+    /** @type {Worker|DelayedInvokeWorkerMockup} */
+    var worker;
+
+    /** @type {object} */
+    var queue = [];
+
+    function DelayedInvokeQueue() {
+        if(!!window.Worker && false) { // (!! trick - convert to boolean)
+            worker = new Worker("delayed-invoke-worker.js");
+        } else {
+            worker = new DelayedInvokeWorkerMockup();
+        }
+
+        worker.onmessage = receiveMessage;
+    }
+
+    /**
+     * Delay function call for a specified time.
+     * @param {function}    callback    What to do.
+     * @param {number}      ms          Delay time in milliseconds.
+     */
+    DelayedInvokeQueue.prototype.enqueue = function(callback, ms) {
+        queue.push(callback);
+        worker.postMessage({ time: ms });
+    };
+
+    var receiveMessage = function() {
+        queue.shift().call();
+    };
+
+    return DelayedInvokeQueue;
+
+})();
+
+var DelayedInvokeWorkerMockup = (function() {
+
+    /**
+     * Prepare mockup object.
+     * @constructor
+     */
+    function DelayedInvokeWorkerMockup() {
+        // default onmessage - don't do anything
+        this.onmessage = function() { };
+    }
+
+    /**
+     * Add timeout.
+     * @param data
+     */
+    DelayedInvokeWorkerMockup.prototype.postMessage = function(data) {
+        setTimeout(this.onmessage, data.time);
+    };
+
+    return DelayedInvokeWorkerMockup;
+
+})();/**
+ * Created by rozsival on 25/04/15.
+ */
+
+var isRunning = false;
+
+self.onmessage = function(data) {
+    queue.push(data.time);
+    if(!isRunning) {
+        run();
+    }
+};
+
+var run = function() {
+    /** @type {object} Timeouts queue - contains waiting times in milliseconds (possibly high resolution time). */
+    var queue = [];
+
+    /** @type {VideoTimer} (High resolution) timer */
+    var timer = new VideoTimer();
+
+    do {
+        if(queue.length > 0) {
+            var next = queue.shift();
+            timer.resetTimer();
+            while(timer.currentTime() < next) {
+                // keep spinning
+            }
+            // notify the parrent that another task should be executed
+            self.postMessage();
+        }
+    } while (true);
+};
+/**
  * Khanova Škola - vektorové video
  *
  * CURSOR OBJECT
@@ -2813,7 +2946,7 @@ var RecorderUI = (function() {
 			upload: "Upload",
 			changeColor: "Change brush color",
 			changeSize: "Change brush size",
-			waitingText: "Please be patient. Converting and uploading video usualy takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window."
+			waitingText: "Please be patient. Uploading video usually takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window."
 		},
 
 		container: undefined,
@@ -2828,12 +2961,12 @@ var RecorderUI = (function() {
 	};
 
 	// ui elements
-	var btn, uploadBtn, modal, board, progress;
+	var btn, uploadBtn, modal, board, progressSpan;
 
 	function RecorderUI(options) {
 		$.extend(true, settings, options);
 
-		var container = settings.container || $(settings.containerSelector);
+		var container = settings.container;
 
 		// create the board and canvas
 		var board = createBoard.call(this, container);
@@ -2842,83 +2975,100 @@ var RecorderUI = (function() {
 		var controls = createControls.call(this, container);
 
 		// maximize height of the elements
-		container.append(controls);
-		this.board.css("height", "100%");
-		//this.board.css("height", this.board.height());
-
+		container.appendChild(controls);
+		this.board.style.height = "100%";
 
 		// attach board to the container - but make it over the controls
-		container.prepend(board);
+		container.insertBefore(board, container.firstChild);
 
 		createCanvasContainer.call(this, this.board);
 		VideoEvents.trigger("canvas-container-ready", this.canvas);
 
 		// create the cursor cross and place it inside the board
 		var cursor = new Cursor(settings.cursor)
-		this.board.append(cursor.element);
+		this.board.appendChild(cursor.element);
 
 		// create the modal that will show before uploading recorded data
-		prepareUploadModal.call(this);
+		var modal = prepareUploadModal.call(this);
+		container.appendChild(modal);
 
 		// try to load the Wacom plugin
-		var plugin = $("<object></object>").attr("id", "wtPlugin").attr("type", "application/x-wacomtabletplugin");
-		$("body").append(plugin);
+		var plugin = HTML.createElement("object", {
+			id: "wtPlugin",
+			type: "application/x-wacomtabletplugin"
+		});
+		document.body.appendChild(plugin);
 		VideoEvents.trigger("wacom-plugin-ready", plugin);
 	}
 
 	var createBoard = function() {
-		this.board = $("<div></div>").attr("id", "board")
-						.append("<noscript><p>" + settings.localization.noJS + "</p></noscript>");
+		this.board = HTML.createElement("div", { id: "board" }, [
+			HTML.createElement("noscript", {}, [
+				(function() { var p = HTML.createElement("p"); p.innerHTML = settings.localization.noJS; return p; })()
+			])
+		]);
 
 		return this.board; // add it to the DOM
 	};
 
 	var createCanvasContainer = function(board) {
 		// the canvas - user will paint here
-		this.canvas = $("<div>").attr("id", "canvas-container").attr("width", board.width()).attr("height", board.height());
-		this.board.append(this.canvas);
+		this.canvas = HTML.createElement("div", {
+			id: "canvas-container",
+			width: board.outerWidth,
+			height: board.outerHeight
+		});
+		this.board.appendChild(this.canvas);
 	};
 
 	var createControls = function() {
 		// button
-		var buttonContainer = $("<div></div>").attr("id", "rec-button-container");
+		var buttonContainer = HTML.createElement("div", { id: "rec-button-container" });
 		prepareButtons.call(this, buttonContainer);
 
 		// progress bar
-		colorsPanel = $("<div></div>").attr("id", "colors-panel");
+		var colorsPanel = HTML.createElement("div", { id: "colors-panel" });
 		prepareColorsPanel(colorsPanel);
 		
 		// timer
-		sizesPanel = $("<div></div>").attr("id", "brushes-panel");
+		var sizesPanel = HTML.createElement("div", { id: "brushes-panel" });
 		prepareSizesPanel(sizesPanel);
 
 		// row
-		var controls = $("<div></div>").attr("id", "controls")
-							.append(buttonContainer)
-							.append(colorsPanel)
-							.append(sizesPanel);
+		var controls = HTML.createElement("div", { id: "controls" },
+			[
+				buttonContainer,
+				colorsPanel,
+				sizesPanel
+			]);
 
 		return controls;
 	};
 
+	/**
+	 * Add play/stop and upload buttons to the container.
+	 * @param {HTMLElement} container
+	 */
 	var prepareButtons = function(container) {
 
 		// rec button
-		btn = UIFactory.button("success").attr("title", settings.localization.record);
-		progressSpan = $("<span></span>").text("REC");
-		var glyphicon = UIFactory.glyphicon("record");
-		btn.append(glyphicon).append(progressSpan);
-		container.append(btn);
+		btn = UIFactory.button("success");
+		HTML.setAttributes(btn, { title: settings.localization.record });
+		btn.innerHTML = "REC";
+		container.appendChild(btn);
 
-		// uplaod button
-		uploadBtn = UIFactory.button("default").attr("disabled", "disabled").attr("title", settings.localization.upload);
-		var uploadIcon = UIFactory.glyphicon("upload");
-		uploadBtn.append(uploadIcon).append("<span>" + settings.localization.upload.toUpperCase() + "</span>");
-		container.append(uploadBtn);
+		// upload button
+		uploadBtn = UIFactory.button("default");
+		HTML.setAttributes(uploadBtn, {
+			disabled: "disabled",
+			title: settings.localization.upload
+		});
+		uploadBtn.innerHTML = settings.localization.upload.toUpperCase();
+		container.appendChild(uploadBtn);
 
 		state.recording = false;
 		var _this = this;
-		btn.on("click", function(e) {
+		btn.addEventListener("mouseup", function(e) {
 			e.preventDefault();
 			if(state.recording === false) {
 				if(state.paused) {
@@ -2927,19 +3077,24 @@ var RecorderUI = (function() {
 					start.call(_this);
 				}
 				state.paused = false;
-				btn.attr("title", settings.localization.pause);
+				HTML.setAttributes(btn, {
+					title: settings.localization.pause
+				});
 			} else {
 				state.paused = true;
 				pause.call(_this);
-				btn.attr("title", settings.localization.record);
+				HTML.setAttributes(btn, {
+					title: settings.localization.record
+				});
 			}
 
 			state.recording = !state.recording;
 		});
 
-		uploadBtn.on("click", function(e) {
+		uploadBtn.addEventListener("mouseup", function(e) {
 			e.preventDefault();
-			modal.modal();
+			var modal = document.getElementsByClassName("modal-bg");
+			modal.className = "modal-bg active"; // activate modal
 		});
 	};
 
@@ -2957,20 +3112,20 @@ var RecorderUI = (function() {
 
 	var recording = function() {
 		UIFactory.changeButton(btn, "danger"); // danger = red -> recording is ON
-		uploadBtn.attr("disabled", "disabled");
-		this.board.addClass("no-pointer");
+		HTML.setAttributes(uploadBtn, { disabled: "disabled" });
+		this.board.className += " no-pointer";
 
 		var time = 0;
 		tick = setInterval(function() {
 			time += 1;
-			progressSpan.text(secondsToString(time));
+			btn.innerHTML = secondsToString(time);
 		}, 1000);
 	};
 
 	var pause = function() {
 		UIFactory.changeButton(btn, "success"); // success = green -> recording is OFF, can start again
-		this.board.removeClass("no-pointer");
-		uploadBtn.removeAttr("disabled");
+		this.board.className.replace("no-pointer", "");
+		uploadBtn.removeAttribute("disabled");
 		VideoEvents.trigger("pause");
 
 		clearInterval(tick);
@@ -2979,78 +3134,83 @@ var RecorderUI = (function() {
 	var prepareUploadModal = function() {
 
 		// input objects
-		var titleInput = $("<input>").attr("type", "text").attr("name", "title").attr("placeholder", "video's title").addClass("form-control");
-		var authorInput = $("<input>").attr("type", "text").attr("name", "author").attr("placeholder", "your name").addClass("form-control");
-		var descriptionTextarea = $("<textarea />").attr("name", "description").attr("placeholder", "video description").addClass("form-control");
+		var titleInput = HTML.createElement("input", {
+			type: "text",
+			name: "title",
+			placeholder: "video's title",
+			class: "form-control"
+		});
+		var authorInput = HTML.createElement("input", {
+			type: "text",
+			name: "author",
+			placeholder: "your name",
+			class: "form-control"
+		});
+		var descriptionTextarea = HTML.createElement("textarea", {
+			name: "description",
+			placeholder: "video description",
+			class: "form-control"
+		});
 
 		// button
-		var save = $("<button>").attr("type", "button").addClass("btn btn-primary").text("Save video");
-        var uploadInfo = $("<div />")
-        					.css("display", "none")
-        					.append("<p />").addClass("alert alert-info").text(settings.localization.waitingText);
+		var save = HTML.createElement("button", {
+			type: "button",
+			class: "btn btn-primary"
+		});
+		save.innerHTML = "Save video";
 
-        // uploqe progress
-        var uploadBar = UIFactory.progressbar("info", 0).text("0% uploaded").addClass("active progress-striped");
-        var uploadProgress = $("<div />").addClass("progress").append(uploadBar).css("display", "none");
+		//
+		var infoAlert = HTML.createElement("p", { class: "alert alert-info" });
+		infoAlert.innerHTML = settings.localization.waitingText;
+        var uploadInfo = HTML.createElement("div", { style: "display: none;" }, [ infoAlert ]);
 
-        VideoEvents.on("upload-progress", function(e, percent) {
+		VideoEvents.on("upload-progress", function(e, percent) {
         	console.log(percent);
-        	UIFactory.changeProgress(uploadBar, percent);
-        	uploadBar.text(Math.floor(percent) + "% uploaded");
         });
 
-        //
-        // This is a Twitter Bootstrap 3 modal window
-        // see www.bootstrapdocs.com/v3.2.0/docs/
-        //
-		modal = $("<div />").addClass("modal fade").append(
-						$("<div />").addClass("modal-dialog").append(
-							$("<div />").addClass("modal-content")
-								.append(
-									// MODAL HEADER
-									$("<div />").addClass("modal-header")
-										.append(
-											$("<button>").attr("type", "button").addClass("close").attr("data-dismiss", "modal")
-												.append($("<span>").attr("aria-hidden", "true").html("&times;"))
-												.append($("<span>").addClass("sr-only").text("Close"))
-										).append(
-											$("<h4>Save captured video</h4>").addClass("modal-title")
-										)
-								).append(
-									// MODAL BODY
-									$("<div />").addClass("modal-body")
-										.append(
-											// name input
-											$("<p />").addClass("form-group")
-												.append(titleInput)
-										).append(
-											$("<p />").addClass("form-group")
-												.append(authorInput)
-										).append(
-											$("<p />").addClass("form-group")
-												.append(descriptionTextarea)
-										).append(uploadInfo).append(uploadProgress)
+		var closeBtn = HTML.createElement("button", { class: "close-btn" });
+		closeBtn.innerHTML = "&times";
+		closeBtn.addEventListener("mouseup", function(e) {
+			e.preventDefault();
+			var wrapper = document.getElementsByClassName("modal-bg");
+			wrapper.className = ""; // remove "active"
+			wrapper.className = "modal-bg";
+		});
 
-								).append(
-									// MODAL FOOTER
-									$("<div />").addClass("modal-footer")
-										.append($("<button>").attr("type", "button").addClass("btn btn-default").attr("data-dismiss", "modal").text("Close"))
-										.append(save)
+		var title = HTML.createElement("h4");
+		title.innerHTML = "Save captured video";
 
-								)
-						)
-					);
+		var modalBody = HTML.createElement("div", { class: "modal-body" },
+			[
+				HTML.createElement("p", { class: "form-group" }, [ titleInput ]),
+				HTML.createElement("p", { class: "form-group" }, [ authorInput ]),
+				HTML.createElement("p", { class: "form-group" }, [ descriptionTextarea ]),
+				uploadInfo
+			]);
 
-		$("body").append(modal);
+		var modalFooter = HTML.createElement("div", { class: "modal-footer" },
+			[
+				closeBtn,
+				save
+			]);
 
-		save.on("click", function(e) {
+		modal = HTML.createElement("div", { class: "modal" },
+			[
+				closeBtn,
+				title,
+				modalBody,
+				modalFooter
+			]);
+
+		save.addEventListener("mouseup", function(e) {
 			e.preventDefault();
 
 			// inform the user..
-			$(this).attr("disabled", "disabled");
-			$(this).text("Started uploading...");
+			HTML.setAttributes(save, {
+				disabled: "disabled"
+			});
+			save.innerHTML = "Starting upload...";
 			uploadInfo.slideToggle();
-			uploadProgress.slideToggle();
 
 			VideoEvents.trigger("stop", {
 				info: { // this will be merged with the <info> structure
@@ -3064,8 +3224,10 @@ var RecorderUI = (function() {
 		});
 
 		VideoEvents.on("recording-finished", function() {
-			save.text("Video was successfully uploaded.");
+			save.innerHTML = "Video was successfully uploaded.";
 		});
+
+		return HTML.createElement("div", { class: "modal-bg" }, [ modal ]);
 	};
 
 	/**
@@ -3074,37 +3236,51 @@ var RecorderUI = (function() {
 	 */
 	var prepareColorsPanel = function(panel) {
 		var changeColor = function(button) {
-			button.addClass("active").siblings().removeClass("active");
-			VideoEvents.trigger("color-change", button.data("color"));
+			var children = button.parentNode.childNodes;
+			for (var i = 0; i < children.length; ++i) {
+				HTML.setAttributes(children[i], { class: "option" });
+			}
+
+			HTML.setAttributes(button, { class: "option active" });
+			VideoEvents.trigger("color-change", button.getAttribute("data-color"));
 		};
 
 		Object.keys(settings.pallete).forEach(function(color) {
 			var button = addColorButton(panel, color, settings.pallete[color]);
-			button.on("click", function(e) {
+			button.addEventListener("mouseup", function(e) {
 				// prevent default - 
 				e.preventDefault();
-				var btn = $(this);
-				changeColor(btn);
+				changeColor(button);
 			});
 		});
 	};
 
 	/**
 	 * Creates buttons for changing brush size during recording.
-	 * @param  {object} panel Parent element of the buttons.
+	 * @param  {HTMLElement} panel Parent element of the buttons.
 	 */
 	var prepareSizesPanel = function(panel) {
+		/**
+		 * @param {HTMLElement} button
+		 */
 		var changeSize = function(button) {
-			button.addClass("active").siblings().removeClass("active");
-			var size = button.children(".dot").data("size");
+			// reset btns
+			var children = button.parentNode.childNodes;
+			for (var i = 0; i < children.length; ++i) {
+				HTML.setAttributes(children[i], { class: "option" });
+			}
+
+			HTML.setAttributes(button, { class: "option active" });
+			var size = button.firstChild.getAttribute("data-size"); // it has only one child
 			VideoEvents.trigger("brush-size-change", settings.widths[size]);
 		};
 
 		Object.keys(settings.widths).forEach(function(size) {
-			var button = addSizeButton(panel, size, settings.widths[size]).attr("title", settings.localization.changeSize);
-			button.on("click", function(e) {
+			var button = addSizeButton(panel, size, settings.widths[size]);
+			HTML.setAttributes(button, { title: settings.localization.changeSize });
+			button.addEventListener("mouseup", function(e) {
 				e.preventDefault();
-				changeSize($(this));
+				changeSize(button);
 			});
 		});
 	};
@@ -3117,12 +3293,17 @@ var RecorderUI = (function() {
 	 * @return {object}				The button
 	 */
 	var addColorButton = function(panel, colorName, colorValue) {
-		var button = $("<button></button>").addClass("option").data("color", colorValue).css("background-color", colorValue).attr("title", colorName);
+		var button = HTML.createElement("button", {
+			class: "option",
+			"data-color": colorValue,
+			title: colorName,
+			style: "background-color: " + colorValue
+		});
 		if(colorName == settings.default.color) {
 			VideoEvents.trigger("color-change", colorValue);
-			button.addClass("active");
+			HTML.setAttributes(button, { class: "option active" });
 		}
-		panel.append(button);
+		panel.appendChild(button);
 		return button;
 	};
 
@@ -3134,13 +3315,29 @@ var RecorderUI = (function() {
 	 * @return {object}				The button
 	 */
 	var addSizeButton = function(panel, sizeName, size) {
-		var dot = $("<span></span>").addClass("dot").data("size", sizeName).width(size).height(size).css("border-radius", size/2 + "px");
-		var button = $("<button></button>").addClass("option").attr("title", size).append(dot);
+		var dot = HTML.createElement("span", {
+			class: "dot",
+			"data-size": sizeName
+		});
+		var borderWidth = 2;
+		dot.style.borderWidth = borderWidth + "px";
+		dot.style.borderRadius = size/2 + "px";
+		dot.style.width = (size - 2*borderWidth) + "px";
+		dot.style.height = (size - 2*borderWidth) + "px";
+
+
+		var button = HTML.createElement("button", {
+			class: "option",
+			title: size
+		}, [ dot ]);
+
 		if(sizeName == settings.default.size) {
 			VideoEvents.trigger("brush-size-change", size);
-			button.addClass("active");
+			HTML.setAttributes(button, { class: "option active" });
 		}
-		panel.append(button);
+
+		panel.appendChild(button);
+
 		return button;
 	};
 
@@ -3159,43 +3356,28 @@ var RecorderUI = (function() {
 
 
 var UIFactory = {
-	
-	/**
-	 * Creates a jQuery object representing a span element with classes specific for Twitter Bootstrap 3 icon.
-	 * @param  {string} type Icon type - sufix of class name - "glyphicon-<type>". See http://bootstrapdocs.com/v3.2.0/docs/components#glyphicons for the list of icons.
-	 * @return {object}      jQuery object, needs to be pushed into the DOM
-	 */
-	glyphicon: function(type) {
-		return $("<span></span>").addClass("glyphicon glyphicon-" + type).attr("data-icon-type", type);
-	},
-
-	/**
-	 * Changes icon type.
-	 * @param  {object} jQuery icon object.
-	 * @param  {[type]} type New icon type - glyphicon class sufix.
-	 * @return {void}
-	 */
-	changeIcon: function(icon, type) {
-		var old = icon.data("icon-type");
-		icon.removeClass("glyphicon-" + old).addClass("glyphicon-" + type).data("icon-type", type);
-	},
 
 	/**
 	 * Creates a jQuery object representing a button element with classes specific for Twitter Bootstrap 3 button.
 	 * @param  {string} type Button type - suffix of class name - "btn-<type>". See http://bootstrapdocs.com/v3.2.0/docs/css/#buttons for list of button types.
-	 * @return {[type]}      [description]
+	 * @return {HTMLElement} Button element
 	 */
 	button: function(type) {
-		return $("<button></button>").addClass("btn btn-" + type).data("type", type);	
+		return HTML.createElement("button", { class: "btn btn-" + type, "data-type": type });
 	},
 
 	/**
 	 * Changes icon type. *this* should be the jQuery object of the icon. Function useage: *UIFactory. changeIcon(icon, "new-type")*
 	 * @param  {string} type New icon type - glyphicon class sufix.
-	 * @return {void}
+	 * @return {HTMLElement}
 	 */
 	changeButton: function(button, type) {
-		return button.removeClass("btn-" + button.data("type")).addClass("btn-" + type).data("type", type);
+		HTML.setAttributes(button, {
+			class: "btn btn-" + type,
+			"data-type": type
+		});
+
+		return button
 	},
 
 	//
@@ -3205,43 +3387,43 @@ var UIFactory = {
 	/**
 	 * Creates a jQuery object representing a div element with classes specific for Twitter Bootstrap 3 progress bar.
 	 * @param  {string} type Progressbar type - suffix of class name - "progress-bar-<type>". See http://bootstrapdocs.com/v3.2.0/docs/css/#progressbars for list of button types.
-	 * @return {[type]}      [description]
+	 * @return {HTMLElement} Progressbar
 	 */
 	progressbar: function(type, initialProgress) {
-		return $("<div></div>")
-					.addClass("progress-bar progress-bar-" + type)
-					.attr("role", "progress-bar")
-					.data("progress", initialProgress)
-					.css("width", initialProgress + "%");
+		return HTML.createElement("div", {
+			class: "progress-bar progress-bar-" + type,
+			"data-progress": initialProgress,
+			css: "width: " + initialProgress + "%",
+			role: "progress-bar"
+		});
 	},
 
 	/**
 	 * Changes progressbar type and progress.
 	 * @param  {object} bar      Progress bar object.
-	 * @param  {int} 	progress Progress in percents.
+	 * @param  {string}	progress Progress in percents.
 	 * @param  {int}	time     Time in milliseconds - how long will it take to animate the progress change.
 	 * @return {void}
 	 */
 	changeProgress: function(bar, progress, time) {
 
 		// the progress might be
-		var first = progress.toString()[0];
-		if(first == "+" || first == "-") {			
-			var sign = first == "+" ? 1 : -1;
-			progress = Number(bar.data("progress")) + sign * number(progress.substr(1));
+		var first = progress.innerHTML[0];
+		if(first === "+" || first === "-") {
+			var sign = first === "+" ? 1 : -1;
+			progress = Number(bar.getAttribute("data-progress")) + sign * Number(progress.substr(1));
 		};
 
 		bar.stop(); // stop any animation that is in progress
 		if (time == undefined) {
-			bar.css("width", progress + "%");
+			bar.style.width = progress + "%";
 		} else {
 			// time is defined - animate the progress
-			bar.animate({
-				width: progress + "%",
-			}, time, "linear");
+			bar.style.transitionDuration = (time / 1000) + "s";
+			bar.style.width = progress + "%";
 		}
 
-		bar.data("progress", progress);
+		bar.setAttribute("data-progress", progress);
 	},
 
 	//
@@ -3252,30 +3434,23 @@ var UIFactory = {
 	 * Create canvas element with a cross on transparent background.
 	 * @param  {int}	size  Width and height of the cross in pixels.
 	 * @param  {string} color Css color atribute. Specifies the color of the cross.
-	 * @return {DOMObject}    The cavnas element.
+	 * @return {Element}    The SVG element.
 	 */
 	createCursorCanvas:  function(size, color) {
-		var canvas = document.createElement("canvas");
-		canvas.width = size;
-		canvas.height = size;
-		var context = canvas.getContext("2d");
+		var canvas = SVG.createElement("svg", {
+			width: size,
+			height: size
+		});
 		var offset = size / 2;
 
 		// draw the "+"
-		context.lineWidth = size * 0.1; // 10% of the size is the line
-		context.strokeStyle = color;
-		context.beginPath();
-
-		// vertical line
-		context.moveTo(offset, 0);
-		context.lineTo(offset, size);
-
-		// horizontal line
-		context.moveTo(0, offset);
-		context.lineTo(size, offset);
-
-		context.stroke();
-		context.closePath();
+		var path = SVG.createElement("path", {
+			fill: "transparent",
+			stroke: color,
+			"stroke-width": size * 0.1,
+			d: "M " + offset + ",0 L " + offset + "," + size + " M 0," + offset + " L " + size + "," + offset + " Z"
+		});
+		canvas.appendChild(path);
 
 		// I want to move the cursor to any point and the stuff behind the cursor must be visible
 		canvas.style.position = "absolute";

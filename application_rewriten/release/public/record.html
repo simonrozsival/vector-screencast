@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="robots" value="noindex, nofollow"> <!-- this is just a demo app, no indexing by search engines please -->
+        <title>Record a new vector video</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" media="screen,projection,tv" href="/css/default.css">
+        <link rel="shortcut icon" href="/favicon.ico">
+    </head>
+    <body>
+        <!--
+            Record a new video.
+            Demo by Šimon Rozsíval.
+        -->
+        
+        <!-- #recorder is the container into wich I want to place the recorder -->
+        <div id="recorder" class="board"></div>
+        
+        <!-- load the libary JS -->
+        <script src="/js/libs/vector-video.js"></script>
+            
+        <!-- initialisation script -->
+        <script>
+        // wait until the DOM is loaded and ready
+        window.onload = function() {
+            // create the recorder
+            var recorder = new VectorVideo.Recorder("recorder", {
+                // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
+                UploadURL: "/upload/result",
+                Audio: {
+                    host: "localhost",
+                    port: 4000,
+                    path: "/upload/audio"
+                }
+            });
+        };
+        </script>
+    </body>
+</html>

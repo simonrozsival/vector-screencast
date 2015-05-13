@@ -4,17 +4,46 @@ How the source was designed and maintained. Mention that the development of the 
 \section{HTML5}
 What is HTML5, what parts are needed. Compatibility of these technologies in browsers. A chart of people using a compatible browser? Playing should be possible in the vast majority of browsers today and the prognose is good.
 
+
+
+
+
 \subsection{Event driven programming}
-Why it is used. What are the pros and cons. How is it used in websites. How the inner implementation in Vector Screencast works.
-% en.wikipedia.org/wiki/Event-driven_programming
+When creating the architecture of Vector Screencast, a lot of 
+
+The Event Aggregator mechanism is imlemented through the ``VideoEvents'' object literal. This object provides a very simple interface for registering and triggering callbacks for specific events.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \subsection{Working with XML data}
 Using jQuery here.
+
 
 \subsection{Drawing lines}
 At the time of recording, mouse coordinates relative to the drawing board are captured along with the pressure of the pen on a drawing board or the state of the left mouse button. This data is then used to draw a line with a changing width at the moment of recording as a visual feedback for the person recording and then every time the video will be replayed. The outcome of the rendering phase should be the same every time so the intention of the creator is perserved. On the other hand, the rendering algorithm might be improved in the future and the video could be rendered using to this algorithm without any editing.
 
 Rendering at the time of playback gives us the opportunity to adjust the outcome to the environment of the end user. This means that the result can be sharp on every display resolution.
+
+
+\subsection{Audio capturing}
+
+\subsection{Audio processing}
+
+
+
+
+
 
 
 

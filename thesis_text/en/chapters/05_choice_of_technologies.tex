@@ -26,27 +26,19 @@ Microsoft Silverlight \cite{} a development tool for creating web applications. 
 Silverlight comes as a plugin for web browsers. It is free, altough the list of supported browsers is even smaller \cite{} than the one of Adobe Flash consisting of exclusively desktop operating systems. Development of Silverlight was also discontinued by Microsoft in 2012 and the combination of these facts makes it unsuitable for this project.
 
 \subsubsection{HTML5}
-HTML5 is the fifth revision of Hypertext Markup Language (HTML) standard of World Wide Web Consortium (W3C). It has been given the Recommendation status in the end of 2014 and a significant part of it's new features is already implemented in modern web browsers.
+HTML5 is the fifth revision of Hypertext Markup Language (HTML) standard of World Wide Web Consortium (W3C). It has been given the Recommendation status in the end of 2014 and all crutial aspects of both tools can be implemented using the proposed standard. Tracking mouse was long supported even in older specifications of HTML and ECMA Script (familiarly known rather as Java Script). Wacom provides a plugin and ``Wacom WebPlugin Feel™ Multi-Touch API'' [http://www.wacomeng.com/web/WebPluginTouchAPI.htm] for web browsers providing access to precise data from graphical tablets from this manufacturer. Vector graphics are supported through the Scalable Vector Graphics (SVG) format \cite{} and it can be manipulated through Document Object Model (DOM) API \cite{}, as well as any other XML content. MediaStream API \cite{} enables access to audio input from user's microphone. The ``<audio>'' tag can be used to stream audio files and play them in the web browser.
 
-Can I perform all needed tasks using this technology?
-Player:
-Audio - http://caniuse.com/#search=audio%20element
-SVG - http://caniuse.com/#search=svg
+While HTML5 is a new technology, many of the most important features have already been implemented in some web browsers, like Google Chrome and Mozilla Firefox. More specifically all the features needed to implement video player are supported in the latest versions of all major web browsers. The only catch might be a disagreement on supported audio file formats among the developers of web browsers. This can be overcome by converting the audio into the most widely used formats and providing them to the browser, which will then choose the one it supports.
 
-Recorder: 
-getUserMedia/Stream API - http://caniuse.com/#search=getUserMedia
-Web Sockets - http://caniuse.com/#search=web%20sockets
+The features needed by the recording tool, like the MediaStream API, are more specific and the number of browsers supporting these features is smaller, but this won't be an issue for content creators, who can easily install a supported web browser on all desktop platforms and even some mobile ones. Also a fast development in this area is expected and these features will be most likely implemented in all major browsers soon.
 
 \subsection{Conclusion}
-The bottleneck of most of the technologies is their support in mobile devices. These devices don't allow some of the above mentioned technologies to run inside them. As the popularity and market share of mobile devices grows, supporting them is a priority. This eventually leads to only one option, and that is HTML5. All major web browsers have the features needed to create the video player, including the versions of browsers for mobile devices.
-
-The specification of HTML5 is finished since  and support of all it's features isn't implemented in all today's web browsers. This situation is getting better with every release of a new version of all web browsers.
-
-
-
+The bottleneck of most of the technologies is their support in mobile devices. These devices don't allow some of the above mentioned technologies to run inside them. As the popularity and market share of mobile devices grows, supporting them is a high priority. This eventually leads to only one option, and that is HTML5. All major web browsers have the features needed to create the video player, including the versions of browsers for mobile devices.
 
 \subsection{Possible issues and known limitations}
-About browser speed. Memory limitations. Network speed.
+Web browsers are developed by several companies and 
+
+
 
 Mobile OS browsers limitations - audio recording.
 

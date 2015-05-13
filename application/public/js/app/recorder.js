@@ -27,7 +27,7 @@ var Recorder = (function(){
 	var settings = {
 		chunkLength: 2000,
 		container: {
-			selector: "#recorder"
+			id: "recorder"
 		},
 		cursor: {}, // cursor has it's own defaults
 		localization: {
@@ -55,8 +55,8 @@ var Recorder = (function(){
 
 		// [0] - settings
 		$.extend(true, settings, options);
-		var el = $(settings.container.selector);
-
+		var el = document.getElementById(settings.container.id);
+		
 		// [1] - init events
 		bindEvents.call(this);
 			

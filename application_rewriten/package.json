@@ -1,0 +1,36 @@
+{
+  "scripts": {
+    "start": "node serer.js 3000"
+  },
+  "main": "server.js",
+  "name": "VectorVideo",
+  "version": "0.2.0",
+  "readme": "readme.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonrozsival/vectorvideo"
+  },
+  "description": "The goal of this project is to create a library for recording and playing Khan Academy like videos.",
+  "keywords": [
+    "vectors",
+    "video",
+    "animation",
+    "svg",
+    "online education"
+  ],
+  "author": "Šimon Rozsíval",
+  "license": "MIT",
+  "dependencies": {
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-concat": "^2.5.2",
+    "gulp-less": "^3.0.3",
+    "gulp-minify-css": "^1.1.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-tsc": "^0.9.4",
+    "merge-stream": "^0.1.7",
+    "node-uuid": "^1.4.3",
+    "typescript": "^1.5.0-beta"
+  }
+}

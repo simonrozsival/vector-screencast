@@ -16,6 +16,7 @@ var UserInputDataProvider = (function() {
 	};
 	var timer;
 	var penApi = false;
+	var lastState;
 
 
 	function UserInputDataProvider() {
@@ -46,7 +47,7 @@ var UserInputDataProvider = (function() {
 		} else {
 			return state.mouseDown ? 1 : 0;
 		}
-	}
+	};
 
 	var correctMouseCoords = function(e) {
 		if (e.pageX == undefined || e.pageY == undefined) {
@@ -67,7 +68,11 @@ var UserInputDataProvider = (function() {
 		timer = new VideoTimer();
 
 		VideoEvents.on("canvas-container-ready", function(e, canvasContainer) {
-			offset = canvasContainer.offset();
+			var rect = canvasContainer.getBoundingClientRect();
+			offset = {
+				top: rect.top,
+				left: rect.left
+			};
 		});
 
 		VideoEvents.on("start", start);
@@ -76,9 +81,10 @@ var UserInputDataProvider = (function() {
 		VideoEvents.on("stop", pause);
 
 		// is Wacom tablet ready?
-		VideoEvents.on("wacom-plugin-ready", function(e, $plugin) {
-			var plugin = $plugin[0];
-			if(plugin.version != undefined) {
+		VideoEvents.on("wacom-plugin-ready", function(e, plugin) {
+			console.log("Wacom plugin: ", plugin.version);
+			if(!!plugin === true // plugin is 'undefined' if the tablet isn't installed or plugged in
+				&& !!plugin.version === true) {
 				console.log("Wacom tablet is connected and plugin installed. Plugin version is " + plugin.version + ".");
 				penApi = plugin.penAPI;
 			}
@@ -109,6 +115,7 @@ var UserInputDataProvider = (function() {
 			cursor = correctMouseCoords.call(this, e);
 			var current = getCurrentCursorState();
 			reportAction(current);
+			lastState = current;
 		}
 	};
 

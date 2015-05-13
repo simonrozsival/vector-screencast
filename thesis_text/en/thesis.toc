@@ -1,0 +1,54 @@
+\contentsline {chapter}{Introduction}{3}{chapter*.2}
+\contentsline {section}{\numberline {0.1}Khan Academy}{3}{section.0.1}
+\contentsline {section}{\numberline {0.2}Vector Screencast project}{3}{section.0.2}
+\contentsline {section}{\numberline {0.3}Thesis structure}{3}{section.0.3}
+\contentsline {chapter}{\numberline {1}Distance education}{4}{chapter.1}
+\contentsline {section}{\numberline {1.1}Current systems}{4}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Moodle}{4}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}Coursera}{4}{subsection.1.1.2}
+\contentsline {subsection}{\numberline {1.1.3}Youtube.com}{5}{subsection.1.1.3}
+\contentsline {subsection}{\numberline {1.1.4}Khan Academy}{5}{subsection.1.1.4}
+\contentsline {chapter}{\numberline {2}Possible technological enhancments}{7}{chapter.2}
+\contentsline {subsection}{\numberline {2.0.5}Video codecs}{7}{subsection.2.0.5}
+\contentsline {subsubsection}{VP9}{7}{section*.3}
+\contentsline {chapter}{\numberline {3}The Vector Video project}{8}{chapter.3}
+\contentsline {section}{\numberline {3.1}Video player requirements}{8}{section.3.1}
+\contentsline {section}{\numberline {3.2}Video recording tool requirements}{8}{section.3.2}
+\contentsline {section}{\numberline {3.3}Goals of this thesis}{8}{section.3.3}
+\contentsline {chapter}{\numberline {4}Analysis}{9}{chapter.4}
+\contentsline {subsection}{\numberline {4.0.1}Technical requirements}{9}{subsection.4.0.1}
+\contentsline {subsection}{\numberline {4.0.2}Available techonologies}{9}{subsection.4.0.2}
+\contentsline {subsubsection}{Java applets}{9}{section*.4}
+\contentsline {subsubsection}{Adobe Flash}{9}{section*.5}
+\contentsline {subsubsection}{Microsoft Silverlight}{10}{section*.6}
+\contentsline {subsubsection}{HTML5}{10}{section*.7}
+\contentsline {subsection}{\numberline {4.0.3}Conclusion}{11}{subsection.4.0.3}
+\contentsline {subsection}{\numberline {4.0.4}Possible issues and known limitations}{11}{subsection.4.0.4}
+\contentsline {chapter}{\numberline {5}Vector Screencast file format}{12}{chapter.5}
+\contentsline {section}{\numberline {5.1}Audio}{12}{section.5.1}
+\contentsline {section}{\numberline {5.2}Video}{12}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Binary format}{12}{subsection.5.2.1}
+\contentsline {subsection}{\numberline {5.2.2}Text format}{12}{subsection.5.2.2}
+\contentsline {subsubsection}{SVG}{12}{section*.8}
+\contentsline {subsubsection}{Custom XML-based format}{12}{section*.9}
+\contentsline {section}{\numberline {5.3}Conclusion}{12}{section.5.3}
+\contentsline {chapter}{\numberline {6}Implementation}{13}{chapter.6}
+\contentsline {section}{\numberline {6.1}HTML5}{13}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}Event driven programming}{13}{subsection.6.1.1}
+\contentsline {subsection}{\numberline {6.1.2}Working with XML data}{13}{subsection.6.1.2}
+\contentsline {subsection}{\numberline {6.1.3}Drawing lines}{13}{subsection.6.1.3}
+\contentsline {subsection}{\numberline {6.1.4}Audio capturing}{13}{subsection.6.1.4}
+\contentsline {subsection}{\numberline {6.1.5}Audio processing}{13}{subsection.6.1.5}
+\contentsline {subsection}{\numberline {6.1.6}Input handling}{13}{subsection.6.1.6}
+\contentsline {chapter}{\numberline {7}Integration into other applications}{14}{chapter.7}
+\contentsline {section}{\numberline {7.1}Video player}{14}{section.7.1}
+\contentsline {section}{\numberline {7.2}Video recording}{14}{section.7.2}
+\contentsline {chapter}{\numberline {8}Testing}{15}{chapter.8}
+\contentsline {section}{\numberline {8.1}Comparint the tool to youtube}{15}{section.8.1}
+\contentsline {chapter}{\numberline {9}Users' documentation}{16}{chapter.9}
+\contentsline {chapter}{\numberline {10}Programmers' documentation}{17}{chapter.10}
+\contentsline {chapter}{Conclusion}{18}{chapter*.10}
+\contentsline {chapter}{Bibliography}{19}{chapter*.11}
+\contentsline {chapter}{List of Tables}{21}{chapter*.12}
+\contentsline {chapter}{List of Abbreviations}{22}{chapter*.13}
+\contentsline {chapter}{Attachments}{23}{chapter*.14}
