@@ -1,8 +1,8 @@
 # gulp-minify-css
 
-[![Build Status](https://travis-ci.org/jonathanepollack/gulp-minify-css.svg?branch=master)](https://travis-ci.org/jonathanepollack/gulp-minify-css)
+[![Build Status](https://travis-ci.org/murphydanger/gulp-minify-css.svg?branch=master)](https://travis-ci.org/murphydanger/gulp-minify-css)
 [![Build status](https://ci.appveyor.com/api/projects/status/eidg7ju694an2i74?svg=true)](https://ci.appveyor.com/project/ShinnosukeWatanabe/gulp-minify-css)
-[![Coverage Status](https://img.shields.io/coveralls/jonathanepollack/gulp-minify-css.svg)](https://coveralls.io/r/jonathanepollack/gulp-minify-css)
+[![Coverage Status](https://img.shields.io/coveralls/murphydanger/gulp-minify-css.svg)](https://coveralls.io/r/murphydanger/gulp-minify-css)
 
 [gulp](http://gulpjs.com/) plugin to minify CSS, using [clean-css] 
 
@@ -62,7 +62,7 @@ gulp.task('minify-css', function() {
 
 (MIT License)
 
-Copyright (c) 2013 Jonathan Pollack (<jonathanepollack@gmail.com>), Cloublabs Inc.
+Copyright (c) 2015 Jonathan Pollack, [Terminal.com](https://www.terminal.com)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

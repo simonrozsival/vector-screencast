@@ -1,0 +1,18 @@
+/**
+ * Enable the recorder and the player to stretch accross the whole screen
+ */
+
+html,
+body {
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	height: 100%;
+	font-family: sans-serif;
+}
+
+#demo,
+.vector-video-wrapper {
+	width: 100%;
+	height: 100%;
+}

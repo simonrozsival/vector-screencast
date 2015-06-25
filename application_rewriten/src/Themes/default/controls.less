@@ -1,124 +1,180 @@
 @import (less) "./variables/variables.less";
 
-#recorder-controls {
-	padding: 20px 0;
+.vector-video-controls {
+	padding: 20px;
 	width: 100%;
 	overflow: hidden;
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	background: @light;
+	background: fade(@light, 70%);
+	transition: all 0.3s;
+	
+	.recording &.autohide {
+		bottom: -(2*20px + @btn-height) + 10px;
+		
+		&:hover {
+			bottom: 0;
+		} 
+	}
+	
+	/** progressbar */
+	.progress-bar {
+		content: " "; // it must not be empty!
+		display: block;
+		height: 5px;
+		position: absolute;
+		top: 1px;
+		left: 0;
+		background: @highlight;		
+	}
+	
+	// unselectable!
+	-webkit-user-select: none;        
+	-moz-user-select: none;
+	-ms-user-select: none; /* IE10+ */
+	-o-user-select: none;
+	user-select: none;
 
 	button {
 		transition: all 0.2s;
-		margin-right: 10px;
+		height: @btn-height;
 		cursor: pointer;
+		margin-right: 10px;
+		color: @btn-default-txt;		
+		border: 2px solid @light;
+		border-radius: 4px;
+		background: @light;
+		//box-shadow: 0 0 10px @dark inset;		
+		font-size: 18px;
 
-		&:hover,
-		&.active {
-			transform: scale(1.2);
-			border: 2px solid @dark;
-		}
-
-		&:active,
-		&:focus {
-			outline: none;
+		&:not(:disabled) {
+			&:hover,
+			&.active {
+				border-color: @white;
+			}
+	
+			&:active,
+			&:focus {
+				outline: none;
+			}			
 		}
 
 		&.option {
-			width: @btn-height;
-			height: @btn-height;
-			border: 1px solid rgba(0, 0, 0, 0.2);
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
 			position: relative;
 			margin: 2px 22px 2px 2px;
-		}
-
-		&.btn {
-			border: none;
-			padding: 0 20px;
-			line-height: @btn-height;
-			background-color: @btn-default-bg;
-			color: @btn-default-txt;
-			font-weight: bold;
-			font-size: @font-size;
-
-			&.btn-success {
-				background-color: @btn-success-bg;
-				color: @btn-success-txt;
+			width: @btn-height;
+			float: left;
+			background: @light;
+			overflow: hidden;
+			
+			&.active {
+				transform: scale(1.1);
+				border-color: @white;
 			}
-
-			&.btn-danger {
+			
+			&:hover {
+				border-color: @white;
+			}
+		}
+		
+		.icon {
+			width: 20px;
+			height: 20px;
+			margin-right: 10px;
+			float: left;
+			
+			&.rec {
+				border-radius: 20px;
+				border: none;
 				background-color: @btn-red-bg;
-				color: @btn-red-txt;
+			}
+			
+			&.play {
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-width: 10px 0 10px 20px;
+				border-color: transparent transparent transparent @dark;
+			}
+			
+			&.pause {				
+				width: 20px;
+				height: 20px;
+				background: @dark; 
+			}
+			
+			&.upload {
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-width: 0 10px 20px 10px;
+				border-color: transparent transparent @dark transparent;
 			}
 		}
+		
+		&:disabled {
+			cursor: default;
+			background: @dark;
+			
+			.icon {				
+				&.rec {
+					background-color: @light;
+				}
+				
+				&.play {
+					border-color: transparent transparent transparent @light;
+				}
+				
+				&.pause {				
+					background: @light; 
+				}
+				
+				&.upload {
+					border-color: transparent transparent @light transparent;
+				}
+			}			
+		}
+		
 	}
 }
 
-#video-progress {
-	line-height: 100%;
-}
-
-#video-progress .progress {
-	margin: 7px 0;
-	position: relative;
-}
-
-#video-progress .progress-bar {
-	transition: none;
-	-webkit-transition: none;
-	-moz-transition: none;
-	position: absolute;
-	left: 0;
-}
-
-#video-time {
+.video-time {
 	height: 34px;
 	line-height: 34px;
 }
 
-#time {
+.time {
 	line-height: 1em;
 }
 
 
 /** player **/
 
-#button-container,
+.vector-video-buttons,
 #video-time {
-	width: 15%;
-	text-align: center;
+	text-align: left;
 	float: left;
-}
-
-#video-progress {
-	width: 70%;
-	float: left;
+	margin-right: @btn-height*1.5;
 }
 
 /** recorder **/
 
-#rec-button-container {
-	width: 25%;
-	text-align: center;
+.vector-video-buttons,
+.vector-video-colors,
+.vector-video-eraser {
 	float: left;
+	margin-right: @btn-height*1.5;
 }
 
-#colors-panel {
-	width: 50%;
+.vector-video-sizes {
 	float: left;
-}
-
-#brushes-panel {
-	width: 25%;
-	float: left;
+	margin-right: @btn-height*1.5;
 
 	button {
 		.dot {
 			background: transparent;
-			border: 2px solid @dark;
-			display: inline-block;
+			display: inline-block;			
 		}
 	}
 }

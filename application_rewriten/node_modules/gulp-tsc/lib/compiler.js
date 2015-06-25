@@ -35,13 +35,15 @@ function Compiler(sourceFiles, options) {
     noImplicitAny:     false,
     noResolve:         false,
     removeComments:    false,
-    sourcemap:         false,
+    sourceMap:         false,
     tmpDir:            '',
     noLib:             false,
     keepTree:          true,
     pathFilter:        null,
     safe:              false
   }, options);
+  this.options.sourceMap = this.options.sourceMap || this.options.sourcemap;
+  delete this.options.sourcemap;
 
   this.tscOptions = {
     path:   this.options.tscPath,
@@ -66,7 +68,7 @@ Compiler.prototype.buildTscArguments = function () {
   if (this.options.noImplicitAny)     args.push('--noImplicitAny');
   if (this.options.noResolve)         args.push('--noResolve');
   if (this.options.removeComments)    args.push('--removeComments');
-  if (this.options.sourcemap)         args.push('--sourcemap');
+  if (this.options.sourceMap)         args.push('--sourcemap');
   if (this.options.noLib)             args.push('--noLib');
 
   if (this.tempDestination) {
@@ -211,7 +213,7 @@ Compiler.prototype.processOutputFiles = function (callback) {
 
   var stream = fsSrc(patterns, options);
   stream = stream.pipe(this.fixOutputFilePath());
-  if (this.options.sourcemap && !this.options.sourceRoot) {
+  if (this.options.sourceMap && !this.options.sourceRoot) {
     stream = stream.pipe(this.fixSourcemapPath());
   }
   if (this.options.declaration && this.options.outDir) {

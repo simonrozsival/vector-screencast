@@ -9,7 +9,7 @@ function shellescape(arg) {
     if (/["'` \\$]/.test(arg)) {
       return '"' + arg.replace(/(["`\\$])/g, '\\$1') + '"';
     } else {
-      return arg;
+      return '"' + arg + '"';
     }
   }
 }

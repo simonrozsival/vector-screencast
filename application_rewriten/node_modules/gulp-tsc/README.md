@@ -163,11 +163,11 @@ Default: `false`
 
 Do not emit comments to output.
 
-#### options.sourcemap
+#### options.sourceMap
 Type: `Boolean`
 Default: `false`
 
-`--sourcemap` option for `tsc` command.
+`--sourcemap` option for `tsc` command. Alternatively you could use `sourcemap` parameter for backward compatibilty, that parameter would be removed in some future releases.
 
 Generated `.js.map` file is also piped into the stream.
 
@@ -187,7 +187,7 @@ Default: `''` (current working directory)
 
 A path relative to current working directory, where a temporary build folder will be put in.
 
-**Notice**: If you use this option with sourcemaps, consider to specify `outDir` or `sourceRoot`. See [options.sourcemap](#optionssourcemap) for details.
+**Notice**: If you use this option with sourcemaps, consider to specify `outDir` or `sourceRoot`. See [options.sourceMap](#optionssourcemap) for details.
 
 If you are watching some files in current working directory with gulp.watch(), the creation of temporary build folder will trigger a folder change event.
 
@@ -315,7 +315,7 @@ If you have a gulp task like this:
 ```
 gulp.task('compile', function(){
   gulp.src(['src/**/*.ts'])
-    .pipe(typescript({ sourcemap: true, declaration: true }))
+    .pipe(typescript({ sourceMap: true, declaration: true }))
     .pipe(gulp.dest('foo/bar/'))
 });
 ```
@@ -327,7 +327,7 @@ To fix the relative path, just specify `outDir` same as your `gulp.dest` path.
 ```
 gulp.task('compile', function(){
   gulp.src(['src/**/*.ts'])
-    .pipe(typescript({ sourcemap: true, declaration: true, outDir: 'foo/bar/' }))
+    .pipe(typescript({ sourceMap: true, declaration: true, outDir: 'foo/bar/' }))
     .pipe(gulp.dest('foo/bar/'))
 });
 ```
