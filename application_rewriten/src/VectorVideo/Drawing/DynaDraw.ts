@@ -1,8 +1,10 @@
 /// <reference path="Path" />
+/// <reference path="../Helpers/VideoTimer" />
 
 module Drawing {
 	
 	import Vector2 = Helpers.Vector2;
+	import VideoTimer = Helpers.VideoTimer;
 	
 	/**
 	 * Set of brush properties that have effect on the outcome
@@ -49,7 +51,7 @@ module Drawing {
 		private previousPressure: number;
 		private mousePosition: Vector2;
 		
-		constructor(private calculateSpeed: boolean) { }
+		constructor(private calculateSpeed: boolean, private timer: VideoTimer) { }
 		
 		/**
 		 * @param	{Vector2}		position	The starting point of the cursor.
@@ -113,11 +115,11 @@ module Drawing {
 			var width: number = this.getRadius(pressure, relativeSpeed);
 			var delta: Vector2 = this.angle.scale(width);
 			if(this.firstSegment) {
-				path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta));
+				path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta), this.timer.CurrentTime());
 				this.firstSegment = false;
 			}
 			
-			path.ExtendPath(this.position.add(delta), this.position.subtract(delta));
+			path.ExtendPath(this.position.add(delta), this.position.subtract(delta), this.timer.CurrentTime());
 			path.Draw();
 		}
 		
@@ -211,8 +213,8 @@ module Drawing {
 		/**
 		 * Initialise new instance of DynaDraw
 		 */
-		constructor(private slowSimulation: boolean, private minBrushSize: number, private maxBrushSize: number) {
-			this.cursor = new Cursor(slowSimulation); // when slow simulation is on, use width adjustments when moving fast
+		constructor(private slowSimulation: boolean, private minBrushSize: number, private maxBrushSize: number, timer: VideoTimer) {
+			this.cursor = new Cursor(slowSimulation, timer); // when slow simulation is on, use width adjustments when moving fast
 			if(slowSimulation === true) {
 				requestAnimationFrame((time: number) => {
 					this.lastAnimationTime = time;

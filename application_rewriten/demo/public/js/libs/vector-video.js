@@ -923,7 +923,93 @@ var UI;
     UI.Panel = Panel;
 })(UI || (UI = {}));
 /// <reference path="../Helpers/Vector" />
+/// <reference path="../Helpers/Spline" />
+var Drawing;
+(function (Drawing) {
+    var Segment = (function () {
+        function Segment(time) {
+            this.time = time;
+        }
+        Object.defineProperty(Segment.prototype, "Time", {
+            get: function () { return this.time; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Segment.prototype, "Left", {
+            get: function () { throw new Error("Not implemented"); },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Segment.prototype, "Right", {
+            get: function () { throw new Error("Not implemented"); },
+            enumerable: true,
+            configurable: true
+        });
+        return Segment;
+    })();
+    Drawing.Segment = Segment;
+    var QuadrilateralSegment = (function (_super) {
+        __extends(QuadrilateralSegment, _super);
+        function QuadrilateralSegment(left, right, time) {
+            _super.call(this, time);
+            this.left = left;
+            this.right = right;
+        }
+        Object.defineProperty(QuadrilateralSegment.prototype, "Left", {
+            get: function () { return this.left; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(QuadrilateralSegment.prototype, "Right", {
+            get: function () { return this.right; },
+            enumerable: true,
+            configurable: true
+        });
+        return QuadrilateralSegment;
+    })(Segment);
+    Drawing.QuadrilateralSegment = QuadrilateralSegment;
+    var ZeroLengthSegment = (function (_super) {
+        __extends(ZeroLengthSegment, _super);
+        function ZeroLengthSegment(left, right, time) {
+            _super.call(this, left, right, time);
+        }
+        return ZeroLengthSegment;
+    })(QuadrilateralSegment);
+    Drawing.ZeroLengthSegment = ZeroLengthSegment;
+    var CurvedSegment = (function (_super) {
+        __extends(CurvedSegment, _super);
+        function CurvedSegment(left, right, time) {
+            _super.call(this, time);
+            this.left = left;
+            this.right = right;
+        }
+        Object.defineProperty(CurvedSegment.prototype, "Left", {
+            get: function () { return this.left.End; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CurvedSegment.prototype, "Right", {
+            get: function () { return this.right.End; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CurvedSegment.prototype, "LeftBezier", {
+            get: function () { return this.left; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CurvedSegment.prototype, "RightBezier", {
+            get: function () { return this.right; },
+            enumerable: true,
+            configurable: true
+        });
+        return CurvedSegment;
+    })(Segment);
+    Drawing.CurvedSegment = CurvedSegment;
+})(Drawing || (Drawing = {}));
+/// <reference path="../Helpers/Vector" />
 /// <reference path="../Helpers/SVG" />
+/// <reference path="./Segments" />
 var Drawing;
 (function (Drawing) {
     var SVG = Helpers.SVG;
@@ -937,12 +1023,13 @@ var Drawing;
             if (this.wireframe === undefined) {
                 this.wireframe = false;
             }
-            this.points = [];
+            this.segments = [];
+            this.pathPoints = [];
         }
         Object.defineProperty(Path.prototype, "LastPoint", {
             /** The last point that was drawn */
             get: function () {
-                return this.points[this.iterator];
+                return this.pathPoints[this.iterator];
             },
             enumerable: true,
             configurable: true
@@ -950,7 +1037,7 @@ var Drawing;
         Object.defineProperty(Path.prototype, "LastButOnePoint", {
             /** The last point that was drawn */
             get: function () {
-                return this.points[Math.max(0, this.iterator - 1)];
+                return this.pathPoints[Math.max(0, this.iterator - 1)];
             },
             enumerable: true,
             configurable: true
@@ -958,7 +1045,7 @@ var Drawing;
         Object.defineProperty(Path.prototype, "LastButTwoPoint", {
             /** The last point that was drawn */
             get: function () {
-                return this.points[Math.max(0, this.iterator - 2)];
+                return this.pathPoints[Math.max(0, this.iterator - 2)];
             },
             enumerable: true,
             configurable: true
@@ -976,11 +1063,9 @@ var Drawing;
          * Before rendering the first segment, save the coordinates of the left and right
          * point as soon, as the direction is known.
          */
-        Path.prototype.InitPath = function (right, left) {
-            this.points.push({
-                left: left,
-                right: right
-            });
+        Path.prototype.InitPath = function (right, left, time) {
+            this.segments.push(new Drawing.ZeroLengthSegment(left, right, time));
+            this.pathPoints.push({ Left: left, Right: right, Time: time });
             this.iterator = 0;
         };
         /**
@@ -988,37 +1073,48 @@ var Drawing;
          * @param	{Vector2}	right	"Right" point of the segment.
          * @param	{Vector2}	left	"Left"	point of the segment.
          */
-        Path.prototype.ExtendPath = function (right, left) {
+        Path.prototype.ExtendPath = function (right, left, time) {
             // draw the segment
-            this.DrawSegment(right, left);
+            var segment = this.DrawSegment(right, left, time);
             // and push it to the list
-            this.points.push({
-                left: left,
-                right: right
-            });
+            this.segments.push(segment);
+            this.pathPoints.push({ Left: left, Right: right, Time: time });
             this.iterator++;
         };
-        Path.prototype.DrawSegment = function (right, left) {
-            this.CalculateAndDrawCurvedSegment(right, left);
-            //this.DrawQuarilateralSegment(this.LastPoint.right, this.LastPoint.left, right, left);
+        Path.prototype.DrawSegment = function (right, left, time) {
+            return this.CalculateAndDrawCurvedSegment(right, left, time);
+            // return this.CalculateAndDrawQuarilateralSegment(right, left, time);
         };
-        Path.prototype.CalculateAndDrawCurvedSegment = function (right, left) {
-            var leftBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.left, this.LastButOnePoint.left, this.LastPoint.left, left);
-            var rightBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.right, this.LastButOnePoint.right, this.LastPoint.right, right);
-            this.DrawCurvedSegment(leftBezier, rightBezier);
+        Path.prototype.CalculateAndDrawCurvedSegment = function (right, left, time) {
+            var leftBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
+            var rightBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);
+            var segment = new Drawing.CurvedSegment(leftBezier, rightBezier, time);
+            this.DrawCurvedSegment(segment);
+            return segment;
         };
         /**
          *
          */
-        Path.prototype.DrawCurvedSegment = function (left, right) {
+        Path.prototype.DrawCurvedSegment = function (segment) {
             throw new Error("Not implemented");
         };
         /**
          *
          */
-        Path.prototype.DrawQuadrilateralSegment = function (pr, pl, r, l) {
+        Path.prototype.CalculateAndDrawQuarilateralSegment = function (right, left, time) {
+            var segment = new Drawing.QuadrilateralSegment(left, right, time);
+            this.DrawQuadrilateralSegment(segment);
+            return segment;
+        };
+        /**
+         *
+         */
+        Path.prototype.DrawQuadrilateralSegment = function (segment) {
             throw new Error("Not implemented");
         };
+        /**
+         *
+         */
         Path.prototype.Draw = function () {
             // No need to draw anything more..
         };
@@ -1029,11 +1125,14 @@ var Drawing;
         Path.prototype.angle = function (vec) {
             return Math.atan2(-vec.X, vec.Y) - Math.PI / 2; /// :-) 
         };
+        /**
+         * Draw everything from the begining
+         */
         Path.prototype.Redraw = function () {
             this.iterator = 0;
             this.DrawStartDot(this.startPosition, this.startRadius);
-            while (this.iterator < this.points.length) {
-                this.DrawSegment(this.LastPoint.right, this.LastPoint.left);
+            while (this.iterator < this.segments.length) {
+                this.CalculateAndDrawCurvedSegment(this.LastPoint.Right, this.LastPoint.Left, this.LastPoint.Time);
                 this.iterator++;
             }
         };
@@ -1078,30 +1177,30 @@ var Drawing;
         /**
          * Extend the SVG path with a curved segment.
          */
-        SvgPath.prototype.DrawCurvedSegment = function (left, right) {
-            this.right += SVG.CurveToString(right.StartCP, right.EndCP, right.End);
-            this.left = SVG.CurveToString(left.EndCP, left.StartCP, left.Start) + " " + this.left;
+        SvgPath.prototype.DrawCurvedSegment = function (segment) {
+            this.right += SVG.CurveToString(segment.RightBezier.StartCP, segment.RightBezier.EndCP, segment.RightBezier.End);
+            this.left = SVG.CurveToString(segment.LeftBezier.EndCP, segment.LeftBezier.StartCP, segment.LeftBezier.Start) + " " + this.left;
             // A] - a simple line at the end of the line 
             // this.cap = SVG.LineToString(left);
             // B] - an "arc cap"
-            var center = right.End.add(left.End).scale(0.5);
-            var startDirection = right.End.subtract(center);
-            var endDirection = left.End.subtract(center);
-            this.cap = SVG.ArcString(left.End, center.distanceTo(left.End), this.angle(startDirection));
+            var center = segment.Right.add(segment.Left).scale(0.5);
+            var startDirection = segment.Right.subtract(center);
+            var endDirection = segment.Left.subtract(center);
+            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
         };
         /**
          * Extend the SVG path with a quadrilateral segment
          */
-        SvgPath.prototype.DrawQuadrilateralSegment = function (pr, pl, r, l) {
-            this.right += SVG.LineToString(r);
-            this.left = SVG.LineToString(pl) + " " + this.left;
+        SvgPath.prototype.DrawQuadrilateralSegment = function (segment) {
+            this.right += SVG.LineToString(segment.Right);
+            this.left = SVG.LineToString(this.LastPoint.Left) + " " + this.left;
             // A] - a simple line at the end of the line 
             // this.cap = SVG.LineToString(left);
             // B] - an "arc cap"
-            var center = r.add(l).scale(0.5);
-            var startDirection = r.subtract(center);
-            var endDirection = l.subtract(center);
-            this.cap = SVG.ArcString(l, center.distanceTo(l), this.angle(startDirection));
+            var center = segment.Right.add(segment.Left).scale(0.5);
+            var startDirection = segment.Right.subtract(center);
+            var endDirection = segment.Left.subtract(center);
+            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
         };
         /**
          * Promote the curve to the DOM
@@ -1139,16 +1238,16 @@ var Drawing;
         /**
          * Draw a simple quadrilateral segment
          */
-        CanvasPath.prototype.DrawQuarilateralSegment = function (pr, pl, r, l) {
+        CanvasPath.prototype.DrawQuarilateralSegment = function (segment) {
             this.context.beginPath();
-            this.context.moveTo(pr.X, pr.Y);
-            this.context.lineTo(pl.X, pl.Y);
-            this.context.lineTo(l.X, l.Y);
+            this.context.moveTo(this.LastPoint.Right.X, this.LastPoint.Right.Y);
+            this.context.lineTo(this.LastPoint.Left.X, this.LastPoint.Left.Y);
+            this.context.lineTo(segment.Left.X, segment.Left.Y);
             // an "arc cap"
-            var center = r.add(l).scale(0.5);
-            var startDirection = r.subtract(center);
-            var endDirection = l.subtract(center);
-            this.context.arc(center.X, center.Y, center.distanceTo(l), this.angle(startDirection), this.angle(endDirection), false);
+            var center = segment.Right.add(segment.Left).scale(0.5);
+            var startDirection = segment.Right.subtract(center);
+            var endDirection = segment.Left.subtract(center);
+            this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), this.angle(startDirection), this.angle(endDirection), false);
             //
             this.context.closePath();
             this.context.fillStyle = this.color;
@@ -1157,21 +1256,21 @@ var Drawing;
         /**
          * Draw a curved segment using bezier curves.
          */
-        CanvasPath.prototype.DrawCurvedSegment = function (leftBezier, rightBezier) {
+        CanvasPath.prototype.DrawCurvedSegment = function (segment) {
             this.context.beginPath();
-            this.context.moveTo(rightBezier.Start.X, rightBezier.Start.Y);
-            this.context.lineTo(leftBezier.Start.X, leftBezier.Start.Y);
+            this.context.moveTo(segment.RightBezier.Start.X, segment.RightBezier.Start.Y);
+            this.context.lineTo(segment.LeftBezier.Start.X, segment.LeftBezier.Start.Y);
             // left curve
-            this.context.bezierCurveTo(leftBezier.StartCP.X, leftBezier.StartCP.Y, leftBezier.EndCP.X, leftBezier.EndCP.Y, leftBezier.End.X, leftBezier.End.Y);
+            this.context.bezierCurveTo(segment.LeftBezier.StartCP.X, segment.LeftBezier.StartCP.Y, segment.LeftBezier.EndCP.X, segment.LeftBezier.EndCP.Y, segment.LeftBezier.End.X, segment.LeftBezier.End.Y);
             // A] - an "arc cap"
-            var center = rightBezier.End.add(leftBezier.End).scale(0.5);
-            var startDirection = rightBezier.End.subtract(center);
-            var endDirection = leftBezier.End.subtract(center);
-            this.context.arc(center.X, center.Y, center.distanceTo(leftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
+            var center = segment.RightBezier.End.add(segment.LeftBezier.End).scale(0.5);
+            var startDirection = segment.RightBezier.End.subtract(center);
+            var endDirection = segment.LeftBezier.End.subtract(center);
+            this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
             // B] - line cap	
-            // this.context.lineTo(rightBezier.End.X, rightBezier.End.Y);
+            // this.context.lineTo(segment.RightBezier.End.X, segment.RightBezier.End.Y);
             // right curve
-            this.context.bezierCurveTo(rightBezier.EndCP.X, rightBezier.EndCP.Y, rightBezier.StartCP.X, rightBezier.StartCP.Y, rightBezier.Start.X, rightBezier.Start.Y);
+            this.context.bezierCurveTo(segment.RightBezier.EndCP.X, segment.RightBezier.EndCP.Y, segment.RightBezier.StartCP.X, segment.RightBezier.StartCP.Y, segment.RightBezier.Start.X, segment.RightBezier.Start.Y);
             this.context.closePath();
             if (this.wireframe) {
                 // "wireframe" is better for debuging:
@@ -1188,7 +1287,72 @@ var Drawing;
     })(Path);
     Drawing.CanvasPath = CanvasPath;
 })(Drawing || (Drawing = {}));
+var Helpers;
+(function (Helpers) {
+    /**
+    * (High resolution) timer.
+    */
+    var VideoTimer = (function () {
+        /**
+         * Creates a timer and resets it.
+         */
+        function VideoTimer() {
+            /** Current time of the moment when the timer was paused. */
+            this.pauseTime = 0;
+            /** @type {Date|object} */
+            if (!window.performance) {
+                this.clock = Date;
+            }
+            else {
+                this.clock = window.performance; // High resolution timer
+            }
+            this.paused = false;
+            this.Reset();
+        }
+        Object.defineProperty(VideoTimer.prototype, "StartTime", {
+            get: function () { return this.startTime; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Get time ellapsed since the last clock reset
+         */
+        VideoTimer.prototype.CurrentTime = function () {
+            return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
+        };
+        /**
+         * Set the timer to a specific point (in milliseconds)
+         */
+        VideoTimer.prototype.SetTime = function (milliseconds) {
+            this.Reset();
+            this.startTime += milliseconds;
+        };
+        /**
+         * Pause the timer
+         */
+        VideoTimer.prototype.Pause = function () {
+            this.pauseTime = this.CurrentTime();
+            this.paused = true;
+        };
+        /**
+         * Unpause the timer
+         */
+        VideoTimer.prototype.Resume = function () {
+            this.paused = false;
+            this.SetTime(-this.pauseTime);
+        };
+        /**
+         * Start counting from zero
+         */
+        VideoTimer.prototype.Reset = function () {
+            this.startTime = this.clock.now();
+        };
+        return VideoTimer;
+    })();
+    Helpers.VideoTimer = VideoTimer;
+})(Helpers || (Helpers = {}));
 /// <reference path="Path" />
+/// <reference path="../Helpers/VideoTimer" />
 var Drawing;
 (function (Drawing) {
     var Vector2 = Helpers.Vector2;
@@ -1223,8 +1387,9 @@ var Drawing;
      * - implementation of the "filter" in the original algorithm
      */
     var Cursor = (function () {
-        function Cursor(calculateSpeed) {
+        function Cursor(calculateSpeed, timer) {
             this.calculateSpeed = calculateSpeed;
+            this.timer = timer;
         }
         /**
          * @param	{Vector2}		position	The starting point of the cursor.
@@ -1280,10 +1445,10 @@ var Drawing;
             var width = this.getRadius(pressure, relativeSpeed);
             var delta = this.angle.scale(width);
             if (this.firstSegment) {
-                path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta));
+                path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta), this.timer.CurrentTime());
                 this.firstSegment = false;
             }
-            path.ExtendPath(this.position.add(delta), this.position.subtract(delta));
+            path.ExtendPath(this.position.add(delta), this.position.subtract(delta), this.timer.CurrentTime());
             path.Draw();
         };
         Cursor.prototype.StartPath = function (path, pt, pressure) {
@@ -1334,7 +1499,7 @@ var Drawing;
         /**
          * Initialise new instance of DynaDraw
          */
-        function DynaDraw(slowSimulation, minBrushSize, maxBrushSize) {
+        function DynaDraw(slowSimulation, minBrushSize, maxBrushSize, timer) {
             var _this = this;
             this.slowSimulation = slowSimulation;
             this.minBrushSize = minBrushSize;
@@ -1349,7 +1514,7 @@ var Drawing;
              */
             this.brushes = {};
             this.oneFrame = 1000 / 60; // 60 Hz in milliseconds
-            this.cursor = new Cursor(slowSimulation); // when slow simulation is on, use width adjustments when moving fast
+            this.cursor = new Cursor(slowSimulation, timer); // when slow simulation is on, use width adjustments when moving fast
             if (slowSimulation === true) {
                 requestAnimationFrame(function (time) {
                     _this.lastAnimationTime = time;
@@ -1479,9 +1644,9 @@ var Drawing;
         DrawingStrategy.prototype.GetCanvas = function () {
             return this.canvasWrapper;
         };
-        DrawingStrategy.prototype.InitBrushDynamcis = function (minBrushSize, maxBrushSize) {
+        DrawingStrategy.prototype.InitDynaDraw = function (minBrushSize, maxBrushSize, timer) {
             // init DynaDraw
-            this.dynaDraw = new Drawing.DynaDraw(this.slowSimulation, minBrushSize, maxBrushSize);
+            this.dynaDraw = new Drawing.DynaDraw(this.slowSimulation, minBrushSize, maxBrushSize, timer);
         };
         /**
          * Current brush settings
@@ -2527,70 +2692,6 @@ var Helpers;
     })();
     Helpers.File = File;
 })(Helpers || (Helpers = {}));
-var Helpers;
-(function (Helpers) {
-    /**
-    * (High resolution) timer.
-    */
-    var VideoTimer = (function () {
-        /**
-         * Creates a timer and resets it.
-         */
-        function VideoTimer() {
-            /** Current time of the moment when the timer was paused. */
-            this.pauseTime = 0;
-            /** @type {Date|object} */
-            if (!window.performance) {
-                this.clock = Date;
-            }
-            else {
-                this.clock = window.performance; // High resolution timer
-            }
-            this.paused = false;
-            this.Reset();
-        }
-        Object.defineProperty(VideoTimer.prototype, "StartTime", {
-            get: function () { return this.startTime; },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Get time ellapsed since the last clock reset
-         */
-        VideoTimer.prototype.CurrentTime = function () {
-            return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
-        };
-        /**
-         * Set the timer to a specific point (in milliseconds)
-         */
-        VideoTimer.prototype.SetTime = function (milliseconds) {
-            this.Reset();
-            this.startTime += milliseconds;
-        };
-        /**
-         * Pause the timer
-         */
-        VideoTimer.prototype.Pause = function () {
-            this.pauseTime = this.CurrentTime();
-            this.paused = true;
-        };
-        /**
-         * Unpause the timer
-         */
-        VideoTimer.prototype.Resume = function () {
-            this.paused = false;
-            this.SetTime(-this.pauseTime);
-        };
-        /**
-         * Start counting from zero
-         */
-        VideoTimer.prototype.Reset = function () {
-            this.startTime = this.clock.now();
-        };
-        return VideoTimer;
-    })();
-    Helpers.VideoTimer = VideoTimer;
-})(Helpers || (Helpers = {}));
 /// <reference path="VideoInfo" />
 /// <reference path="ICursor" />
 /// <reference path="../VideoFormat/IO" />
@@ -3135,8 +3236,8 @@ var AudioRecording;
          * @param	success		Initialisation success callback
          */
         AudioRecorder.prototype.Init = function (success) {
-            //window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            var context = new AudioContext();
+            var context = (new AudioContext() // FF, GCh
+                || null); // others
             navigator.getUserMedia = (navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia);
@@ -3155,9 +3256,7 @@ var AudioRecording;
                         // create processing node
                         var bufferSize = 2048;
                         var recorder = context.createScriptProcessor(bufferSize, 1, 1);
-                        recorder.onaudioprocess = function (data) {
-                            $this.processData(data);
-                        };
+                        recorder.onaudioprocess = function (data) { return $this.processData(data); };
                         $this.input.connect(recorder);
                         recorder.connect(context.destination);
                         $this.initSuccessful = true;
@@ -3648,19 +3747,20 @@ var VideoData;
             this.board.addEventListener("pointerenter", function (e) { return _this.onPointerLeave(e); });
             this.board.addEventListener("pointerover", function (e) { return _this.onPointerOver(e); }); // maybe start a new line, if the button is pressed
             this.currentEvent = null;
+            this.isDown = false;
         }
         /**
          * Return pressure of the mouse, touch or pen.
          */
         PointerEventsAPI.prototype.GetPressure = function () {
-            if (this.currentEvent === null) {
+            if (this.isDown === false || this.currentEvent === null) {
                 return 0; // no envent, no pressure
             }
-            if (this.currentEvent.type === "mouse"
-                || this.currentEvent.type === "touch") {
-                return this.isDown ? 1 : 0;
-            }
-            return this.currentEvent.pressure;
+            // if(this.currentEvent.pointerType === "mouse"
+            // 	|| this.currentEvent.pointerType === "touch") {
+            // 		return 1; // button is pressed or touchscreen touched - maximum presure
+            // }
+            return this.currentEvent.pressure; // this device knows, what is current pressure
         };
         /**
          * Filter all clicks on buttons and other possible UI controls
@@ -3678,7 +3778,7 @@ var VideoData;
          * Trace mouse movement.
          */
         PointerEventsAPI.prototype.onPointerMove = function (e) {
-            this.onDown(e);
+            this.onMove(e);
             this.currentEvent = e;
         };
         /**
@@ -3900,6 +4000,12 @@ var UI;
             this.controls = controls;
             this.AddChild(this.controls);
         }
+        Object.defineProperty(RecorderUI.prototype, "Timer", {
+            /** Access to the timer for "everyone"" */
+            get: function () { return this.recordingTimer; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(RecorderUI.prototype, "Width", {
             /** Get the width of the board in pixels. */
             get: function () {
@@ -4158,30 +4264,31 @@ var VectorVideo;
                 // default drawing strategy is SVG
                 this.drawer = new SVGDrawer(true);
             }
-            // prepare the UI			
+            // create UI and connect it to the drawer			
             this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization);
             this.ui.AcceptCanvas(this.drawer.GetCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch(); // adapt to the environment
             var min = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size < currentValue.Size ? previousValue : currentValue; }).Size;
             var max = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size > currentValue.Size ? previousValue : currentValue; }).Size;
-            this.drawer.InitBrushDynamcis(min, max);
+            this.drawer.InitDynaDraw(min, max, this.ui.Timer);
             // select best input method
             var wacomApi = WacomTablet.IsAvailable();
             if (window.hasOwnProperty("PointerEvent")) {
                 var pointer = new PointerEventsAPI(container);
                 pointer.InitControlsAvoiding();
+                console.log("Pointer Events API is used");
             }
             else if (wacomApi !== null) {
                 var tablet = new WacomTablet(container, wacomApi);
+                console.log("Wacom WebPAPI is used");
             }
             else {
                 var mouse = new Mouse(container);
                 mouse.InitControlsAvoiding();
                 var touch = new TouchEventsAPI(container);
+                console.log("Mouse and Touch Events API are used.");
             }
-            // var mouse = new Mouse(container);
-            // mouse.InitControlsAvoiding();
             // set default color and size of the brush
             VideoEvents.trigger(VideoEventType.ChangeColor, settings.ColorPallete[0]);
             VideoEvents.trigger(VideoEventType.ChangeBrushSize, settings.BrushSizes[0]);

@@ -133,7 +133,7 @@ module VectorVideo {
 			VideoEvents.on(VideoEventType.Continue,			()						=> this.Continue());
 			VideoEvents.on(VideoEventType.Pause,			()						=> this.Pause());
 			VideoEvents.on(VideoEventType.StartUpload,		()						=> this.StartUpload());
-						
+																
 			// the most important part - the drawer
 			if(!!settings.DrawingStrategy) {
 				this.drawer = settings.DrawingStrategy;
@@ -142,7 +142,7 @@ module VectorVideo {
 				this.drawer = new SVGDrawer(true);
 			}
 			
-			// prepare the UI			
+			// create UI and connect it to the drawer			
 			this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization);
 			this.ui.AcceptCanvas(this.drawer.GetCanvas());
 			container.appendChild(this.ui.GetHTML()); 
@@ -150,23 +150,23 @@ module VectorVideo {
 			
 			var min: number = brushes.reduce((previousValue: UI.BrushSize, currentValue: UI.BrushSize, index: number, arr: Array<UI.BrushSize>) => previousValue.Size < currentValue.Size ? previousValue : currentValue).Size;
 			var max: number = brushes.reduce((previousValue: UI.BrushSize, currentValue: UI.BrushSize, index: number, arr: Array<UI.BrushSize>) => previousValue.Size > currentValue.Size ? previousValue : currentValue).Size;				
-			this.drawer.InitBrushDynamcis(min, max);
+			this.drawer.InitDynaDraw(min, max, this.ui.Timer);
 			
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
 			if(window.hasOwnProperty("PointerEvent")) {
 				var pointer = new PointerEventsAPI(container);
 				pointer.InitControlsAvoiding();
+				console.log("Pointer Events API is used");
 			} else if (wacomApi !== null) {
 				var tablet = new WacomTablet(container, wacomApi);
+				console.log("Wacom WebPAPI is used");
 			} else {
 				var mouse = new Mouse(container);
 				mouse.InitControlsAvoiding();
 				var touch = new TouchEventsAPI(container);
+				console.log("Mouse and Touch Events API are used.");
 			}
-			
-			// var mouse = new Mouse(container);
-			// mouse.InitControlsAvoiding();
 			
 			// set default color and size of the brush
 			VideoEvents.trigger(VideoEventType.ChangeColor, settings.ColorPallete[0]);

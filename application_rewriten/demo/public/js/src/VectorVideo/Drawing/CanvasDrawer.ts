@@ -17,6 +17,7 @@ module Drawing {
     import BrushSettings = Settings.BrushSettings;
     import HTML = Helpers.HTML;
     import CursorState = Helpers.CursorState;
+    import VideoTimer = Helpers.VideoTimer;
     
     /**
      * This is the main drawing class - processes cursor states
@@ -76,7 +77,7 @@ module Drawing {
          * @param   pressure    The pressure of the pointing device in this point.
          */
         protected StartLine(point: Vector2, pressure: number): void {
-            var path: CanvasPath = new CanvasPath(this.settings.Color, this.context);
+            var path: Path = new CanvasPath(this.settings.Color, this.context);
             this.dynaDraw.StartPath(point, pressure, this.settings.Size, path);
         }
     

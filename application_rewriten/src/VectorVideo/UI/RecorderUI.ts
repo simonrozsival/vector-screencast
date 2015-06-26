@@ -30,6 +30,9 @@ module UI {
 		/** Informative recording timer */
 		private recordingTimer: Helpers.VideoTimer;
 		
+		/** Access to the timer for "everyone"" */
+		public get Timer(): Helpers.VideoTimer { return this.recordingTimer; }
+		
 		/** Get the width of the board in pixels. */
 		public get Width(): number {
 			return this.board.Width;

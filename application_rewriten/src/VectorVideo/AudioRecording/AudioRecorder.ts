@@ -11,7 +11,6 @@ module AudioRecording {
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
 	import AudioSource = VideoData.AudioSource;
-
 		
 	/**
 	 * The main audio recording class.
@@ -66,8 +65,9 @@ module AudioRecording {
 		 * @param	success		Initialisation success callback
 		 */
 		public Init(success?: () => any) {
-			//window.AudioContext = window.AudioContext || window.webkitAudioContext;
-			var context: AudioContext = new AudioContext();
+			var context: AudioContext = (new AudioContext() // FF, GCh
+											//|| new webkitAudioContext() // Safari
+											|| null); // others
 			navigator.getUserMedia = (navigator.getUserMedia ||
 										navigator.webkitGetUserMedia ||
 										navigator.mozGetUserMedia);
@@ -82,16 +82,14 @@ module AudioRecording {
 					},
 	
 					// success callback
-					(localMediaStream: any) => {						
+					(localMediaStream: any) => { // (localMediaStream: MediaStream) => { ... } // not supported by TypeScript yet (absent in MS(I)E)						
 						if($this.doNotStartRecording === false) {
 							$this.input = context.createMediaStreamSource(localMediaStream);
 								
 							// create processing node
 							var bufferSize = 2048;
 							var recorder = context.createScriptProcessor(bufferSize, 1, 1);
-							recorder.onaudioprocess = (data: any) => {
-								$this.processData(data);
-							};
+							recorder.onaudioprocess = (data: AudioProcessingEvent) => $this.processData(data);
 							$this.input.connect(recorder);
 							recorder.connect(context.destination);
 							$this.initSuccessful = true;
@@ -271,14 +269,14 @@ module AudioRecording {
 		/**
 		 *
 		 */
-		private processData(data: any) : void {
+		private processData(data: AudioProcessingEvent) : void {
 			if(this.recording === false) {
 				return; // recording has not started or is paused
 			}
 	
 			// grab only the left channel - lower quality but half the data to transfer..
 			// most NTB microphones are mono..
-			var left: any = data.inputBuffer.getChannelData(0);
+			var left: Float32Array = data.inputBuffer.getChannelData(0);
 	
 			if(this.recordingWorker) {
 				this.recordingWorker.postMessage({

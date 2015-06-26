@@ -19,6 +19,7 @@ module Drawing {
     import BezierCurveSegment = Helpers.BezierCurveSegment;
     import HTML = Helpers.HTML;
     import SVG = Helpers.SVG;
+    import VideoTimer = Helpers.VideoTimer;
     import CursorState = Helpers.CursorState;
 
 	export class DrawingStrategy {
@@ -59,9 +60,9 @@ module Drawing {
         /** The drawing algorithm implementation */
         protected dynaDraw: DynaDraw;
 		
-        public InitBrushDynamcis(minBrushSize: number, maxBrushSize: number): void {            
+        public InitDynaDraw(minBrushSize: number, maxBrushSize: number, timer: VideoTimer): void {            
             // init DynaDraw
-            this.dynaDraw = new DynaDraw(this.slowSimulation, minBrushSize, maxBrushSize);
+            this.dynaDraw = new DynaDraw(this.slowSimulation, minBrushSize, maxBrushSize, timer);
         }
 			
         /** Last state received. */

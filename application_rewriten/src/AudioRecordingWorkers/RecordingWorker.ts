@@ -149,7 +149,7 @@ class BinaryAudioStreamingProcessor {
      * Send data to the remote server.
      * It is necessary to encode the data into 16-bit integers, so the other side can work with them properly. 
      */
-    public PushData(data) {
+    public PushData(data: Float32Array) {
         if(this.socket) {
             if(this.socket.readyState !== WebSocket.OPEN) {
                 this.Error("Connection was lost");
@@ -165,7 +165,7 @@ class BinaryAudioStreamingProcessor {
      * - I need to convert it to 16 bit integer to be able to save it as WAV later.
      * Magic explained: 0x7FFF == 32767 == (2^15 - 1) is the maximum positive value of a 16-bit integer
      */
-    private ConvertTo16BitInt (buffer: Array<number>) : Int16Array {
+    private ConvertTo16BitInt (buffer: Float32Array) : Int16Array {
         var tmp = new Int16Array(buffer.length);
         for (var i = 0; i < buffer.length; i++) {
             tmp[i] = Math.min(1, buffer[i]) * 0x7FFF;

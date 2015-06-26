@@ -30,22 +30,23 @@ module VideoData {
 			this.board.addEventListener("pointerenter",  	(e)	=> this.onPointerLeave(e));
 			this.board.addEventListener("pointerover",  	(e)	=> this.onPointerOver(e)); // maybe start a new line, if the button is pressed
 			this.currentEvent = null;
+			this.isDown = false;
 		}
 		
 		/**
 		 * Return pressure of the mouse, touch or pen.
 		 */
 		public GetPressure(): number {
-			if(this.currentEvent === null) {
-				return 0; // no envent, no pressure
-			}
-				
-			if(this.currentEvent.type === "mouse"
-				|| this.currentEvent.type === "touch") {
-				return this.isDown ? 1 : 0;
+			if(this.isDown === false || this.currentEvent === null) {
+					return 0; // no envent, no pressure
 			}
 
-			return this.currentEvent.pressure;
+			// if(this.currentEvent.pointerType === "mouse"
+			// 	|| this.currentEvent.pointerType === "touch") {
+			// 		return 1; // button is pressed or touchscreen touched - maximum presure
+			// }
+
+			return this.currentEvent.pressure; // this device knows, what is current pressure
 		}
 		
 		/**
@@ -64,7 +65,7 @@ module VideoData {
 		 * Trace mouse movement.
 		 */
 		protected onPointerMove(e: PointerEvent) : any {
-			this.onDown(e);
+			this.onMove(e);
 			this.currentEvent = e;
 		}
 	

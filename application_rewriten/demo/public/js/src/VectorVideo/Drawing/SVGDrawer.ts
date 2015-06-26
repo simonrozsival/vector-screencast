@@ -19,6 +19,7 @@ module Drawing {
     import BezierCurveSegment = Helpers.BezierCurveSegment;
     import HTML = Helpers.HTML;
     import SVG = Helpers.SVG;
+    import VideoTimer = Helpers.VideoTimer;
     import CursorState = Helpers.CursorState;
 
     /**

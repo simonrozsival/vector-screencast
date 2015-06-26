@@ -1,12 +1,19 @@
 /// <reference path="../Helpers/Vector" />
 /// <reference path="../Helpers/SVG" />
-
+/// <reference path="./Segments" />
 
 module Drawing {
 	
-	import Vector2 = Helpers.Vector2;
-	import SVG = Helpers.SVG;
 	import BezierHelper = Helpers.BezierCurveSegment;
+	import SVG = Helpers.SVG;
+	import Vector2 = Helpers.Vector2;
+	
+	
+	interface PathPoint {
+		Left: Vector2;
+		Right: Vector2;
+		Time: number;
+	}
 	
 	export class Path {		
 				
@@ -14,22 +21,26 @@ module Drawing {
 		private iterator: number;
 				
 		/** List of all points that were drawn */
-		protected points: Array<{ left: Vector2, right: Vector2}>;		
+		protected segments: Array<Segment>;		
 		
+		/** List of raw points along the path */		
+		private pathPoints: Array<PathPoint>;
+						
 		/** The last point that was drawn */
-		protected get LastPoint(): { left: Vector2, right: Vector2} {
-			return this.points[this.iterator];
+		protected get LastPoint(): PathPoint {
+			return this.pathPoints[this.iterator];
 		}
 		
 		/** The last point that was drawn */
-		protected get LastButOnePoint(): { left: Vector2, right: Vector2} {
-			return this.points[Math.max(0, this.iterator - 1)];
+		protected get LastButOnePoint(): PathPoint {
+			return this.pathPoints[Math.max(0, this.iterator - 1)];
 		}
 		
 		/** The last point that was drawn */
-		protected get LastButTwoPoint(): { left: Vector2, right: Vector2} {
-			return this.points[Math.max(0, this.iterator - 2)];
-		}		
+		protected get LastButTwoPoint(): PathPoint {
+			return this.pathPoints[Math.max(0, this.iterator - 2)];
+		}
+		
 		
 		/** Start point information */
 		private startPosition: Vector2;
@@ -43,7 +54,8 @@ module Drawing {
 				this.wireframe = false;
 			}
 			
-			this.points = [];
+			this.segments = [];
+			this.pathPoints = [];
 		}
 		
 		public StartPath(pt: Vector2, radius: number): void {
@@ -62,11 +74,9 @@ module Drawing {
 		 * Before rendering the first segment, save the coordinates of the left and right
 		 * point as soon, as the direction is known.
 		 */
-		public InitPath(right: Vector2, left: Vector2): void {
-			this.points.push({
-				left: left,
-				right: right
-			});
+		public InitPath(right: Vector2, left: Vector2, time: number): void {
+			this.segments.push(new ZeroLengthSegment(left, right, time));
+			this.pathPoints.push({ Left: left, Right: right, Time: time });
 			this.iterator = 0;			
 		}
 		
@@ -75,43 +85,57 @@ module Drawing {
 		 * @param	{Vector2}	right	"Right" point of the segment.
 		 * @param	{Vector2}	left	"Left"	point of the segment.
 		 */
-		public ExtendPath(right: Vector2, left: Vector2): void {
+		public ExtendPath(right: Vector2, left: Vector2, time: number): void {
 			// draw the segment
-			this.DrawSegment(right, left);
+			var segment: Segment = this.DrawSegment(right, left, time);
 			
 			// and push it to the list
-			this.points.push({
-				left: left,
-				right: right
-			});
+			this.segments.push(segment);
+			this.pathPoints.push({ Left: left, Right: right, Time: time });
 			this.iterator++;
 		}
 				
-		private DrawSegment(right: Vector2, left: Vector2): void {
-			this.CalculateAndDrawCurvedSegment(right, left);
-			//this.DrawQuarilateralSegment(this.LastPoint.right, this.LastPoint.left, right, left);
+		private DrawSegment(right: Vector2, left: Vector2, time: number): Segment {			
+			return this.CalculateAndDrawCurvedSegment(right, left, time);
+			
+			// return this.CalculateAndDrawQuarilateralSegment(right, left, time);
 		}
 		
-		private CalculateAndDrawCurvedSegment(right: Vector2, left: Vector2): void {
-			var leftBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.left, this.LastButOnePoint.left, this.LastPoint.left, left);
-			var rightBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.right, this.LastButOnePoint.right, this.LastPoint.right, right);
-			this.DrawCurvedSegment(leftBezier, rightBezier);
+		private CalculateAndDrawCurvedSegment(right: Vector2, left: Vector2, time: number): Segment {			
+			var leftBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
+			var rightBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);			
+			var segment: CurvedSegment = new CurvedSegment(leftBezier, rightBezier, time)
+			this.DrawCurvedSegment(segment);
+						
+			return segment;
 		}		
 		
 		/**
 		 * 
 		 */
-		protected DrawCurvedSegment(left: Helpers.BezierCurveSegment, right: Helpers.BezierCurveSegment): void {
+		protected DrawCurvedSegment(segment: CurvedSegment): void {
 			throw new Error("Not implemented");
 		}		
 		
 		/**
 		 * 
 		 */
-		protected DrawQuadrilateralSegment(pr: Vector2, pl: Vector2, r: Vector2, l: Vector2): void {
+		private CalculateAndDrawQuarilateralSegment(right: Vector2, left: Vector2, time: number): Segment {
+			var segment: QuadrilateralSegment = new QuadrilateralSegment(left, right, time);
+			this.DrawQuadrilateralSegment(segment);
+			return segment;			
+		}
+		
+		/**
+		 * 
+		 */
+		protected DrawQuadrilateralSegment(segment: QuadrilateralSegment): void {
 			throw new Error("Not implemented");
 		}		
 		
+		/**
+		 * 
+		 */
 		public Draw(): void {
 			// No need to draw anything more..
 		}
@@ -124,11 +148,14 @@ module Drawing {
 			return Math.atan2(-vec.X, vec.Y) - Math.PI/2; /// :-) 
 		}
 		
+		/**
+		 * Draw everything from the begining
+		 */
 		public Redraw(): void {
 			this.iterator = 0;
 			this.DrawStartDot(this.startPosition, this.startRadius);
-			while (this.iterator < this.points.length) {
-				this.DrawSegment(this.LastPoint.right, this.LastPoint.left);			
+			while (this.iterator < this.segments.length) {
+				this.CalculateAndDrawCurvedSegment(this.LastPoint.Right, this.LastPoint.Left, this.LastPoint.Time);			
 				this.iterator++;
 			}
 		}
@@ -187,35 +214,35 @@ module Drawing {
 		/**
 		 * Extend the SVG path with a curved segment.
 		 */
-		protected DrawCurvedSegment(left: Helpers.BezierCurveSegment, right: Helpers.BezierCurveSegment): void {
-			this.right += SVG.CurveToString(right.StartCP, right.EndCP, right.End);
-			this.left = SVG.CurveToString(left.EndCP, left.StartCP, left.Start) + " " + this.left;
+		protected DrawCurvedSegment(segment: CurvedSegment): void {
+			this.right += SVG.CurveToString(segment.RightBezier.StartCP, segment.RightBezier.EndCP, segment.RightBezier.End);
+			this.left = SVG.CurveToString(segment.LeftBezier.EndCP, segment.LeftBezier.StartCP, segment.LeftBezier.Start) + " " + this.left;
 			
 			// A] - a simple line at the end of the line 
 			// this.cap = SVG.LineToString(left);
 			
 			// B] - an "arc cap"
-			var center: Vector2 = right.End.add(left.End).scale(0.5);
-			var startDirection: Vector2 = right.End.subtract(center);
-			var endDirection: Vector2 = left.End.subtract(center);
-			this.cap = SVG.ArcString(left.End, center.distanceTo(left.End), this.angle(startDirection));				
+			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
+			var startDirection: Vector2 = segment.Right.subtract(center);
+			var endDirection: Vector2 = segment.Left.subtract(center);
+			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));				
 		}		
 		
 		/**
 		 * Extend the SVG path with a quadrilateral segment
 		 */		
-		protected DrawQuadrilateralSegment(pr: Vector2, pl: Vector2, r: Vector2, l: Vector2): void {			
-			this.right += SVG.LineToString(r);
-			this.left = SVG.LineToString(pl) + " " + this.left;
+		protected DrawQuadrilateralSegment(segment: QuadrilateralSegment): void {			
+			this.right += SVG.LineToString(segment.Right);
+			this.left = SVG.LineToString(this.LastPoint.Left) + " " + this.left;
 			
 			// A] - a simple line at the end of the line 
 			// this.cap = SVG.LineToString(left);
 			
 			// B] - an "arc cap"
-			var center: Vector2 = r.add(l).scale(0.5);
-			var startDirection: Vector2 = r.subtract(center);
-			var endDirection: Vector2 = l.subtract(center);
-			this.cap = SVG.ArcString(l, center.distanceTo(l), this.angle(startDirection));
+			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
+			var startDirection: Vector2 = segment.Right.subtract(center);
+			var endDirection: Vector2 = segment.Left.subtract(center);
+			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
 		}
 				
 		/**
@@ -256,17 +283,17 @@ module Drawing {
 		/**
 		 * Draw a simple quadrilateral segment
 		 */
-		protected DrawQuarilateralSegment(pr: Vector2, pl: Vector2, r: Vector2, l: Vector2): void { 
+		protected DrawQuarilateralSegment(segment: QuadrilateralSegment): void { 
 			this.context.beginPath();
-			this.context.moveTo(pr.X, pr.Y);
-			this.context.lineTo(pl.X, pl.Y);			
-			this.context.lineTo(l.X, l.Y);
+			this.context.moveTo(this.LastPoint.Right.X, this.LastPoint.Right.Y);
+			this.context.lineTo(this.LastPoint.Left.X, this.LastPoint.Left.Y);			
+			this.context.lineTo(segment.Left.X, segment.Left.Y);
 			
 			// an "arc cap"
-			var center: Vector2 = r.add(l).scale(0.5);
-			var startDirection: Vector2 = r.subtract(center);
-			var endDirection: Vector2 = l.subtract(center);
-			this.context.arc(center.X, center.Y, center.distanceTo(l), this.angle(startDirection), this.angle(endDirection), false);		
+			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
+			var startDirection: Vector2 = segment.Right.subtract(center);
+			var endDirection: Vector2 = segment.Left.subtract(center);
+			this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), this.angle(startDirection), this.angle(endDirection), false);		
 			//
 			
 			this.context.closePath();
@@ -278,25 +305,25 @@ module Drawing {
 		/**
 		 * Draw a curved segment using bezier curves.
 		 */
-		protected DrawCurvedSegment(leftBezier: Helpers.BezierCurveSegment, rightBezier: Helpers.BezierCurveSegment): void {
+		protected DrawCurvedSegment(segment: CurvedSegment): void {
 			this.context.beginPath();
-			this.context.moveTo(rightBezier.Start.X, rightBezier.Start.Y);	
-			this.context.lineTo(leftBezier.Start.X, leftBezier.Start.Y);
+			this.context.moveTo(segment.RightBezier.Start.X, segment.RightBezier.Start.Y);	
+			this.context.lineTo(segment.LeftBezier.Start.X, segment.LeftBezier.Start.Y);
 						
 			// left curve
-			this.context.bezierCurveTo(leftBezier.StartCP.X, leftBezier.StartCP.Y, leftBezier.EndCP.X, leftBezier.EndCP.Y, leftBezier.End.X, leftBezier.End.Y);			
+			this.context.bezierCurveTo(segment.LeftBezier.StartCP.X, segment.LeftBezier.StartCP.Y, segment.LeftBezier.EndCP.X, segment.LeftBezier.EndCP.Y, segment.LeftBezier.End.X, segment.LeftBezier.End.Y);			
 			
 			// A] - an "arc cap"
-			var center: Vector2 = rightBezier.End.add(leftBezier.End).scale(0.5);
-			var startDirection: Vector2 = rightBezier.End.subtract(center);
-			var endDirection: Vector2 = leftBezier.End.subtract(center);
-			this.context.arc(center.X, center.Y, center.distanceTo(leftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
+			var center: Vector2 = segment.RightBezier.End.add(segment.LeftBezier.End).scale(0.5);
+			var startDirection: Vector2 = segment.RightBezier.End.subtract(center);
+			var endDirection: Vector2 = segment.LeftBezier.End.subtract(center);
+			this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
 			
 			// B] - line cap	
-			// this.context.lineTo(rightBezier.End.X, rightBezier.End.Y);
+			// this.context.lineTo(segment.RightBezier.End.X, segment.RightBezier.End.Y);
 			
 			// right curve
-			this.context.bezierCurveTo(rightBezier.EndCP.X, rightBezier.EndCP.Y, rightBezier.StartCP.X, rightBezier.StartCP.Y, rightBezier.Start.X, rightBezier.Start.Y);			
+			this.context.bezierCurveTo(segment.RightBezier.EndCP.X, segment.RightBezier.EndCP.Y, segment.RightBezier.StartCP.X, segment.RightBezier.StartCP.Y, segment.RightBezier.Start.X, segment.RightBezier.Start.Y);			
 			
 			this.context.closePath();
 			
