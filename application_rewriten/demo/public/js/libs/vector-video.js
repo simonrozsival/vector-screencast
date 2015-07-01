@@ -459,14 +459,58 @@ var Helpers;
     Helpers.HTML = HTML;
 })(Helpers || (Helpers = {}));
 ;
+var Helpers;
+(function (Helpers) {
+    var COORDS_PRECISION = 3;
+    /**
+     * Prints a number rounded and with trimmed trailing zeros.
+     */
+    function precise(n, precision) {
+        if (precision === void 0) { precision = COORDS_PRECISION; }
+        return Number(n.toFixed(precision)).toString(); // isn't there a better way?
+    }
+    Helpers.precise = precise;
+    /**
+    * Converts an integer value of seconds to a human-readable time format - "0:00"
+    * @param  s seconds
+    * @return Human readable time
+    */
+    function secondsToString(s) {
+        var time;
+        var minutes = Math.floor(s / 60);
+        time = minutes + ":";
+        var seconds = Math.floor(s % 60);
+        if (seconds <= 9) {
+            time += "0" + seconds.toString(10); // seconds should have leading zero if lesser than 10
+        }
+        else {
+            time += seconds.toString(10);
+        }
+        return time;
+    }
+    Helpers.secondsToString = secondsToString;
+    ;
+    /**
+    * Converts an integer value of milliseconds to a human-readable time format - "0:00"
+    * @param  ms     Time in milliseconds
+    * @return Human readable time
+    */
+    function millisecondsToString(ms) {
+        return secondsToString(Math.floor(ms / 1000));
+    }
+    Helpers.millisecondsToString = millisecondsToString;
+    ;
+})(Helpers || (Helpers = {}));
 /// <reference path="vector.ts" />
 /// <reference path="HTML.ts" />
+/// <reference path="HelperFunctions" />
 /**
  * SVG helper
  * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function, moveToString: Function, lineToString: Function, curveToString: Function}}
  */
 var Helpers;
 (function (Helpers) {
+    var precise = Helpers.precise;
     var SVG = (function () {
         function SVG() {
         }
@@ -483,9 +527,9 @@ var Helpers;
          */
         SVG.CreateDot = function (center, radius, color) {
             return this.CreateElement("circle", {
-                cx: center.X,
-                cy: center.Y,
-                r: radius,
+                cx: precise(center.X),
+                cy: precise(center.Y),
+                r: precise(radius),
                 fill: color,
                 stroke: "transparent"
             });
@@ -499,9 +543,9 @@ var Helpers;
         SVG.CreateCircle = function (center, radius, color) {
             if (radius > 0) {
                 return this.CreateElement("circle", {
-                    cx: center.X,
-                    cy: center.Y,
-                    r: radius,
+                    cx: precise(center.X),
+                    cy: precise(center.Y),
+                    r: precise(radius),
                     stroke: color,
                     fill: "transparent",
                     "stroke-width": 1
@@ -521,7 +565,7 @@ var Helpers;
                 return this.CreateElement("path", {
                     fill: "transparent",
                     stroke: color,
-                    "stroke-width": width,
+                    "stroke-width": precise(width),
                     d: this.MoveToString(start) + " " + this.LineToString(end)
                 });
             }
@@ -555,14 +599,14 @@ var Helpers;
          * @param   a   End point
          */
         SVG.MoveToString = function (a) {
-            return "M " + a.X + "," + a.Y;
+            return "M " + precise(a.X) + "," + precise(a.Y);
         };
         /**
          * Returns string for SVG path - draw line from current point to the given one.
          * @param   a   End point
          */
         SVG.LineToString = function (a) {
-            return "L " + a.X + "," + a.Y;
+            return "L " + precise(a.X) + "," + precise(a.Y);
         };
         /**
          * Returns string for SVG path - draw a cubic Bézier curfe from current point to point c using control points a and b.
@@ -571,19 +615,92 @@ var Helpers;
          * @param   c   The end point of the curve
          */
         SVG.CurveToString = function (a, b, c) {
-            return "C " + a.X + "," + a.Y + " " + b.X + "," + b.Y + " " + c.X + "," + c.Y;
+            return "C " + precise(a.X) + "," + precise(a.Y) + " " + precise(b.X) + "," + precise(b.Y) + " " + precise(c.X) + "," + precise(c.Y);
         };
         /**
          * Returns string for SVG path - an arc
          */
         SVG.ArcString = function (end, radius, startAngle) {
-            return "A " + radius + "," + radius + " " + startAngle + " 0,0 " + end.X + "," + end.Y;
+            return "A " + precise(radius) + "," + precise(radius) + " " + startAngle + " 0,0 " + precise(end.X) + "," + precise(end.Y);
+        };
+        /**
+         * Read attribute value
+         */
+        SVG.attr = function (node, name) {
+            var attr = node.attributes.getNamedItemNS(null, name);
+            if (!!attr) {
+                return attr.textContent;
+            }
+            throw new Error("Attribute " + name + " is missing in " + node.localName);
+        };
+        /**
+         * Read numberic value of an attribute
+         */
+        SVG.numAttr = function (node, name) {
+            return Number(node.attributes.getNamedItemNS(null, name).textContent);
         };
         /** XML namespace of SVG */
         SVG.namespace = "http://www.w3.org/2000/svg";
         return SVG;
     })();
     Helpers.SVG = SVG;
+    var SVGA = (function () {
+        function SVGA() {
+        }
+        Object.defineProperty(SVGA, "Namespace", {
+            get: function () { return this.namespace; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Creates an element with specified properties.
+         */
+        SVGA.CreateElement = function (name, attributes) {
+            var el = document.createElementNS(this.namespace, "a:" + name);
+            if (!!attributes) {
+                this.SetAttributes(el, attributes);
+            }
+            return el;
+        };
+        /**
+         * Assign a set of attributes to an element.
+         * @param   el          The element
+         * @param   attributes  The set of attributes
+         */
+        SVGA.SetAttributes = function (el, attributes) {
+            if (!el) {
+                console.log(attributes);
+            }
+            for (var attr in attributes) {
+                var a = document.createAttributeNS(this.namespace, "a:" + attr);
+                a.textContent = attributes[attr];
+                el.attributes.setNamedItemNS(a);
+            }
+        };
+        /**
+         * Read attribute value
+         */
+        SVGA.attr = function (node, name, defaultValue) {
+            var attr = node.attributes.getNamedItemNS(this.Namespace, name);
+            if (!!attr) {
+                return attr.textContent;
+            }
+            if (!!defaultValue) {
+                return defaultValue;
+            }
+            throw new Error("Attribute " + name + " is missing in " + node.localName);
+        };
+        /**
+         * Read numberic value of an attribute
+         */
+        SVGA.numAttr = function (node, name, defaultValue) {
+            return Number(SVGA.attr(node, name, defaultValue !== undefined ? defaultValue.toString() : undefined));
+        };
+        /** XML namespace of SVG */
+        SVGA.namespace = "http://www.rozsival.com/2015/vector-video";
+        return SVGA;
+    })();
+    Helpers.SVGA = SVGA;
 })(Helpers || (Helpers = {}));
 ///<reference path="./Vector.ts" />
 var Helpers;
@@ -628,24 +745,32 @@ var Helpers;
         Object.defineProperty(BezierCurveSegment.prototype, "Start", {
             /** The point, wher the spline starts */
             get: function () { return this.start; },
+            set: function (vec) { this.start = vec; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BezierCurveSegment.prototype, "StartCP", {
             /** The control point adjecent to the starting point */
             get: function () { return this.startCP; },
+            set: function (vec) { this.startCP = vec; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BezierCurveSegment.prototype, "End", {
             /** The point, where the spline ends */
             get: function () { return this.end; },
+            set: function (vec) { this.end = vec; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(BezierCurveSegment.prototype, "EndCP", {
             /** The control point adjecent to the ending point */
             get: function () { return this.endCP; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BezierCurveSegment.prototype, "EndCp", {
+            set: function (vec) { this.endCP = vec; },
             enumerable: true,
             configurable: true
         });
@@ -670,24 +795,29 @@ var Helpers;
         VideoEventType[VideoEventType["ReachEnd"] = 4] = "ReachEnd";
         VideoEventType[VideoEventType["Replay"] = 5] = "Replay";
         VideoEventType[VideoEventType["JumpTo"] = 6] = "JumpTo";
-        VideoEventType[VideoEventType["BufferStatus"] = 7] = "BufferStatus";
-        VideoEventType[VideoEventType["CursorState"] = 8] = "CursorState";
-        VideoEventType[VideoEventType["ChangeColor"] = 9] = "ChangeColor";
-        VideoEventType[VideoEventType["ChangeBrushSize"] = 10] = "ChangeBrushSize";
-        VideoEventType[VideoEventType["CurrentTime"] = 11] = "CurrentTime";
-        VideoEventType[VideoEventType["Render"] = 12] = "Render";
-        VideoEventType[VideoEventType["ClearCanvas"] = 13] = "ClearCanvas";
-        VideoEventType[VideoEventType["VideoInfoLoaded"] = 14] = "VideoInfoLoaded";
-        VideoEventType[VideoEventType["CanvasSize"] = 15] = "CanvasSize";
-        VideoEventType[VideoEventType["CanvasOffset"] = 16] = "CanvasOffset";
-        VideoEventType[VideoEventType["RegisterRecordingTool"] = 17] = "RegisterRecordingTool";
-        VideoEventType[VideoEventType["RecordingToolFinished"] = 18] = "RecordingToolFinished";
-        VideoEventType[VideoEventType["RecordingFinished"] = 19] = "RecordingFinished";
-        VideoEventType[VideoEventType["StartUpload"] = 20] = "StartUpload";
-        VideoEventType[VideoEventType["DownloadData"] = 21] = "DownloadData";
+        VideoEventType[VideoEventType["VideoInfoLoaded"] = 7] = "VideoInfoLoaded";
+        VideoEventType[VideoEventType["BufferStatus"] = 8] = "BufferStatus";
+        VideoEventType[VideoEventType["CursorState"] = 9] = "CursorState";
+        VideoEventType[VideoEventType["ChangeColor"] = 10] = "ChangeColor";
+        VideoEventType[VideoEventType["ChangeBrushSize"] = 11] = "ChangeBrushSize";
+        VideoEventType[VideoEventType["StartPath"] = 12] = "StartPath";
+        VideoEventType[VideoEventType["DrawSegment"] = 13] = "DrawSegment";
+        VideoEventType[VideoEventType["DrawPath"] = 14] = "DrawPath";
+        VideoEventType[VideoEventType["CurrentTime"] = 15] = "CurrentTime";
+        VideoEventType[VideoEventType["Render"] = 16] = "Render";
+        VideoEventType[VideoEventType["ClearCanvas"] = 17] = "ClearCanvas";
+        VideoEventType[VideoEventType["CanvasSize"] = 18] = "CanvasSize";
+        VideoEventType[VideoEventType["CanvasScalingFactor"] = 19] = "CanvasScalingFactor";
+        VideoEventType[VideoEventType["RegisterRecordingTool"] = 20] = "RegisterRecordingTool";
+        VideoEventType[VideoEventType["RecordingToolFinished"] = 21] = "RecordingToolFinished";
+        VideoEventType[VideoEventType["RecordingFinished"] = 22] = "RecordingFinished";
+        VideoEventType[VideoEventType["StartUpload"] = 23] = "StartUpload";
+        VideoEventType[VideoEventType["DownloadData"] = 24] = "DownloadData";
+        // DO NOT ADD NEW EVENTS UNDERNEATH:    
+        // hack:
+        VideoEventType[VideoEventType["length"] = 25] = "length";
     })(Helpers.VideoEventType || (Helpers.VideoEventType = {}));
-    var VideoEventType = Helpers.VideoEventType;
-    var eventTypesCount = 22; // !!!! do not forget to update if you update VideoEventType enum
+    var VideoEventType = Helpers.VideoEventType; // if nothing follows "length", then VideoEventType.length gives the total count of valid values        
     var VideoEvent = (function () {
         function VideoEvent(type) {
             this.type = type;
@@ -720,7 +850,7 @@ var Helpers;
         VideoEvent.prototype.trigger = function (args) {
             for (var i = 0; i < this.listeners.length; i++) {
                 var cmd = this.listeners[i];
-                this.triggerAsync(cmd, args);
+                cmd.apply(this, args);
             }
         };
         /**
@@ -753,7 +883,7 @@ var Helpers;
          * Unregister event listener
          */
         VideoEvents.off = function (type, command) {
-            if (type in VideoEvents.events === true) {
+            if (!!VideoEvents.events[type]) {
                 VideoEvents.events[type].off(command);
             }
         };
@@ -771,7 +901,7 @@ var Helpers;
             }
         };
         /** Registered events */
-        VideoEvents.events = new Array(eventTypesCount);
+        VideoEvents.events = new Array(VideoEventType.length);
         return VideoEvents;
     })();
     Helpers.VideoEvents = VideoEvents;
@@ -927,14 +1057,8 @@ var UI;
 var Drawing;
 (function (Drawing) {
     var Segment = (function () {
-        function Segment(time) {
-            this.time = time;
+        function Segment() {
         }
-        Object.defineProperty(Segment.prototype, "Time", {
-            get: function () { return this.time; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Segment.prototype, "Left", {
             get: function () { throw new Error("Not implemented"); },
             enumerable: true,
@@ -950,8 +1074,8 @@ var Drawing;
     Drawing.Segment = Segment;
     var QuadrilateralSegment = (function (_super) {
         __extends(QuadrilateralSegment, _super);
-        function QuadrilateralSegment(left, right, time) {
-            _super.call(this, time);
+        function QuadrilateralSegment(left, right) {
+            _super.call(this);
             this.left = left;
             this.right = right;
         }
@@ -970,26 +1094,28 @@ var Drawing;
     Drawing.QuadrilateralSegment = QuadrilateralSegment;
     var ZeroLengthSegment = (function (_super) {
         __extends(ZeroLengthSegment, _super);
-        function ZeroLengthSegment(left, right, time) {
-            _super.call(this, left, right, time);
+        function ZeroLengthSegment(left, right) {
+            _super.call(this, left, right);
         }
         return ZeroLengthSegment;
     })(QuadrilateralSegment);
     Drawing.ZeroLengthSegment = ZeroLengthSegment;
     var CurvedSegment = (function (_super) {
         __extends(CurvedSegment, _super);
-        function CurvedSegment(left, right, time) {
-            _super.call(this, time);
+        function CurvedSegment(left, right) {
+            _super.call(this);
             this.left = left;
             this.right = right;
         }
         Object.defineProperty(CurvedSegment.prototype, "Left", {
             get: function () { return this.left.End; },
+            set: function (vec) { this.left.End = vec; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(CurvedSegment.prototype, "Right", {
             get: function () { return this.right.End; },
+            set: function (vec) { this.right.End = vec; },
             enumerable: true,
             configurable: true
         });
@@ -1013,11 +1139,15 @@ var Drawing;
 var Drawing;
 (function (Drawing) {
     var SVG = Helpers.SVG;
+    var Vector2 = Helpers.Vector2;
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
     var Path = (function () {
         /**
          * Init a new colored path
          */
-        function Path(color, wireframe) {
+        function Path(curved, color, wireframe) {
+            this.curved = curved;
             this.color = color;
             this.wireframe = wireframe;
             if (this.wireframe === undefined) {
@@ -1026,6 +1156,30 @@ var Drawing;
             this.segments = [];
             this.pathPoints = [];
         }
+        Object.defineProperty(Path.prototype, "Segments", {
+            /** Access to all segments of the path. */
+            get: function () {
+                return this.segments;
+            },
+            /** Assign set of all segments at once. */
+            set: function (value) {
+                this.segments = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Path.prototype, "LastDrawnSegment", {
+            /** Access the segment that was drawn previousely. */
+            get: function () {
+                return this.lastDrawnSegment;
+            },
+            /** Init the last drawn segment position. */
+            set: function (value) {
+                this.lastDrawnSegment = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Path.prototype, "LastPoint", {
             /** The last point that was drawn */
             get: function () {
@@ -1050,11 +1204,23 @@ var Drawing;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Path.prototype, "Color", {
+            /**
+             * Path of the color fill.
+             */
+            get: function () {
+                return this.color;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Path.prototype.StartPath = function (pt, radius) {
-            this.DrawStartDot(pt, radius);
+            this.segments = [new Drawing.ZeroLengthSegment(pt.add(new Vector2(0, radius)), pt.add(new Vector2(0, -radius)))];
             this.startPosition = pt;
             this.startRadius = radius;
             this.iterator = -1;
+            this.DrawStartDot(pt, radius);
+            this.lastDrawnSegment = this.segments[0];
         };
         Path.prototype.DrawStartDot = function (pt, radius) {
             throw new Error("Not impelmented");
@@ -1063,32 +1229,40 @@ var Drawing;
          * Before rendering the first segment, save the coordinates of the left and right
          * point as soon, as the direction is known.
          */
-        Path.prototype.InitPath = function (right, left, time) {
-            this.segments.push(new Drawing.ZeroLengthSegment(left, right, time));
-            this.pathPoints.push({ Left: left, Right: right, Time: time });
+        Path.prototype.InitPath = function (right, left) {
+            this.segments = [new Drawing.ZeroLengthSegment(left, right)]; // override the first segment
+            this.pathPoints.push({ Left: left, Right: right });
             this.iterator = 0;
+        };
+        Path.prototype.StartDrawingPath = function (seg) {
+            this.DrawStartDot(seg.Left.add(seg.Right).scale(0.5), seg.Left.distanceTo(seg.Right) / 2);
+            this.lastDrawnSegment = seg;
         };
         /**
          * Draw another segment of current path.
          * @param	{Vector2}	right	"Right" point of the segment.
          * @param	{Vector2}	left	"Left"	point of the segment.
          */
-        Path.prototype.ExtendPath = function (right, left, time) {
+        Path.prototype.ExtendPath = function (right, left) {
             // draw the segment
-            var segment = this.DrawSegment(right, left, time);
+            var segment = this.CalculateSegment(right, left);
+            this.DrawSegment(segment);
+            VideoEvents.trigger(VideoEventType.DrawSegment, segment);
             // and push it to the list
             this.segments.push(segment);
-            this.pathPoints.push({ Left: left, Right: right, Time: time });
+            this.pathPoints.push({ Left: left, Right: right });
             this.iterator++;
         };
-        Path.prototype.DrawSegment = function (right, left, time) {
-            return this.CalculateAndDrawCurvedSegment(right, left, time);
-            // return this.CalculateAndDrawQuarilateralSegment(right, left, time);
+        Path.prototype.CalculateSegment = function (right, left) {
+            if (this.curved) {
+                return this.CalculateCurvedSegment(right, left);
+            }
+            return this.CalculateQuarilateralSegment(right, left);
         };
-        Path.prototype.CalculateAndDrawCurvedSegment = function (right, left, time) {
+        Path.prototype.CalculateCurvedSegment = function (right, left) {
             var leftBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
             var rightBezier = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);
-            var segment = new Drawing.CurvedSegment(leftBezier, rightBezier, time);
+            var segment = new Drawing.CurvedSegment(leftBezier, rightBezier);
             this.DrawCurvedSegment(segment);
             return segment;
         };
@@ -1101,10 +1275,8 @@ var Drawing;
         /**
          *
          */
-        Path.prototype.CalculateAndDrawQuarilateralSegment = function (right, left, time) {
-            var segment = new Drawing.QuadrilateralSegment(left, right, time);
-            this.DrawQuadrilateralSegment(segment);
-            return segment;
+        Path.prototype.CalculateQuarilateralSegment = function (right, left) {
+            return new Drawing.QuadrilateralSegment(left, right);
         };
         /**
          *
@@ -1116,25 +1288,40 @@ var Drawing;
          *
          */
         Path.prototype.Draw = function () {
-            // No need to draw anything more..
+            // This si up to concrete ancestors..
+        };
+        Path.prototype.DrawSegment = function (seg) {
+            if (seg instanceof Drawing.CurvedSegment) {
+                this.DrawCurvedSegment(seg);
+            }
+            else if (seg instanceof Drawing.QuadrilateralSegment) {
+                this.DrawQuadrilateralSegment(seg);
+            }
+            this.lastDrawnSegment = seg;
         };
         /**
          * Helper functions for determining, what is the angle between the x axis and vector in radians.
          * Math.atan(vec) function does this, but the angle is counterclockwise and rotated by PI/2...
          */
-        Path.prototype.angle = function (vec) {
+        Path.angle = function (vec) {
             return Math.atan2(-vec.X, vec.Y) - Math.PI / 2; /// :-) 
         };
         /**
          * Draw everything from the begining
          */
-        Path.prototype.Redraw = function () {
+        Path.prototype.DrawWholePath = function () {
             this.iterator = 0;
-            this.DrawStartDot(this.startPosition, this.startRadius);
+            // if there's nothing to draw, run away!
+            if (this.segments.length === 0)
+                return;
+            var start = this.segments[0].Left.add(this.segments[0].Right).scale(0.5);
+            var radius = start.distanceTo(this.segments[0].Left);
+            this.DrawStartDot(start, radius);
+            this.lastDrawnSegment = this.segments[0];
             while (this.iterator < this.segments.length) {
-                this.CalculateAndDrawCurvedSegment(this.LastPoint.Right, this.LastPoint.Left, this.LastPoint.Time);
-                this.iterator++;
+                this.DrawSegment(this.segments[this.iterator++]);
             }
+            this.Draw(); // flush
         };
         return Path;
     })();
@@ -1144,13 +1331,11 @@ var Drawing;
         /**
          * Initialise new SVG path
          */
-        function SvgPath(color, canvas) {
-            _super.call(this, color);
+        function SvgPath(curved, color, canvas) {
+            _super.call(this, curved, color);
             this.canvas = canvas;
         }
         SvgPath.prototype.DrawStartDot = function (position, radius) {
-            // init SVG
-            this.startDot = SVG.CreateDot(position, radius, this.color);
             var options;
             if (this.wireframe) {
                 // "wireframe" is better for debuging:
@@ -1166,13 +1351,37 @@ var Drawing;
                 };
             }
             this.path = SVG.CreateElement("path", options);
+            // arc cap at the start
+            var left = position.add(new Vector2(-radius, 0));
+            var right = position.add(new Vector2(radius, 0));
+            var center = right.add(left).scale(0.5);
+            var startDirection = left.subtract(center);
+            var endDirection = right.subtract(center);
+            var arc = SVG.ArcString(right, center.distanceTo(right), Path.angle(startDirection));
             // prepare paths
-            this.right = SVG.MoveToString(position);
-            this.left = "Z";
-            this.cap = SVG.LineToString(position);
-            // connect SVG's with the canvas
-            this.canvas.appendChild(this.startDot);
+            this.right = SVG.MoveToString(right);
+            this.left = SVG.LineToString(left) + " " + arc;
+            this.cap = SVG.ArcString(left, center.distanceTo(left), Path.angle(endDirection));
+            SVG.SetAttributes(this.path, { d: this.right + this.cap + this.left });
+            // connect SVG's with the canvas				
             this.canvas.appendChild(this.path);
+        };
+        /**
+         * Before rendering the first segment, save the coordinates of the left and right
+         * point as soon, as the direction is known.
+         */
+        SvgPath.prototype.InitPath = function (right, left) {
+            _super.prototype.InitPath.call(this, right, left);
+            this.StartDrawingPath(this.segments[0]);
+        };
+        SvgPath.prototype.StartDrawingPath = function (segment) {
+            var center = segment.Right.add(segment.Left).scale(0.5);
+            var startDirection = segment.Left.subtract(center);
+            var endDirection = segment.Right.subtract(center);
+            var arc = SVG.ArcString(segment.Right, center.distanceTo(segment.Right), Path.angle(startDirection));
+            // prepare paths
+            this.right = SVG.MoveToString(segment.Right);
+            this.left = SVG.LineToString(segment.Left) + " " + arc;
         };
         /**
          * Extend the SVG path with a curved segment.
@@ -1186,28 +1395,34 @@ var Drawing;
             var center = segment.Right.add(segment.Left).scale(0.5);
             var startDirection = segment.Right.subtract(center);
             var endDirection = segment.Left.subtract(center);
-            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
+            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
         };
         /**
          * Extend the SVG path with a quadrilateral segment
          */
         SvgPath.prototype.DrawQuadrilateralSegment = function (segment) {
             this.right += SVG.LineToString(segment.Right);
-            this.left = SVG.LineToString(this.LastPoint.Left) + " " + this.left;
+            this.left = SVG.LineToString(this.lastDrawnSegment.Left) + " " + this.left;
             // A] - a simple line at the end of the line 
             // this.cap = SVG.LineToString(left);
             // B] - an "arc cap"
             var center = segment.Right.add(segment.Left).scale(0.5);
             var startDirection = segment.Right.subtract(center);
             var endDirection = segment.Left.subtract(center);
-            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
+            this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
+        };
+        /**
+         * Create path string.
+         */
+        SvgPath.prototype.GetPathString = function () {
+            return this.right + this.cap + this.left;
         };
         /**
          * Promote the curve to the DOM
          */
         SvgPath.prototype.Draw = function () {
             SVG.SetAttributes(this.path, {
-                d: this.right + this.cap + this.left
+                d: this.GetPathString()
             });
         };
         return SvgPath;
@@ -1216,48 +1431,42 @@ var Drawing;
     var CanvasPath = (function (_super) {
         __extends(CanvasPath, _super);
         /** Init empty path */
-        function CanvasPath(color, context) {
-            _super.call(this, color);
+        function CanvasPath(curved, color, context) {
+            _super.call(this, curved, color);
             this.context = context;
+            this.context.fillStyle = this.color;
         }
         CanvasPath.prototype.DrawStartDot = function (position, radius) {
             // now draw the start dot
+            this.context.beginPath();
             this.DrawDot(position, radius);
+            this.Draw();
         };
         /**
          * Helper function that draws a dot of the curve's color
          * with specified radius in the given point.
          */
         CanvasPath.prototype.DrawDot = function (c, r) {
-            this.context.beginPath();
             this.context.arc(c.X, c.Y, r, 0, 2 * Math.PI, true);
-            this.context.closePath();
-            this.context.fillStyle = this.color;
-            this.context.fill();
         };
         /**
          * Draw a simple quadrilateral segment
          */
-        CanvasPath.prototype.DrawQuarilateralSegment = function (segment) {
-            this.context.beginPath();
-            this.context.moveTo(this.LastPoint.Right.X, this.LastPoint.Right.Y);
-            this.context.lineTo(this.LastPoint.Left.X, this.LastPoint.Left.Y);
+        CanvasPath.prototype.DrawQuadrilateralSegment = function (segment) {
+            this.context.moveTo(this.lastDrawnSegment.Right.X, this.lastDrawnSegment.Right.Y);
+            this.context.lineTo(this.lastDrawnSegment.Left.X, this.lastDrawnSegment.Left.Y);
             this.context.lineTo(segment.Left.X, segment.Left.Y);
             // an "arc cap"
             var center = segment.Right.add(segment.Left).scale(0.5);
             var startDirection = segment.Right.subtract(center);
             var endDirection = segment.Left.subtract(center);
-            this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), this.angle(startDirection), this.angle(endDirection), false);
-            //
-            this.context.closePath();
-            this.context.fillStyle = this.color;
-            this.context.fill();
+            this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), Path.angle(startDirection), Path.angle(endDirection), false);
+            //		
         };
         /**
          * Draw a curved segment using bezier curves.
          */
         CanvasPath.prototype.DrawCurvedSegment = function (segment) {
-            this.context.beginPath();
             this.context.moveTo(segment.RightBezier.Start.X, segment.RightBezier.Start.Y);
             this.context.lineTo(segment.LeftBezier.Start.X, segment.LeftBezier.Start.Y);
             // left curve
@@ -1266,475 +1475,23 @@ var Drawing;
             var center = segment.RightBezier.End.add(segment.LeftBezier.End).scale(0.5);
             var startDirection = segment.RightBezier.End.subtract(center);
             var endDirection = segment.LeftBezier.End.subtract(center);
-            this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
+            this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), Path.angle(startDirection), Path.angle(endDirection), false);
             // B] - line cap	
             // this.context.lineTo(segment.RightBezier.End.X, segment.RightBezier.End.Y);
             // right curve
             this.context.bezierCurveTo(segment.RightBezier.EndCP.X, segment.RightBezier.EndCP.Y, segment.RightBezier.StartCP.X, segment.RightBezier.StartCP.Y, segment.RightBezier.Start.X, segment.RightBezier.Start.Y);
+        };
+        /**
+         * Fill all drawn segments
+         */
+        CanvasPath.prototype.Draw = function () {
             this.context.closePath();
-            if (this.wireframe) {
-                // "wireframe" is better for debuging:
-                this.context.strokeStyle = this.color;
-                this.context.stroke();
-            }
-            else {
-                // filled shape is necessary for production:
-                this.context.fillStyle = this.color;
-                this.context.fill();
-            }
+            this.context.fill();
+            this.context.beginPath();
         };
         return CanvasPath;
     })(Path);
     Drawing.CanvasPath = CanvasPath;
-})(Drawing || (Drawing = {}));
-var Helpers;
-(function (Helpers) {
-    /**
-    * (High resolution) timer.
-    */
-    var VideoTimer = (function () {
-        /**
-         * Creates a timer and resets it.
-         */
-        function VideoTimer() {
-            /** Current time of the moment when the timer was paused. */
-            this.pauseTime = 0;
-            /** @type {Date|object} */
-            if (!window.performance) {
-                this.clock = Date;
-            }
-            else {
-                this.clock = window.performance; // High resolution timer
-            }
-            this.paused = false;
-            this.Reset();
-        }
-        Object.defineProperty(VideoTimer.prototype, "StartTime", {
-            get: function () { return this.startTime; },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Get time ellapsed since the last clock reset
-         */
-        VideoTimer.prototype.CurrentTime = function () {
-            return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
-        };
-        /**
-         * Set the timer to a specific point (in milliseconds)
-         */
-        VideoTimer.prototype.SetTime = function (milliseconds) {
-            this.Reset();
-            this.startTime += milliseconds;
-        };
-        /**
-         * Pause the timer
-         */
-        VideoTimer.prototype.Pause = function () {
-            this.pauseTime = this.CurrentTime();
-            this.paused = true;
-        };
-        /**
-         * Unpause the timer
-         */
-        VideoTimer.prototype.Resume = function () {
-            this.paused = false;
-            this.SetTime(-this.pauseTime);
-        };
-        /**
-         * Start counting from zero
-         */
-        VideoTimer.prototype.Reset = function () {
-            this.startTime = this.clock.now();
-        };
-        return VideoTimer;
-    })();
-    Helpers.VideoTimer = VideoTimer;
-})(Helpers || (Helpers = {}));
-/// <reference path="Path" />
-/// <reference path="../Helpers/VideoTimer" />
-var Drawing;
-(function (Drawing) {
-    var Vector2 = Helpers.Vector2;
-    /**
-     * Set of brush properties that have effect on the outcome
-     */
-    var BrushInstance = (function () {
-        function BrushInstance(mass, friction, size) {
-            this.mass = mass;
-            this.friction = friction;
-            this.size = size;
-        }
-        Object.defineProperty(BrushInstance.prototype, "Mass", {
-            get: function () { return this.mass; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BrushInstance.prototype, "Friction", {
-            get: function () { return this.friction; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BrushInstance.prototype, "Size", {
-            get: function () { return this.size; },
-            enumerable: true,
-            configurable: true
-        });
-        return BrushInstance;
-    })();
-    /**
-     * Current cursor
-     * - implementation of the "filter" in the original algorithm
-     */
-    var Cursor = (function () {
-        function Cursor(calculateSpeed, timer) {
-            this.calculateSpeed = calculateSpeed;
-            this.timer = timer;
-        }
-        /**
-         * @param	{Vector2}		position	The starting point of the cursor.
-         * @param	{BrushInstance} brush  		Physical properties of the brush.
-         */
-        Cursor.prototype.Reset = function (position, brush) {
-            this.brush = brush;
-            this.position = position;
-            this.startPosition = position;
-            this.previousPosition = position;
-            this.previousPressure = -1; // negative means, there is no pressure information yet
-            this.mousePosition = position;
-            this.acceleration = new Vector2(0, 0);
-            this.velocity = new Vector2(0, 0);
-            this.firstSegment = true;
-        };
-        /**
-         * Apply force created by mouse movement
-         * @param 	{Vector2}	mouse 			Mouse position
-         * @param	{number}	elapsedFrames	The number of frames elapsed since last movement
-         */
-        Cursor.prototype.Apply = function (mouse, elapsedFrames) {
-            // calculate the force
-            var force = mouse.subtract(this.position);
-            if (force.getSizeSq() < Cursor.threshold) {
-                return false; // too subtle movement
-            }
-            // calculate acceleration and velocity
-            this.acceleration = force.scale(1 / this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
-            this.velocity = this.velocity.add(this.acceleration);
-            if (this.velocity.getSizeSq() < Cursor.threshold) {
-                return false; // nearly no movement (a "heavy" brush)
-            }
-            // destroy unnecessary references
-            this.mousePosition = mouse;
-            mouse = null;
-            force = null;
-            this.acceleration = null;
-            // calculate the angle of the mouse
-            this.angle = this.velocity.getNormal();
-            // apply the drag of the digital drawing tool
-            this.velocity = this.velocity.scale(1 - this.brush.Friction); // more friction means less movement
-            // update position
-            this.position = this.position.add(this.velocity.scale(elapsedFrames));
-            return true; // there is something to render
-        };
-        /**
-         * Draw next segment
-         */
-        Cursor.prototype.Draw = function (path, pressure) {
-            // the quicker the brush moves, the smaller print it leaves 
-            var relativeSpeed = this.calculateSpeed === true ? this.velocity.getSize() / (this.brush.Size * this.brush.Size) : 0; // set to 0 if no speed correction is used
-            var width = this.getRadius(pressure, relativeSpeed);
-            var delta = this.angle.scale(width);
-            if (this.firstSegment) {
-                path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta), this.timer.CurrentTime());
-                this.firstSegment = false;
-            }
-            path.ExtendPath(this.position.add(delta), this.position.subtract(delta), this.timer.CurrentTime());
-            path.Draw();
-        };
-        Cursor.prototype.StartPath = function (path, pt, pressure) {
-            path.StartPath(pt, this.getRadius(pressure, 0));
-        };
-        /**
-         * Calculate current radius from pressure and speed of the cursor.
-         */
-        Cursor.prototype.getRadius = function (pressure, speed) {
-            // I must interpolate the pressure between the last point and current pressure in the 
-            if (this.previousPressure < 0)
-                this.previousPressure = pressure;
-            var interpolatedPressure = this.interpolatePressure(pressure);
-            var radius = this.speedFactor(speed) * this.brush.Size * interpolatedPressure / 2;
-            // save for next time
-            this.previousPosition = this.position;
-            this.previousPressure = interpolatedPressure;
-            return radius;
-        };
-        /**
-         * Get current pressure - achieve smooth pressure gradients
-         */
-        Cursor.prototype.interpolatePressure = function (mousePressure) {
-            var d1 = this.position.distanceTo(this.previousPosition);
-            var d2 = this.position.distanceTo(this.mousePosition);
-            if (d1 === 0 && d2 === 0) {
-                return mousePressure; // I don't have to interpolate
-            }
-            return (d1 / (d1 + d2)) * (mousePressure - this.previousPressure) + this.previousPressure;
-        };
-        /**
-         * Determine the effect of the speed on thickness of the path
-         */
-        Cursor.prototype.speedFactor = function (speed) {
-            return Math.max(1 - speed, 0.4);
-        };
-        /** Mouse movement threshold - ingore too subtle mouse movements */
-        Cursor.threshold = 1;
-        return Cursor;
-    })();
-    /**
-     * This class is an implementation of the algorithm originally created
-     * in 1989 by Paul Haeberli - see http://www.sgi.com/grafica/dyna/index.html
-     * The algorithm is based on physical properties of an object which is guided
-     * by mouse movement.
-     */
-    var DynaDraw = (function () {
-        /**
-         * Initialise new instance of DynaDraw
-         */
-        function DynaDraw(slowSimulation, minBrushSize, maxBrushSize, timer) {
-            var _this = this;
-            this.slowSimulation = slowSimulation;
-            this.minBrushSize = minBrushSize;
-            this.maxBrushSize = maxBrushSize;
-            /** Physical constants */
-            this.minMass = 5;
-            this.maxMass = 20;
-            this.minFriction = 0.3; // 0.4 is experimentaly derived constant, that gives nice results for all weights
-            this.maxFriction = 0.45;
-            /**
-             * Each brush has different properties - larger brushes are heavier and have greater drag
-             */
-            this.brushes = {};
-            this.oneFrame = 1000 / 60; // 60 Hz in milliseconds
-            this.cursor = new Cursor(slowSimulation, timer); // when slow simulation is on, use width adjustments when moving fast
-            if (slowSimulation === true) {
-                requestAnimationFrame(function (time) {
-                    _this.lastAnimationTime = time;
-                    _this.Tick(time);
-                });
-            }
-            else {
-                requestAnimationFrame(function () { return _this.TickWhile(); });
-            }
-        }
-        DynaDraw.prototype.interpolateMass = function (brushSize) {
-            return this.minMass + (this.maxMass - this.minMass) * (brushSize - this.minBrushSize) / (this.maxBrushSize - this.minBrushSize);
-        };
-        DynaDraw.prototype.interpolateFriction = function (brushSize) {
-            return this.maxFriction - (this.maxFriction - this.minFriction) * (brushSize - this.minBrushSize) / (this.maxBrushSize - this.minBrushSize);
-        };
-        DynaDraw.prototype.GetBrush = function (brushSize) {
-            if (!this.brushes[brushSize]) {
-                //this.brushes[brushSize]	= new BrushInstance(this.interpolateMass(brushSize), this.interpolateFriction(brushSize), brushSize); 
-                this.brushes[brushSize] = new BrushInstance(this.minMass, this.maxFriction, brushSize);
-            }
-            return this.brushes[brushSize];
-        };
-        /**
-         * Start drawing a new path with a given color and brush size.
-         * @param	{Vector2}		position	Cursor state information
-         * @param	{number}		pressure	Cursor pressure
-         * @param	{string} 		color		CSS value of the color
-         * @param	{number} 		brushSize	The size of the selected brush
-         */
-        DynaDraw.prototype.StartPath = function (position, pressure, brushSize, path) {
-            this.cursor.Reset(position, this.GetBrush(brushSize));
-            this.position = position;
-            this.pressure = pressure;
-            this.path = path;
-            this.cursor.StartPath(this.path, position, pressure);
-        };
-        /**
-         * Animate cursor movement
-         * @param	{Vector2}		position	Cursor state information
-         * @param	{number}		pressure	Cursor pressure
-         */
-        DynaDraw.prototype.NextPoint = function (position, pressure) {
-            this.position = position;
-            this.pressure = pressure;
-        };
-        /**
-         * Stop drawing the line when the mouse or digital pen is released.
-         * @param	{Vector2}		position	Cursor state information
-         * @param	{number}		pressure	Cursor pressure
-         */
-        DynaDraw.prototype.EndPath = function (position, pressure) {
-            this.position = position;
-        };
-        /**
-         * Simulate brush's movement frame by frame as long as it keeps moving.
-         * This approach will be more responsive (the path will always reach the cursor before it moves in a different direction),
-         * but the resulting curves aren't as nice and smooth as with the regular simulation.
-         */
-        DynaDraw.prototype.TickWhile = function () {
-            var _this = this;
-            if (!!this.position) {
-                while (this.cursor.Apply(this.position, 1)) {
-                    this.cursor.Draw(this.path, this.pressure);
-                }
-                this.position = null; // skip Apply(..) that will return false next time
-            }
-            // do the next tick
-            requestAnimationFrame(function (time) { return _this.TickWhile(); }); // ~ 60 FPS
-        };
-        DynaDraw.prototype.Tick = function (time) {
-            var _this = this;
-            if (!!this.position) {
-                if (this.cursor.Apply(this.position, (time - this.lastAnimationTime) / this.oneFrame)) {
-                    this.cursor.Draw(this.path, this.pressure);
-                }
-                else {
-                    this.position = null; // skip Apply(..) that will return false next time	
-                }
-            }
-            // do the next tick
-            this.lastAnimationTime = time;
-            requestAnimationFrame(function (time) { return _this.Tick(time); }); // ~ 60 FPS
-            //setTimeout(() => this.Tick(time + 1), 1); // ~ 1000 FPS
-            //setTimeout(() => this.Tick(time + 30), 30); // ~ 30 FPS
-            //setTimeout(() => this.Tick(time + 200), 200); // ~ 30 FPS
-        };
-        return DynaDraw;
-    })();
-    Drawing.DynaDraw = DynaDraw;
-})(Drawing || (Drawing = {}));
-/// <reference path="./DrawingStrategy" />
-/// <reference path="../helpers/Vector" />
-/// <reference path="../helpers/State" />
-/// <reference path="../helpers/HTML" />
-/// <reference path="../helpers/SVG" />
-/// <reference path="../helpers/Spline" />
-/// <reference path="../helpers/VideoEvents" />
-/// <reference path="../settings/BrushSettings" />
-/// <reference path="../UI/BasicElements" />
-/// <reference path="DynaDraw" />
-/// <reference path="Path" />
-var Drawing;
-(function (Drawing) {
-    var Vector2 = Helpers.Vector2;
-    var HTML = Helpers.HTML;
-    var DrawingStrategy = (function () {
-        /**
-         * Init general things
-         */
-        function DrawingStrategy(slowSimulation) {
-            this.slowSimulation = slowSimulation;
-            // wrapper
-            this.canvasWrapper = new UI.SimpleElement("div");
-            HTML.SetAttributes(this.canvasWrapper.GetHTML(), { class: "vector-video-canvas-wrapper" });
-            // settings will be set later
-            this.settings = {
-                Color: "",
-                Size: 0
-            };
-            // collection of all paths
-            this.paths = [];
-        }
-        /**
-         * Allow acces to the canvas element.
-         */
-        DrawingStrategy.prototype.GetCanvas = function () {
-            return this.canvasWrapper;
-        };
-        DrawingStrategy.prototype.InitDynaDraw = function (minBrushSize, maxBrushSize, timer) {
-            // init DynaDraw
-            this.dynaDraw = new Drawing.DynaDraw(this.slowSimulation, minBrushSize, maxBrushSize, timer);
-        };
-        /**
-         * Current brush settings
-         * @return {object} Settings.
-         */
-        DrawingStrategy.prototype.GetCurrentBrushSettings = function () {
-            return this.settings;
-        };
-        /**
-         * Set current brush size
-         * @param   size    The new size of the brush (line thickness)
-         */
-        DrawingStrategy.prototype.SetBrushSize = function (size) {
-            this.settings.Size = size.Size;
-        };
-        /**
-         * Set current brush color
-         * @param   color   The new color of the brush
-         */
-        DrawingStrategy.prototype.SetBrushColor = function (color) {
-            this.settings.Color = color.CssValue;
-        };
-        /**
-         * Process next state and
-         */
-        DrawingStrategy.prototype.ProcessNewState = function (cursor) {
-            try {
-                var nextPoint = new Vector2(cursor.X, cursor.Y);
-                if (cursor.Pressure > 0) {
-                    if (!this.lastState || this.lastState.Pressure === 0) {
-                        this.StartLine(nextPoint, cursor.Pressure);
-                    }
-                    else {
-                        this.ContinueLine(nextPoint, cursor.Pressure);
-                    }
-                }
-                else if (this.lastState && this.lastState.Pressure > 0) {
-                    this.EndLine(nextPoint);
-                }
-            }
-            catch (err) {
-                console.log("ProcessNewState error: ", err);
-            }
-            this.lastState = cursor;
-        };
-        /**
-         *
-         */
-        DrawingStrategy.prototype.StartLine = function (point, pressure) {
-            throw new Error("Not implemented");
-        };
-        DrawingStrategy.prototype.ContinueLine = function (point, pressure) {
-            this.dynaDraw.NextPoint(point, pressure);
-        };
-        DrawingStrategy.prototype.EndLine = function (point) {
-            this.dynaDraw.EndPath(point, 0);
-        };
-        /**
-         * Clear everything.
-         */
-        DrawingStrategy.prototype.ClearCanvas = function () {
-            throw new Error("Not implemented");
-        };
-        /**
-         * Adapt the canvas to the size of the container
-         */
-        DrawingStrategy.prototype.Stretch = function () {
-            throw new Error("Not implemented");
-        };
-        /**
-         * Scale the content according to given factor
-         */
-        DrawingStrategy.prototype.Scale = function (center, factor) {
-            throw new Error("Not implemented");
-        };
-        /**
-         * Clear the canvas and draw everything from the very start until now
-         */
-        DrawingStrategy.prototype.RedrawEverything = function () {
-            this.ClearCanvas();
-            for (var i = 0; i < this.paths.length; i++) {
-                var element = this.paths[i];
-                element.Redraw();
-            }
-        };
-        return DrawingStrategy;
-    })();
-    Drawing.DrawingStrategy = DrawingStrategy;
 })(Drawing || (Drawing = {}));
 /// <reference path="./DrawingStrategy.ts" />
 /// <reference path="../helpers/Vector.ts" />
@@ -1745,7 +1502,6 @@ var Drawing;
 /// <reference path="../helpers/VideoEvents.ts" />
 /// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
-/// <reference path="DynaDraw" />
 /// <reference path="Path" />
 var Drawing;
 (function (Drawing) {
@@ -1755,17 +1511,22 @@ var Drawing;
      * and renders the lines on the blackboard.
      * This class uses SVG (http://www.w3.org/TR/SVG) for visualising the lines.
      */
-    var SVGDrawer = (function (_super) {
-        __extends(SVGDrawer, _super);
-        function SVGDrawer(slowSimulation) {
-            _super.call(this, slowSimulation);
+    var SVGDrawer = (function () {
+        /**
+         * Init a new drawer.
+         * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
+         */
+        function SVGDrawer(curved) {
+            if (curved === void 0) { curved = true; }
+            this.curved = curved;
+        }
+        SVGDrawer.prototype.CreateCanvas = function () {
             // create the SVG canvas that will be drawn onto
             this.svg = SVG.CreateElement("svg");
             // background:
             var backgroundLayer = SVG.CreateElement("g");
             this.bg = SVG.CreateElement("rect", {
-                id: "background",
-                fill: UI.Color.BackgroundColor.CssValue
+                id: "background"
             });
             backgroundLayer.appendChild(this.bg);
             this.svg.appendChild(backgroundLayer);
@@ -1774,44 +1535,62 @@ var Drawing;
                 id: "canvas"
             });
             this.svg.appendChild(this.canvas);
-            this.canvasWrapper.GetHTML().appendChild(this.svg);
-        }
+            return this.svg;
+        };
+        /**
+         * Make ths canvas as large as possible (fill the parent element)
+         */
         SVGDrawer.prototype.Stretch = function () {
-            var parent = this.canvasWrapper.GetHTML().parentElement;
+            var parent = this.svg.parentElement;
             var width = parent.clientWidth;
             var height = parent.clientHeight;
             Helpers.SVG.SetAttributes(this.svg, {
                 width: width,
                 height: height
             });
-            this.svg = null; // remove reference
             Helpers.SVG.SetAttributes(this.bg, {
                 width: width,
                 height: height
             });
-            this.bg = null; // remove reference
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
         };
         /**
          * Make the canvas blank.
          */
-        SVGDrawer.prototype.ClearCanvas = function () {
+        SVGDrawer.prototype.ClearCanvas = function (color) {
             // remove all drawn parts
             while (!!this.canvas.firstChild) {
                 this.canvas.removeChild(this.canvas.firstChild);
             }
+            // change the bg color
+            SVG.SetAttributes(this.bg, { fill: color.CssValue });
+        };
+        /**
+         * Set color of a path, that will be drawn in the future.
+         * @param   {string} color       Color of the new path.
+         */
+        SVGDrawer.prototype.SetCurrentColor = function (color) {
+            this.currentColor = color;
         };
         /**
          * Start drawing a line.
-         * @param   point       Start point of the line.
-         * @param   pressure    The pressure of the pointing device in this point.
          */
-        SVGDrawer.prototype.StartLine = function (point, pressure) {
-            var path = new Drawing.SvgPath(this.settings.Color, this.canvas);
-            this.dynaDraw.StartPath(point, pressure, this.settings.Size, path);
+        SVGDrawer.prototype.CreatePath = function () {
+            return new Drawing.SvgPath(this.curved, this.currentColor.CssValue, this.canvas);
+        };
+        SVGDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
+            var wr = sourceWidth / this.svg.clientWidth;
+            var hr = sourceHeight / this.svg.clientHeight;
+            var min = Math.min(wr, hr);
+            // prepare scaling and translating
+            SVG.SetAttributes(this.svg, {
+                //"viewBox": `${this.svg.clientWidth - (min * sourceWidth / 2)} ${this.svg.clientHeight - (min * sourceHeight / 2)}  ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
+                "viewBox": "0 0 " + this.svg.clientWidth * min + " " + this.svg.clientHeight * min
+            });
+            return min;
         };
         return SVGDrawer;
-    })(Drawing.DrawingStrategy);
+    })();
     Drawing.SVGDrawer = SVGDrawer;
 })(Drawing || (Drawing = {}));
 /// <reference path="../Drawing/DrawingStrategy" />
@@ -1830,19 +1609,12 @@ var UI;
      */
     var ChangeColorButton = (function (_super) {
         __extends(ChangeColorButton, _super);
-        function ChangeColorButton(color) {
+        function ChangeColorButton(color, callback) {
             var _this = this;
             _super.call(this, ""); // empty text			
-            this.color = color;
-            // make the button a color option
-            Helpers.HTML.SetAttributes(this.GetHTML(), {
-                class: "option",
-                "data-color": color.CssValue,
-                title: color.Name,
-                style: "background-color: " + color.CssValue
-            });
+            this.SetColor(color);
             // announce color change when the button is clicked
-            this.GetHTML().onclick = function (e) { return _this.ChangeColor(e); };
+            this.GetHTML().onclick = function (e) { return !!callback ? callback() : _this.ChangeColor(e); }; // if there is some expicit callback, then call it
         }
         /**
          * Announce color change
@@ -1856,6 +1628,16 @@ var UI;
             // announce the change
             ChangeColorButton.active = this;
             VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
+        };
+        ChangeColorButton.prototype.SetColor = function (color) {
+            this.color = color;
+            // make the button a color option
+            Helpers.HTML.SetAttributes(this.GetHTML(), {
+                class: "option",
+                "data-color": color.CssValue,
+                title: color.Name,
+                style: "background-color: " + color.CssValue
+            });
         };
         return ChangeColorButton;
     })(UI.Button);
@@ -1871,8 +1653,11 @@ var UI;
             this.size = size;
             // there will be a dot corresponding to the brush size
             var dot = Helpers.HTML.CreateElement("span", {
-                style: "width: " + size.CssValue + ";\t\n\t\t\t\t\t\theight: " + size.CssValue + ";\n\t\t\t\t\t\tborder-radius: " + size.Size / 2 + size.Unit + "; \n\t\t\t\t\t\tdisplay: inline-block;\n\t\t\t\t\t\tbackground: black;"
+                style: "width: " + size.CssValue + ";\t\n\t\t\t\t\t\theight: " + size.CssValue + ";\n\t\t\t\t\t\tborder-radius: " + size.Size / 2 + size.Unit + "; \n\t\t\t\t\t\tdisplay: inline-block;\n\t\t\t\t\t\tbackground: black;\n\t\t\t\t\t\tmargin-top: " + -size.Size / 2 + size.Unit + ";",
+                class: "dot",
+                "data-size": size.Size
             });
+            //dot.textContent = size.Size.toString();
             this.GetHTML().appendChild(dot);
             // make the button a color option
             Helpers.HTML.SetAttributes(this.GetHTML(), {
@@ -1921,11 +1706,14 @@ var UI;
             this.stroke = 3;
             this.position = new Vector2(0, 0);
             this.CreateHTML();
+            this.scalingFactor = 1;
+            this.size = null;
         }
         /**
          * Prepares the cursor shape - a dot, but with zero size and no specific color (default white)
          */
         Cursor.prototype.CreateHTML = function () {
+            var _this = this;
             this.element = Helpers.HTML.CreateElement("div", { class: "ui-cursor" });
             this.svg = Helpers.SVG.CreateElement("svg", {
                 width: 2 * this.radius,
@@ -1933,16 +1721,23 @@ var UI;
             });
             this.element.appendChild(this.svg);
             // draw the dot at the center of the SVG element
-            this.dot = Helpers.SVG.CreateDot(new Helpers.Vector2(this.radius, this.radius), this.radius - this.stroke, UI.Color.BackgroundColor.CssValue);
+            this.bgColor = UI.Color.BackgroundColor;
+            this.color = UI.Color.ForegroundColor;
+            this.dot = Helpers.SVG.CreateDot(new Helpers.Vector2(this.radius, this.radius), this.radius - this.stroke, this.bgColor.CssValue);
             Helpers.SVG.SetAttributes(this.dot, {
-                "stroke": "white",
+                "stroke": this.color.CssValue,
                 "stroke-width": this.stroke
             });
             this.svg.appendChild(this.dot);
-            // I want to move the cursor to any point and the stuff behind the cursor must be visible
+            // I want to move the cursor to any point
             this.element.style.position = "absolute";
             this.element.style.background = "transparent";
             this.element.style.lineHeight = "0";
+            Helpers.VideoEvents.on(Helpers.VideoEventType.ClearCanvas, function (color) {
+                _this.bgColor = color;
+                Helpers.SVG.SetAttributes(_this.dot, { fill: _this.bgColor.CssValue });
+                _this.ChangeColor(_this.color); // make sure the border color is contrastant
+            });
         };
         Cursor.prototype.GetHTML = function () {
             return this.element;
@@ -1961,19 +1756,21 @@ var UI;
          * Change the color of brush outline according to current settings.
          */
         Cursor.prototype.ChangeColor = function (color) {
-            if (color.CssValue === UI.Color.BackgroundColor.CssValue) {
-                color = UI.Color.ForegroundColor; // make it inverse
+            if (color.CssValue === this.bgColor.CssValue) {
+                color = color.CssValue === UI.Color.ForegroundColor.CssValue ? UI.Color.BackgroundColor : UI.Color.ForegroundColor; // make it inverse
             }
             Helpers.SVG.SetAttributes(this.dot, {
                 stroke: color.CssValue
             });
+            this.color = color;
         };
         /**
          * Resize the brush according to current settings.
          */
         Cursor.prototype.ChangeSize = function (size) {
+            this.size = size; // update the last size scaled to
             var originalRadius = this.radius;
-            this.radius = size.Size / 2 - 2; // make the cursor a bit smaller than the path it will draw
+            this.radius = (size.Size * this.scalingFactor) / 2 - 2; // make the cursor a bit smaller than the path it will draw
             // resize the whole SVG element
             var calculatedSize = 2 * (this.radius + this.stroke);
             Helpers.SVG.SetAttributes(this.svg, {
@@ -1990,6 +1787,15 @@ var UI;
                 r: Math.max(1, this.radius - this.stroke) // do not allow zero or even negative radius
             });
         };
+        /**
+         * Set new cursor scaling factor to match the dimensions of the canvas and resize the cursor immediately.
+         */
+        Cursor.prototype.SetScalingFactor = function (sf) {
+            this.scalingFactor = sf;
+            if (!!this.size) {
+                this.ChangeSize(this.size);
+            }
+        };
         return Cursor;
     })();
     UI.Cursor = Cursor;
@@ -2003,12 +1809,15 @@ var UI;
 var UI;
 (function (UI) {
     var HTML = Helpers.HTML;
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
     /**
      * The board itself.
      */
     var Board = (function (_super) {
         __extends(Board, _super);
         /**
+         * Create a new board
          * @param	id	HTML element id attribute value
          */
         function Board(id) {
@@ -2019,12 +1828,14 @@ var UI;
             this.cursor = new UI.Cursor();
             this.AddChild(this.cursor);
             // make board's position relative for the cursor			
-            Helpers.HTML.SetAttributes(this.GetHTML(), { position: "relative" });
+            HTML.SetAttributes(this.GetHTML(), { position: "relative" });
             // move the cursor
-            Helpers.VideoEvents.on(Helpers.VideoEventType.CursorState, function (state) { return _this.UpdateCursorPosition(state); });
-            Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeBrushSize, function (state) { return _this.UpdateCursorSize(state); });
-            Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, function (state) { return _this.UpdateCursorColor(state); });
-            Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, function (state) { return _this.UpdateCursorColor(state); });
+            VideoEvents.on(VideoEventType.CursorState, function (state) { return _this.UpdateCursorPosition(state); });
+            VideoEvents.on(VideoEventType.CursorState, function (state) { return _this.UpdateCursorPosition(state); });
+            VideoEvents.on(VideoEventType.ChangeBrushSize, function (state) { return _this.UpdateCursorSize(state); });
+            VideoEvents.on(VideoEventType.ChangeColor, function (state) { return _this.UpdateCursorColor(state); });
+            VideoEvents.on(VideoEventType.ChangeColor, function (state) { return _this.UpdateCursorColor(state); });
+            VideoEvents.on(VideoEventType.CanvasScalingFactor, function (scalingFactor) { return _this.UpdateCursorScale(scalingFactor); });
         }
         Object.defineProperty(Board.prototype, "Width", {
             /** Get the width of the board in pixels */
@@ -2067,10 +1878,16 @@ var UI;
             this.cursor.ChangeSize(size);
         };
         /**
-         * Position the element
+         *
          */
         Board.prototype.UpdateCursorColor = function (color) {
             this.cursor.ChangeColor(color);
+        };
+        /**
+         * Position the element
+         */
+        Board.prototype.UpdateCursorScale = function (scalingFactor) {
+            this.cursor.SetScalingFactor(scalingFactor);
         };
         return Board;
     })(UI.Panel);
@@ -2085,18 +1902,30 @@ var UI;
     var TimeLine = (function (_super) {
         __extends(TimeLine, _super);
         function TimeLine(id) {
+            var _this = this;
             _super.call(this, "div", id);
             this.length = 0;
+            //
+            this.GetHTML().classList.add("ui-progressbar");
             // create progress bar
             var bar = new UI.SimpleElement("div");
-            bar.GetHTML().classList.add("ui-progressbar");
+            bar.GetHTML().classList.add("ui-progress");
             this.progresbar = bar;
             this.AddChild(bar);
+            // create progress bar
+            bar = new UI.SimpleElement("div");
+            bar.GetHTML().classList.add("ui-buffer");
+            this.bufferbar = bar;
+            this.AddChild(bar);
+            // skipping helper
+            this.arrow = new UI.SimpleElement("div", "0:00");
+            this.arrow.GetHTML().classList.add("ui-arrow");
+            this.AddChild(this.arrow);
             // init progresbar with
             this.Sync(0);
             // change video position, when the bar is clicked
-            this.GetHTML().onclick = this.OnClick;
-            // @todo show preloaded content
+            this.GetHTML().onclick = function (e) { return _this.OnClick(e); };
+            this.GetHTML().onmousemove = function (e) { return _this.OnMouseMove(e); };
         }
         Object.defineProperty(TimeLine.prototype, "Length", {
             set: function (length) { this.length = length; },
@@ -2111,10 +1940,27 @@ var UI;
             this.SkipTo(time);
         };
         /**
+         * Show the user an information about the point he is pointing to
+         */
+        TimeLine.prototype.OnMouseMove = function (e) {
+            var progress = (e.clientX - this.GetHTML().clientLeft) / this.GetHTML().clientWidth;
+            var time = Helpers.millisecondsToString(progress * this.length);
+            this.arrow.GetHTML().textContent = time;
+            this.arrow.GetHTML().style.left = progress * 100 + "%";
+        };
+        /**
          * Synchronize progress bar width with current time
+         * @param	{number} 	time	What is the current progress in milliseconds.
          */
         TimeLine.prototype.Sync = function (time) {
-            this.progresbar.GetHTML().style.width = this.length > 0 ? "" + time / this.length * 100 : "O%";
+            this.progresbar.GetHTML().style.width = this.length > 0 ? time / this.length * 100 + "%" : "O%";
+        };
+        /**
+         * Synchronize buffer bar width with current time
+         * @param	{number} 	time	How much is loaded in seconds.
+         */
+        TimeLine.prototype.SetBuffer = function (time) {
+            this.bufferbar.GetHTML().style.width = this.length > 0 ? time / this.length * 100 + "%" : "O%";
         };
         /**
          * @param	time	Time in milliseconds
@@ -2129,39 +1975,6 @@ var UI;
     })(UI.Panel);
     UI.TimeLine = TimeLine;
 })(UI || (UI = {}));
-var Helpers;
-(function (Helpers) {
-    /**
-    * Converts an integer value of seconds to a human-readable time format - "0:00"
-    * @param  s seconds
-    * @return Human readable time
-    */
-    function secondsToString(s) {
-        var time;
-        var minutes = Math.floor(s / 60);
-        time = minutes + ":";
-        var seconds = Math.floor(s % 60);
-        if (seconds <= 9) {
-            time += "0" + seconds.toString(10); // seconds should have leading zero if lesser than 10
-        }
-        else {
-            time += seconds.toString(10);
-        }
-        return time;
-    }
-    Helpers.secondsToString = secondsToString;
-    ;
-    /**
-    * Converts an integer value of milliseconds to a human-readable time format - "0:00"
-    * @param  ms     Time in milliseconds
-    * @return Human readable time
-    */
-    function millisecondsToString(ms) {
-        return secondsToString(Math.floor(ms / 1000));
-    }
-    Helpers.millisecondsToString = millisecondsToString;
-    ;
-})(Helpers || (Helpers = {}));
 /// <reference path="BasicElements" />
 /// <reference path="Buttons" />
 /// <reference path="Color" />
@@ -2185,23 +1998,35 @@ var UI;
          * @param	id				Unique ID of this recorder instance
          * @param	localization	List of translated strings
          */
-        function PlayerUI(id, localization) {
+        function PlayerUI(id, localization, timer) {
+            var _this = this;
             _super.call(this, "div", id + "-player");
             this.id = id;
             this.localization = localization;
-            /** The time of recording in milliseconds */
-            this.time = 0;
-            /** Ticking interval */
-            this.tickingInterval = 100;
+            this.timer = timer;
+            /** Ticking interval - not too often, but precise enough */
+            this.tickingInterval = 200;
+            this.GetHTML().classList.add("vector-video-wrapper");
             // prepare the board
             this.board = this.CreateBoard();
             this.AddChild(this.board);
             // prepare the panels
             var controls = new UI.Panel("div", id + "-controls");
+            controls.GetHTML().classList.add("vector-video-controls", "autohide", "ui-control");
             var buttons = this.CreateButtonsPanel();
-            controls.AddChildren([buttons]);
+            this.timeline = this.CreateTimeLine();
+            var timeStatus = this.CreateTimeStatus();
+            controls.AddChildren([buttons, this.timeline, timeStatus]);
             this.AddChild(controls);
+            // Set the duration of the video as soon as available
+            VideoEvents.on(VideoEventType.VideoInfoLoaded, function (meta) {
+                _this.videoDuration = meta.Length;
+                _this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
+                _this.timeline.Length = meta.Length;
+            });
+            VideoEvents.on(VideoEventType.BufferStatus, function (status) { return _this.timeline.SetBuffer(status); });
             // allow keyboard
+            this.BindKeyboardShortcuts();
         }
         /**
          *
@@ -2218,10 +2043,10 @@ var UI;
                         _this.PlayPause();
                         break;
                     case leftArrow:
-                        _this.timeline.SkipTo(_this.time - skipTime);
+                        _this.timeline.SkipTo(_this.timer.CurrentTime() - skipTime);
                         break;
                     case rightArrow:
-                        _this.timeline.SkipTo(_this.time + skipTime);
+                        _this.timeline.SkipTo(_this.timer.CurrentTime() + skipTime);
                         break;
                 }
             };
@@ -2230,7 +2055,7 @@ var UI;
          * Integrate the canvas into the UI elements tree
          */
         PlayerUI.prototype.AcceptCanvas = function (canvas) {
-            this.board.AddChild(canvas);
+            this.board.GetHTML().appendChild(canvas);
         };
         /**
          * Create the
@@ -2243,8 +2068,9 @@ var UI;
          * Create a panel containing the PLAY/PAUSE button and the upload button.
          */
         PlayerUI.prototype.CreateButtonsPanel = function () {
+            var _this = this;
             var buttonsPanel = new UI.Panel("div", this.id + "-pannels");
-            this.playPauseButton = new UI.Button(this.localization.Play, this.PlayPause);
+            this.playPauseButton = new UI.IconButton("icon-play", this.localization.Play, function (e) { return _this.PlayPause(); });
             buttonsPanel.AddChildren([this.playPauseButton]);
             return buttonsPanel;
         };
@@ -2254,29 +2080,32 @@ var UI;
         PlayerUI.prototype.PlayPause = function () {
             if (this.isPlaying === true) {
                 this.PausePlaying();
+                this.GetHTML().classList.remove("playing");
             }
             else {
                 this.StartPlaying();
+                this.GetHTML().classList.add("playing");
             }
         };
         /**
          * Start (or continue) recording
          */
         PlayerUI.prototype.StartPlaying = function () {
+            var _this = this;
             this.isPlaying = true;
-            this.playPauseButton.GetHTML().classList.add("ui-playing");
-            this.playPauseButton.GetHTML().innerText = this.localization.Pause;
+            this.playPauseButton.ChangeIcon("icon-pause");
+            this.playPauseButton.ChangeContent(this.localization.Pause);
             VideoEvents.trigger(VideoEventType.Start);
             // update time periodically
-            this.ticking = setInterval(this.UpdateCurrentTime, this.tickingInterval);
+            this.ticking = setInterval(function () { return _this.UpdateCurrentTime(); }, this.tickingInterval);
         };
         /**
          * Pause playback
          */
         PlayerUI.prototype.PausePlaying = function () {
             this.isPlaying = false;
-            this.playPauseButton.GetHTML().classList.remove("ui-playing");
-            this.playPauseButton.GetHTML().innerText = this.localization.Play;
+            this.playPauseButton.ChangeIcon("icon-play");
+            this.playPauseButton.ChangeContent(this.localization.Play);
             VideoEvents.trigger(VideoEventType.Pause);
             // do not update the status and timeline while paused
             clearInterval(this.ticking);
@@ -2286,29 +2115,29 @@ var UI;
             return timeline;
         };
         PlayerUI.prototype.CreateTimeStatus = function () {
-            var status = new UI.Panel("div", this.id + "-timeline");
-            var currentTime = new UI.SimpleElement("span", "0:00");
-            var slash = new UI.SimpleElement("span", "&nbsp;/&nbsp;");
-            var totalTime = new UI.SimpleElement("span", "0:00");
-            status.AddChildren([currentTime, slash, totalTime]);
+            var status = new UI.Panel("div", this.id + "-current-time");
+            status.GetHTML().classList.add("ui-time");
+            this.currentTime = new UI.SimpleElement("span", "0:00");
+            var slash = new UI.SimpleElement("span", " / ");
+            this.totalTime = new UI.SimpleElement("span", "0:00");
+            status.AddChildren([this.currentTime, slash, this.totalTime]);
             return status;
         };
         /**
          * @param	time	Current time in seconds
          */
         PlayerUI.prototype.UpdateCurrentTime = function () {
-            this.time += this.tickingInterval;
-            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.time);
-            this.timeline.GetHTML().style.width = this.Length > 0 ? this.time / this.Length + "%" : "0%";
+            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.timer.CurrentTime());
+            this.timeline.Sync(this.timer.CurrentTime());
         };
         return PlayerUI;
     })(UI.Panel);
     UI.PlayerUI = PlayerUI;
 })(UI || (UI = {}));
-/// <reference path="../helpers/HTML.ts" />
-/// <reference path="../helpers/VideoEvents.ts" />
-var VideoData;
-(function (VideoData) {
+/// <reference path="../Helpers/HTML.ts" />
+/// <reference path="../Helpers/VideoEvents.ts" />
+var AudioData;
+(function (AudioData) {
     var VideoEvents = Helpers.VideoEvents;
     var VideoEventType = Helpers.VideoEventType;
     var Errors = Helpers.Errors;
@@ -2320,8 +2149,8 @@ var VideoData;
         AudioSourceType[AudioSourceType["MP3"] = 0] = "MP3";
         AudioSourceType[AudioSourceType["OGG"] = 1] = "OGG";
         AudioSourceType[AudioSourceType["WAV"] = 2] = "WAV";
-    })(VideoData.AudioSourceType || (VideoData.AudioSourceType = {}));
-    var AudioSourceType = VideoData.AudioSourceType;
+    })(AudioData.AudioSourceType || (AudioData.AudioSourceType = {}));
+    var AudioSourceType = AudioData.AudioSourceType;
     /**
      * Class representing one audio source.
      */
@@ -2378,7 +2207,7 @@ var VideoData;
         };
         return AudioSource;
     })();
-    VideoData.AudioSource = AudioSource;
+    AudioData.AudioSource = AudioSource;
     /**
      * This is the audio player
      */
@@ -2397,7 +2226,7 @@ var VideoData;
                 this.InitAudio();
                 this.isReady = true;
                 // attach the player to the document
-                document.appendChild(this.audio);
+                document.documentElement.appendChild(this.audio);
                 console.log("Audio is available.");
             }
         }
@@ -2445,17 +2274,18 @@ var VideoData;
         // private functions section:
         // 
         AudioPlayer.prototype.InitAudio = function () {
+            var _this = this;
             // important audio events
             this.audio.onended = function () { return VideoEvents.trigger(VideoEventType.ReachEnd); };
-            this.audio.onpause = this.InitiatePause;
-            this.audio.ontimeupdate = this.ReportCurrentTime;
+            this.audio.onpause = function () { return _this.InitiatePause(); };
+            this.audio.ontimeupdate = function () { return _this.ReportCurrentTime(); };
             // synchronize audio playback with video
-            VideoEvents.on(VideoEventType.Start, this.Play);
-            VideoEvents.on(VideoEventType.Pause, this.Pause);
-            VideoEvents.on(VideoEventType.Stop, this.Pause);
-            VideoEvents.on(VideoEventType.ReachEnd, this.ReachedEnd);
-            VideoEvents.on(VideoEventType.Replay, this.Replay);
-            VideoEvents.on(VideoEventType.JumpTo, this.JumpTo);
+            VideoEvents.on(VideoEventType.Start, function () { return _this.Play(); });
+            VideoEvents.on(VideoEventType.Pause, function () { return _this.Pause(); });
+            VideoEvents.on(VideoEventType.Stop, function () { return _this.Pause(); });
+            VideoEvents.on(VideoEventType.ReachEnd, function () { return _this.ReachedEnd(); });
+            VideoEvents.on(VideoEventType.Replay, function () { return _this.Replay(); });
+            VideoEvents.on(VideoEventType.JumpTo, function (progress) { return _this.JumpTo(progress); });
             this.MonitorBufferingAsync();
         };
         ;
@@ -2518,19 +2348,18 @@ var VideoData;
          * Asynchronousely monitor current audio buffer
          */
         AudioPlayer.prototype.MonitorBufferingAsync = function () {
+            var _this = this;
             // Has the browser preloaded something since last time?
             // Change the css styles only if needed.
             var lastEnd = 0;
             this.checkPreloaded = setInterval(function () {
-                if (this.audio.canPlayThrough) {
-                    clearInterval(this.checkPreloaded); // no need to run this loop any more
+                var end = _this.audio.buffered.end(_this.audio.buffered.length - 1);
+                if (end !== lastEnd) {
+                    VideoEvents.trigger(VideoEventType.BufferStatus, end);
+                    lastEnd = end;
                 }
-                else {
-                    var end = this.audio.buffered.end(this.audio.buffered.length - 1);
-                    if (end !== lastEnd) {
-                        VideoEvents.trigger(VideoEventType.BufferStatus, end);
-                        lastEnd = end;
-                    }
+                if (end === _this.audio.duration) {
+                    clearInterval(_this.checkPreloaded);
                 }
             }, 1000); // every second check, how much is preloaded
         };
@@ -2568,23 +2397,348 @@ var VideoData;
         };
         return AudioPlayer;
     })();
-    VideoData.AudioPlayer = AudioPlayer;
-})(VideoData || (VideoData = {}));
-/// <reference path="AudioPlayer" />
+    AudioData.AudioPlayer = AudioPlayer;
+})(AudioData || (AudioData = {}));
+/// <reference path="../AudioData/AudioPlayer" />
 var VideoData;
 (function (VideoData) {
     /**
      *
      */
-    var VideoInfo = (function () {
-        function VideoInfo() {
+    var Metadata = (function () {
+        function Metadata() {
         }
-        return VideoInfo;
+        return Metadata;
     })();
-    VideoData.VideoInfo = VideoInfo;
+    VideoData.Metadata = Metadata;
 })(VideoData || (VideoData = {}));
+var VideoData;
+(function (VideoData) {
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
+    /**
+     * Commands are used to trigger some event at given moment.
+     */
+    var Command = (function () {
+        function Command(time) {
+            this.time = time;
+        }
+        Object.defineProperty(Command.prototype, "Time", {
+            get: function () { return this.time; },
+            enumerable: true,
+            configurable: true
+        });
+        Command.prototype.Execute = function () {
+            throw new Error("Not implemented");
+        };
+        return Command;
+    })();
+    VideoData.Command = Command;
+    var MoveCursor = (function (_super) {
+        __extends(MoveCursor, _super);
+        function MoveCursor(x, y, p, time) {
+            _super.call(this, time);
+            this.x = x;
+            this.y = y;
+            this.p = p;
+        }
+        Object.defineProperty(MoveCursor.prototype, "X", {
+            get: function () { return this.x; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MoveCursor.prototype, "Y", {
+            get: function () { return this.y; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MoveCursor.prototype, "P", {
+            get: function () { return this.p; },
+            enumerable: true,
+            configurable: true
+        });
+        MoveCursor.prototype.Execute = function () {
+            VideoEvents.trigger(VideoEventType.CursorState, new Helpers.CursorState(this.Time, this.x, this.y, this.p));
+        };
+        return MoveCursor;
+    })(Command);
+    VideoData.MoveCursor = MoveCursor;
+    var DrawNextSegment = (function (_super) {
+        __extends(DrawNextSegment, _super);
+        function DrawNextSegment() {
+            _super.apply(this, arguments);
+        }
+        DrawNextSegment.prototype.Execute = function () {
+            VideoEvents.trigger(VideoEventType.DrawSegment);
+        };
+        return DrawNextSegment;
+    })(Command);
+    VideoData.DrawNextSegment = DrawNextSegment;
+    var ChangeBrushColor = (function (_super) {
+        __extends(ChangeBrushColor, _super);
+        function ChangeBrushColor(color, time) {
+            _super.call(this, time);
+            this.color = color;
+        }
+        Object.defineProperty(ChangeBrushColor.prototype, "Color", {
+            get: function () { return this.color; },
+            enumerable: true,
+            configurable: true
+        });
+        ChangeBrushColor.prototype.Execute = function () {
+            VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
+        };
+        return ChangeBrushColor;
+    })(Command);
+    VideoData.ChangeBrushColor = ChangeBrushColor;
+    var ChangeBrushSize = (function (_super) {
+        __extends(ChangeBrushSize, _super);
+        function ChangeBrushSize(size, time) {
+            _super.call(this, time);
+            this.size = size;
+        }
+        Object.defineProperty(ChangeBrushSize.prototype, "Size", {
+            get: function () { return this.size; },
+            enumerable: true,
+            configurable: true
+        });
+        ChangeBrushSize.prototype.Execute = function () {
+            VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.size);
+        };
+        return ChangeBrushSize;
+    })(Command);
+    VideoData.ChangeBrushSize = ChangeBrushSize;
+    var ClearCanvas = (function (_super) {
+        __extends(ClearCanvas, _super);
+        function ClearCanvas(time, color) {
+            _super.call(this, time);
+            this.color = color;
+        }
+        Object.defineProperty(ClearCanvas.prototype, "Color", {
+            get: function () { return this.color; },
+            enumerable: true,
+            configurable: true
+        });
+        ClearCanvas.prototype.Execute = function () {
+            VideoEvents.trigger(VideoEventType.ClearCanvas, this.color);
+        };
+        return ClearCanvas;
+    })(Command);
+    VideoData.ClearCanvas = ClearCanvas;
+})(VideoData || (VideoData = {}));
+var Helpers;
+(function (Helpers) {
+    /**
+    * (High resolution) timer.
+    */
+    var VideoTimer = (function () {
+        /**
+         * Creates a timer and resets it.
+         */
+        function VideoTimer(running) {
+            /** Current time of the moment when the timer was paused. */
+            this.pauseTime = 0;
+            /** @type {Date|object} */
+            if (!window.performance) {
+                this.clock = Date;
+            }
+            else {
+                this.clock = window.performance; // High resolution timer
+            }
+            this.paused = !running; // default is false
+            this.Reset();
+        }
+        Object.defineProperty(VideoTimer.prototype, "StartTime", {
+            get: function () { return this.startTime; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Get time ellapsed since the last clock reset
+         */
+        VideoTimer.prototype.CurrentTime = function () {
+            return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
+        };
+        /**
+         * Set the timer to a specific point (in milliseconds)
+         */
+        VideoTimer.prototype.SetTime = function (milliseconds) {
+            this.Reset();
+            this.startTime += milliseconds;
+        };
+        /**
+         * Pause the timer
+         */
+        VideoTimer.prototype.Pause = function () {
+            this.pauseTime = this.CurrentTime();
+            this.paused = true;
+        };
+        /**
+         * Unpause the timer
+         */
+        VideoTimer.prototype.Resume = function () {
+            this.paused = false;
+            this.SetTime(-this.pauseTime);
+        };
+        /**
+         * Start counting from zero
+         */
+        VideoTimer.prototype.Reset = function () {
+            this.startTime = this.clock.now();
+        };
+        return VideoTimer;
+    })();
+    Helpers.VideoTimer = VideoTimer;
+})(Helpers || (Helpers = {}));
+/// <reference path="Command" />
 /// <reference path="../Helpers/State" />
-/// <reference path="../VideoData/VideoInfo" />
+/// <reference path="../Helpers/VideoTimer" />
+/// <reference path="../Helpers/VideoEvents" />
+/// <reference path="../Drawing/Path" />
+var VideoData;
+(function (VideoData) {
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
+    /**
+     * Chunk represents part of the whole video process.
+     * It starts in a specific time and contains list of commands and pre-rendered paths,
+     * that are used to render one chunk in a single moment without unnecessary looping through all commands.
+     * Each chunk contains an information about the last time the screen was erased.
+     */
+    var Chunk = (function () {
+        /*private*/ function Chunk(time, lastErase) {
+            this.time = time;
+            this.lastErase = lastErase;
+            this.initCommands = [];
+            this.commands = [];
+            this.cmdIterator = 0;
+            this.pathIterator = 0;
+        }
+        Object.defineProperty(Chunk.prototype, "StartTime", {
+            get: function () { return this.time; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Chunk.prototype, "LastErase", {
+            get: function () { return this.lastErase; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Chunk.prototype, "CurrentCommand", {
+            get: function () {
+                return this.commands[this.cmdIterator]; // if the index exceeds the bound of the array, undefined is returned
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Chunk.prototype.PeekNextCommand = function () {
+            return this.commands[this.cmdIterator + 1]; // if the index exceeds the bound of the array, undefined is returned
+        };
+        Chunk.prototype.MoveNextCommand = function () { this.cmdIterator++; };
+        /**
+         * Execute all initialising commands to make sure video is in the right state
+         * before continuing the playback. This is necessary when skipping to different point
+         * on the timeline and skipping rendering of some parts of the video using "lastErase" hints..
+         */
+        Chunk.prototype.ExecuteInitCommands = function () {
+            for (var i = 0; i < this.initCommands.length; i++) {
+                this.initCommands[i].Execute();
+            }
+        };
+        Chunk.prototype.GetCommand = function (i) {
+            return i < this.commands.length ? this.commands[i] : null;
+        };
+        Chunk.prototype.PushCommand = function (cmd) {
+            this.commands.push(cmd);
+        };
+        Object.defineProperty(Chunk.prototype, "Commands", {
+            get: function () {
+                return this.commands;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Chunk.prototype, "InitCommands", {
+            get: function () {
+                return this.initCommands;
+            },
+            set: function (initCmds) {
+                this.initCommands = initCmds;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Chunk.prototype.Render = function () {
+            throw new Error("Not implemented");
+        };
+        return Chunk;
+    })();
+    VideoData.Chunk = Chunk;
+    /**
+     * Concrete chunks:
+     */
+    var VoidChunk = (function (_super) {
+        __extends(VoidChunk, _super);
+        function VoidChunk() {
+            _super.apply(this, arguments);
+        }
+        Object.defineProperty(VoidChunk, "NodeName", {
+            get: function () { return "void"; },
+            enumerable: true,
+            configurable: true
+        });
+        VoidChunk.prototype.Render = function () {
+            /* Void.. */
+        };
+        return VoidChunk;
+    })(Chunk);
+    VideoData.VoidChunk = VoidChunk;
+    var PathChunk = (function (_super) {
+        __extends(PathChunk, _super);
+        function PathChunk(path, time, lastErase) {
+            _super.call(this, time, lastErase);
+            this.path = path;
+        }
+        Object.defineProperty(PathChunk, "NodeName", {
+            get: function () { return "path"; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PathChunk.prototype, "Path", {
+            get: function () { return this.path; },
+            enumerable: true,
+            configurable: true
+        });
+        PathChunk.prototype.Render = function () {
+            VideoEvents.trigger(VideoEventType.DrawPath);
+        };
+        return PathChunk;
+    })(Chunk);
+    VideoData.PathChunk = PathChunk;
+    var EraseChunk = (function (_super) {
+        __extends(EraseChunk, _super);
+        function EraseChunk(color, time, lastErase) {
+            _super.call(this, time, lastErase);
+            this.color = color;
+        }
+        Object.defineProperty(EraseChunk, "NodeName", {
+            get: function () { return "erase"; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EraseChunk.prototype, "Color", {
+            get: function () { return this.color; },
+            enumerable: true,
+            configurable: true
+        });
+        EraseChunk.prototype.Render = function () {
+            VideoEvents.trigger(VideoEventType.ClearCanvas, this.color);
+        };
+        return EraseChunk;
+    })(Chunk);
+    VideoData.EraseChunk = EraseChunk;
+})(VideoData || (VideoData = {}));
+/// <referece path="../VideoData/Video" />
 /// <reference path="HTML" />
 var Helpers;
 (function (Helpers) {
@@ -2640,16 +2794,17 @@ var Helpers;
         File.ReadXmlAsync = function (url, success, error) {
             var req = new XMLHttpRequest();
             req.open("GET", url, true);
-            req.onerror = function (e) { return error(); };
-            req.ontimeout = function (e) { return error(); };
+            req.onerror = function (e) { return error(req.status); };
+            req.ontimeout = function (e) { return error(req.status); };
             req.onload = function (e) {
                 if (req.status === 200) {
                     success(req.responseXML);
                 }
                 else {
-                    error();
+                    error(req.status);
                 }
             };
+            req.send();
         };
         /**
          * Download a Blob with a specified name
@@ -2659,7 +2814,7 @@ var Helpers;
             var a = Helpers.HTML.CreateElement("a", {
                 css: "display: none"
             });
-            document.appendChild(a);
+            document.documentElement.appendChild(a);
             var url = URL.createObjectURL(blob);
             Helpers.HTML.SetAttributes(a, {
                 href: url,
@@ -2692,7 +2847,9 @@ var Helpers;
     })();
     Helpers.File = File;
 })(Helpers || (Helpers = {}));
-/// <reference path="VideoInfo" />
+/// <reference path="Metadata" />
+/// <reference path="Command" />
+/// <reference path="Chunk" />
 /// <reference path="ICursor" />
 /// <reference path="../VideoFormat/IO" />
 /// <reference path="../Helpers/File" />
@@ -2700,482 +2857,1039 @@ var Helpers;
 /// <reference path="../Helpers/VideoEvents" />
 /// <reference path="../Helpers/State" />
 /// <reference path="../Helpers/VideoTimer" />
+/// <reference path="../Drawing/Path" />
 var VideoData;
 (function (VideoData) {
-    var StateType = Helpers.StateType;
-    var VideoTimer = Helpers.VideoTimer;
-    var VideoEvents = Helpers.VideoEvents;
-    var VideoEventType = Helpers.VideoEventType;
     var Video = (function () {
         /**
-         *
+         * Video data storage
          */
-        function Video(url, formatReader) {
-            this.formatReader = formatReader;
-            this.timer = null;
-            this.hasData = false;
-            this.isPlaying = false;
-            Helpers.File.ReadXmlAsync(url, this.ProcessInputFile, this.ReadingFileError);
-            // 
-            VideoEvents.on(VideoEventType.CanvasSize, this.CanvasSizeChanged);
-            VideoEvents.on(VideoEventType.Start, this.Start);
-            VideoEvents.on(VideoEventType.Continue, this.Start);
-            VideoEvents.on(VideoEventType.Pause, this.Pause);
-            VideoEvents.on(VideoEventType.Stop, this.Pause);
-            VideoEvents.on(VideoEventType.JumpTo, this.JumpTo);
-            VideoEvents.on(VideoEventType.ReachEnd, this.Pause);
+        function Video() {
+            this.chunks = [];
         }
-        Object.defineProperty(Video.prototype, "Info", {
-            get: function () { return this.info; },
+        Object.defineProperty(Video.prototype, "Metadata", {
+            /** Video information. */
+            get: function () { return this.metadata; },
+            set: function (value) { this.metadata = value; },
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Video.prototype, "CurrentChunk", {
+            /** Reference to current chunk */
+            get: function () {
+                return this.chunks[this.currentChunk]; // if the index exceeds the bound of the array, undefined is returned
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /** Look for the next chunk, but do not move the iterator. */
+        Video.prototype.PeekNextChunk = function () {
+            return this.chunks[this.currentChunk + 1];
+        };
+        /** Jump to the next chunk */
+        Video.prototype.MoveNextChunk = function () { this.currentChunk++; };
         /**
-         * Process the downloaded XML source.
+         * Add a new chunk at the end of the data.
          */
-        Video.prototype.ProcessInputFile = function (xml) {
-            this.hasData = true;
-            this.formatReader.ReadFile(xml);
-            // load video information
-            this.info = this.formatReader.GetInfo();
-            VideoEvents.trigger(VideoEventType.VideoInfoLoaded, this.info); // anyone can have the info
+        Video.prototype.PushChunk = function (chunk) {
+            this.currentChunk = this.chunks.push(chunk) - 1;
+            return this.currentChunk;
         };
-        /**
-         * Handle an error that occured while downloading or parsing the input XML document.
+        /**.
+         * Change current chunk to the one before the very first
          */
-        Video.prototype.ReadingFileError = function (e) {
-            Helpers.Errors.Report(Helpers.ErrorType.Fatal, "Source file couldn't be read and the video won't be played.");
-        };
-        /**
-         * Compute image scaling factor based on original canvas size and current canvas size
-         */
-        Video.prototype.CanvasSizeChanged = function (width, height) {
-            // make sure it doesn't get out of current user's canvas
-            this.scale = Math.min(width / this.info.Width, height / this.info.Height);
-        };
-        /**
-         * Acommodate the position to current canvas size
-         */
-        Video.prototype.CorrectCoords = function (pos) {
-            return {
-                x: pos.x * this.scale,
-                y: pos.y * this.scale
-            };
-        };
-        Video.prototype.Start = function () {
-            if (this.timer === null) {
-                this.timer = new VideoTimer();
-            }
-            else {
-                this.timer.Resume();
-            }
-            this.isPlaying = true;
-            this.Tick(); // this will render as much as needed and then will become async
-        };
-        Video.prototype.Pause = function () {
-            this.timer.Pause();
-            this.isPlaying = false; // Tick() will stop after next animation frame (in 1/60s)
-        };
-        Video.prototype.Replay = function () {
-            //this
-        };
-        Video.prototype.JumpTo = function (progress) {
-            var wasPlaying = this.isPlaying;
-            this.Pause();
-            var time = progress * this.info.Length * 1000; // convert to milliseconds
-            if (time >= this.timer.CurrentTime()) {
-                this.SkipForward(time);
-            }
-            else {
-                this.SkipBackward(time);
-            }
-            if (wasPlaying === true) {
-                this.Start(); // continue from the new point in time
-            }
-        };
-        Video.prototype.SkipForward = function (time) {
-            this.timer.SetTime(time);
-            this.timer.Pause();
-            while (line.FinishTime <= this.formatReader.GetNextPrerenderedLineFinishTime()) {
-                var line = this.formatReader.GetNextPrerenderedLine();
-                this.PublishWholeLine(line);
-            }
-            this.Tick(); // make as many steps as needed
-            // video is paused, so ticking won't continue after it is synchronised
-            // rendering request will also be made
-        };
-        Video.prototype.SkipBackward = function (time) {
-            // rewind... (erase everything)
-            this.
-                // ...and then skip forward
-                Tick();
-        };
-        Video.prototype.PublishWholeLine = function (line) {
-            // @todo
+        Video.prototype.Rewind = function () {
+            this.currentChunk = 0;
         };
         /**
-         * Stop playback when end is reached.
+         * Rewind one item before the very first one - the next MoveNextChunk will enter the first chunk.
          */
-        Video.prototype.ReachedEnd = function () {
-            this.Pause();
+        Video.prototype.RewindMinusOne = function () {
+            this.currentChunk = -1;
         };
         /**
-         * Inform everyone, that I have reached the end
+         * Go on in time until you find the given timeframe and skip to the very preciding "erase" chunk.
+         * If the "erase" chunk preceded current chunk, then there are no erased chunks to fastforward and currentChunk
+         * remains untouched.
+         * @param	{number}	time			Searched time point in milliseconds
          */
-        Video.prototype.ForceReachedEnd = function () {
-            VideoEvents.trigger(VideoEventType.ReachEnd);
+        Video.prototype.FastforwardErasedChunksUntil = function (time) {
+            var c = this.FindChunk(time, +1); // seek among the future chunks
+            this.currentChunk = Math.max(this.currentChunk, this.chunks[c].LastErase);
         };
         /**
-         * Keep the video running (as long as it is not paused).
+         * Go back in time until you find the given timeframe and skip to the very preceding "erase" chunk.
+         * @param	{number}	time			Searched time point in milliseconds
          */
-        Video.prototype.Tick = function () {
-            // number of states that have drawn something on the canvas			
-            var drawingStates = 0;
-            // apply as many states as needed (usually 1 or 2)
-            while (this.nextState.GetTime() <= this.timer.CurrentTime()) {
-                drawingStates += this.ProcessState(this.nextState);
-                this.nextState = this.formatReader.GetNextState();
-                if (!this.nextState) {
-                    // I have reached the end
-                    this.ForceReachedEnd();
-                }
-            }
-            // request frame rendering (if something interesting happened, of course)
-            if (drawingStates > 0) {
-                this.RequestRendering();
-            }
-            // repaint on next animation frame
-            if (this.isPlaying) {
-                requestAnimationFrame(this.Tick); // 1 frame takes about 1/60s
-            }
+        Video.prototype.RewindToLastEraseBefore = function (time) {
+            var c = this.FindChunk(time, -1); // seek among the past chunks
+            this.currentChunk = this.chunks[c].LastErase;
         };
         /**
-         * Tell the drawer that there is something it should render...
+         * Find a chunk that starts at or after "time" and ends after "time"
+         * @param	{number}	time			Searched time point in milliseconds
+         * @param	{number}	directionHint	1 for searching in the future, -1 to search in the past
          */
-        Video.prototype.RequestRendering = function () {
-            VideoEvents.trigger(VideoEventType.Render);
-        };
-        /**
-         * Returns 1 if something is drawn, 0 otherwise
-         * @param	state	Next state
-         */
-        Video.prototype.ProcessState = function (state) {
-            switch (state.GetType()) {
-                case StateType.ChangeBrushSize:
-                    this.ChangeBrushSize(state);
-                    return 0;
-                case StateType.ChangeColor:
-                    this.ChangeColor(state);
-                    return 0;
-                case StateType.Cursor:
-                    this.MoveCursor(state);
-                    // nothing is redrawn if the cursor is just 'hovering' over the canvas
-                    // - unless this is where the line ends...
-                    return state.Pressure > 0
-                        || this.lastCursorState.Pressure > 0 ? 1 : 0;
+        Video.prototype.FindChunk = function (time, directionHint) {
+            var foundChunk = this.currentChunk;
+            while ((!!this.chunks[foundChunk] && !!this.chunks[foundChunk + 1])
+                && (this.chunks[foundChunk].StartTime > time || this.chunks[foundChunk].StartTime <= time)) {
+                foundChunk += directionHint;
             }
-        };
-        Video.prototype.ChangeColor = function (state) {
-            VideoEvents.trigger(VideoEventType.ChangeColor, state.Color.CssValue);
-        };
-        Video.prototype.ChangeBrushSize = function (state) {
-            VideoEvents.trigger(VideoEventType.ChangeBrushSize, state.Size.Size * this.scale);
-        };
-        Video.prototype.MoveCursor = function (state) {
-            VideoEvents.trigger(VideoEventType.CursorState, state);
+            if (!this.CurrentChunk) {
+                return 0; // I haven't found, what I was looking for, return the first chunk ever
+            }
+            if (this.CurrentChunk.StartTime < time) {
+                return this.chunks.length - 1; // return the very last chunk
+            }
+            return foundChunk;
         };
         return Video;
     })();
     VideoData.Video = Video;
 })(VideoData || (VideoData = {}));
+/// <reference path="../../Helpers/SVG" />
+/// <reference path="../../VideoData/Command" />
+/// <reference path="../../Helpers/HelperFunctions" />
 var VideoFormat;
 (function (VideoFormat) {
-    /**
-     *
-     */
-    (function (AnimatedSVGNodeType) {
-        AnimatedSVGNodeType[AnimatedSVGNodeType["Info"] = 0] = "Info";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["Author"] = 1] = "Author";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["Title"] = 2] = "Title";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["Description"] = 3] = "Description";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["Length"] = 4] = "Length";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["AudioTracks"] = 5] = "AudioTracks";
-        AnimatedSVGNodeType[AnimatedSVGNodeType["AudioSource"] = 6] = "AudioSource";
-    })(VideoFormat.AnimatedSVGNodeType || (VideoFormat.AnimatedSVGNodeType = {}));
-    var AnimatedSVGNodeType = VideoFormat.AnimatedSVGNodeType;
-    /**
-     *
-     */
-    (function (AnimatedSVGAttributeType) {
-        AnimatedSVGAttributeType[AnimatedSVGAttributeType["AudioType"] = 0] = "AudioType";
-    })(VideoFormat.AnimatedSVGAttributeType || (VideoFormat.AnimatedSVGAttributeType = {}));
-    var AnimatedSVGAttributeType = VideoFormat.AnimatedSVGAttributeType;
-    /**
-     *
-     */
-    var AnimatedSVG = (function () {
-        function AnimatedSVG() {
-        }
-        Object.defineProperty(AnimatedSVG, "Namespace", {
-            /** The namespace of the Animated SVG */
-            get: function () { return "http://www.rozsival.com/khan-academy/animated-svg"; },
-            enumerable: true,
-            configurable: true
-        });
+    var SVGAnimation;
+    (function (SVGAnimation) {
+        var MoveCursor = VideoData.MoveCursor;
+        var ChangeBrushColor = VideoData.ChangeBrushColor;
+        var ChangeBrushSize = VideoData.ChangeBrushSize;
+        var ClearCanvas = VideoData.ClearCanvas;
+        var DrawNextSegment = VideoData.DrawNextSegment;
+        var SVGA = Helpers.SVGA;
+        var precise = Helpers.precise;
+        var TIME_PRECISION = 2;
+        var COORDS_PRECISION = 3;
+        var PRESSURE_PRECISION = 4;
         /**
-         * Convert the AnimatedSVGNodeType value to string name of XML node.
+         * CommandFactory is the basis of "Chain of responsibility" pattern implementation.
+         * Derived classes are used to convert commands to or from SVG nodes.
          */
-        AnimatedSVG.TypeToName = function (type) {
-            switch (type) {
-                case AnimatedSVGNodeType.Info: return "info";
-                case AnimatedSVGNodeType.Author: return "author";
-                case AnimatedSVGNodeType.Title: return "title";
-                case AnimatedSVGNodeType.Description: return "description";
-                case AnimatedSVGNodeType.Length: return "length";
-                case AnimatedSVGNodeType.AudioTracks: return "audio";
-                case AnimatedSVGNodeType.AudioSource: return "source";
-                default:
-                    throw new Error("Given type is unsupported by Animated SVG.");
+        var CommandFactory = (function () {
+            function CommandFactory(next) {
+                this.next = next;
             }
-        };
-        /**
-         * Convert the string name of XML node to AnimatedSVGNodeType value
-         */
-        AnimatedSVG.NameToType = function (name) {
-            switch (name) {
-                case "info": return AnimatedSVGNodeType.Info;
-                case "author": return AnimatedSVGNodeType.Author;
-                case "title": return AnimatedSVGNodeType.Title;
-                case "description": return AnimatedSVGNodeType.Description;
-                case "length": return AnimatedSVGNodeType.Length;
-                case "audio": return AnimatedSVGNodeType.AudioTracks;
-                case "source": return AnimatedSVGNodeType.AudioSource;
-                default:
-                    throw new Error("No Animated SVG node type corresponds to the given name '" + name + "'");
-            }
-        };
-        /**
-         * Convert the XML attribute of Animated SVG to string
-         */
-        AnimatedSVG.AttributeToName = function (attr) {
-            switch (attr) {
-                case AnimatedSVGAttributeType.AudioType: return "type";
-                default:
-                    throw new Error("Given attribute is unsupported by Animated SVG.");
-            }
-        };
-        /**
-         * Convert the string name of XML attribute to AnimatedSVGAttributeType value
-         */
-        AnimatedSVG.NameToAttribute = function (name) {
-            switch (name) {
-                case "type": return AnimatedSVGAttributeType.AudioType;
-                default:
-                    throw new Error("No Animated SVG attribute name corresponds to the given name '" + name + "'");
-            }
-        };
-        return AnimatedSVG;
-    })();
-    VideoFormat.AnimatedSVG = AnimatedSVG;
-})(VideoFormat || (VideoFormat = {}));
-/// <reference path="IO" />
-/// <reference path="AnimatedSVG" />
-/// <reference path="../VideoData/VideoInfo" />
-/// <reference path="../Helpers/State" />
-/// <reference path="../Helpers/SVG" />
-var VideoInfo = VideoData.VideoInfo;
-var State = Helpers.State;
-//import SVG = Helpers.SVG;
-var VideoFormat;
-(function (VideoFormat) {
-    /**
-     * This class takes video data and converts them into the extended SVG format.
-     */
-    var AnimatedSVGWriter = (function () {
-        /**
-         * Prepare the XML document that will be built.
-         * The namespaces are standard SVG and my custom Animated SVG
-         */
-        function AnimatedSVGWriter() {
-            var type = document.implementation.createDocumentType('svg:svg', '-//W3C//DTD SVG 1.1//EN', 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd');
-            this.document = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg:svg', type);
-            this.document.documentElement.setAttributeNS('http://www.w3.org/2000/xmlns/', "xmlns:a", VideoFormat.AnimatedSVG.Namespace);
-        }
-        /**
-         * Encode the video information into the SVG format
-         */
-        AnimatedSVGWriter.prototype.SetInfo = function (info) {
-            // store width, height and background information 
-            var infoElement = this.document.createElementNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.Info));
-            // video lenght
-            var length = this.document.createElementNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.Length));
-            length.textContent = info.Length.toString(10);
-            infoElement.appendChild(length);
-            // audio tracks
-            var audioElement = this.document.createElementNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.AudioTracks));
-            for (var i = 0; i < info.AudioTracks.length; i++) {
-                var audioSource = info.AudioTracks[i];
-                var source = this.document.createElementNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.AudioSource));
-                source.setAttributeNS(VideoFormat.AnimatedSVG.Namespace, "type", audioSource.MimeType);
-                source.setAttributeNS(VideoFormat.AnimatedSVG.Namespace, "src", audioSource.Url);
-                audioElement.appendChild(source);
-            }
-            infoElement.appendChild(audioElement);
-        };
-        AnimatedSVGWriter.prototype.SetNextState = function (state) {
-            // @todo
-        };
-        AnimatedSVGWriter.prototype.SetNextPrerenderedLine = function (line) {
-            var path = line;
-            this.document.rootElement.appendChild(path);
-            // @todo
-        };
-        /**
-         * Serialize the output before sending to the server.
-         */
-        AnimatedSVGWriter.prototype.ToString = function () {
-            return this.document.documentElement.outerHTML;
-        };
-        return AnimatedSVGWriter;
-    })();
-    VideoFormat.AnimatedSVGWriter = AnimatedSVGWriter;
-})(VideoFormat || (VideoFormat = {}));
-/// <reference path="IO" />
-/// <reference path="AnimatedSVGWriter" />
-/// <reference path="../VideoData/AudioPlayer" />
-/// <reference path="../Helpers/Errors" />
-/// <reference path="../Helpers/SVG" />
-/// <reference path="../VideoData/VideoInfo" />
-var VideoFormat;
-(function (VideoFormat) {
-    var Errors = Helpers.Errors;
-    var ErrorType = Helpers.ErrorType;
-    var SVG = Helpers.SVG;
-    var AnimatedSVGReader = (function () {
-        function AnimatedSVGReader() {
-        }
-        /**
-         * Open and parse the input
-         */
-        AnimatedSVGReader.prototype.ReadFile = function (file) {
-            this.file = file;
-            // Make a simple test - is it an SVG or not? The file might be invalid or corrupt, but that will be revield later. 
-            if (!file.firstChild || file.firstChild.nodeName.toUpperCase() !== "SVG") {
-                Errors.Report(ErrorType.Fatal, "Can't read input file - it is not an SVG file.");
-            }
-        };
-        /**
-         * Extracts information about the video from the extended SVG
-         */
-        AnimatedSVGReader.prototype.GetInfo = function () {
-            var videoInfo;
-            // width and height are parameters of SVG root element
-            if (this.file.rootElement.hasAttributeNS(SVG.Namespace, "width")) {
-                videoInfo.Width = Number(this.file.rootElement.attributes.getNamedItemNS(SVG.Namespace, "width"));
-            }
-            else {
-                Errors.Report(ErrorType.Fatal, "SVG doesn't have the width attribute.");
-            }
-            // the same for height...
-            if (this.file.rootElement.hasAttributeNS(SVG.Namespace, "height")) {
-                videoInfo.Height = Number(this.file.rootElement.attributes.getNamedItemNS(SVG.Namespace, "height"));
-            }
-            else {
-                Errors.Report(ErrorType.Fatal, "SVG doesn't have the height attribute.");
-            }
-            // @todo - Background
-            videoInfo.BackgroundColor = "black";
-            // search for <info> element
-            var infoSearch = this.file.getElementsByTagNameNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.Info));
-            if (infoSearch.length !== 1) {
-                Errors.Report(ErrorType.Fatal, "SVG file doesn't contain " + VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.Info) + " element.");
-            }
-            // the very info element
-            var info = infoSearch.item(0);
-            // go through all it's children and save their values
-            for (var i = 0; i < info.childNodes.length; i++) {
-                var node = info.childNodes.item(i);
-                switch (VideoFormat.AnimatedSVG.NameToType(node.nodeName)) {
-                    case VideoFormat.AnimatedSVGNodeType.AudioTracks:
-                        this.LoadAudioSources(videoInfo, node);
-                        break;
-                    default:
-                        Errors.Report(ErrorType.Fatal, "Unexpected node " + node.nodeName + " inside the " + VideoFormat.AnimatedSVG.TypeToName(VideoFormat.AnimatedSVGNodeType.Info) + " element.");
+            CommandFactory.prototype.FromSVG = function (node) {
+                if (!!this.next) {
+                    return this.next.FromSVG(node);
                 }
-            }
-            if (videoInfo.AudioTracks.length === 0) {
-                Errors.Report(ErrorType.Warning, "No audio is available.");
-            }
-            return videoInfo;
-        };
-        /**
-         * Loads all given audio sources
-         * @param	info	Extracted information goes here
-         * @param	audio	XML node containing information about audio audio sources
-         */
-        AnimatedSVGReader.prototype.LoadAudioSources = function (info, audio) {
-            for (var i = 0; i < audio.childNodes.length; i++) {
-                var element = audio.childNodes[i];
-                var type = element.attributes.getNamedItemNS(VideoFormat.AnimatedSVG.Namespace, VideoFormat.AnimatedSVG.AttributeToName(VideoFormat.AnimatedSVGAttributeType.AudioType));
-                if (!!type) {
-                    info.AudioTracks.push(new VideoData.AudioSource(element.textContent, VideoData.AudioSource.StringToType(type.textContent)));
+                throw new Error("Command loading failed: Unsupported node " + node.nodeName + ".");
+            };
+            CommandFactory.prototype.ToSVG = function (cmd) {
+                if (!!this.next) {
+                    return this.next.ToSVG(cmd);
                 }
+                throw new Error("Command export failed: Unsupported command " + typeof cmd + ".");
+            };
+            return CommandFactory;
+        })();
+        SVGAnimation.CommandFactory = CommandFactory;
+        var MoveCursorFactory = (function (_super) {
+            __extends(MoveCursorFactory, _super);
+            function MoveCursorFactory() {
+                _super.apply(this, arguments);
             }
-        };
+            MoveCursorFactory.prototype.FromSVG = function (node) {
+                if (node.localName === MoveCursorFactory.NodeName) {
+                    return new MoveCursor(SVGA.numAttr(node, "x"), SVGA.numAttr(node, "y"), SVGA.numAttr(node, "p", 0), SVGA.numAttr(node, "t"));
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.FromSVG.call(this, node);
+            };
+            MoveCursorFactory.prototype.ToSVG = function (cmd) {
+                if (cmd instanceof MoveCursor) {
+                    var options = {
+                        "x": precise(cmd.X),
+                        "y": precise(cmd.Y),
+                        "t": precise(cmd.Time, TIME_PRECISION)
+                    };
+                    if (cmd.P > 0) {
+                        options["p"] = precise(cmd.P, PRESSURE_PRECISION);
+                    }
+                    return SVGA.CreateElement(MoveCursorFactory.NodeName, options);
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.ToSVG.call(this, cmd);
+            };
+            MoveCursorFactory.NodeName = "m";
+            return MoveCursorFactory;
+        })(CommandFactory);
+        SVGAnimation.MoveCursorFactory = MoveCursorFactory;
+        var DrawSegmentFactory = (function (_super) {
+            __extends(DrawSegmentFactory, _super);
+            function DrawSegmentFactory() {
+                _super.apply(this, arguments);
+            }
+            DrawSegmentFactory.prototype.FromSVG = function (node) {
+                if (node.localName === DrawSegmentFactory.NodeName) {
+                    return new DrawNextSegment(SVGA.numAttr(node, "t"));
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.FromSVG.call(this, node);
+            };
+            DrawSegmentFactory.prototype.ToSVG = function (cmd) {
+                if (cmd instanceof DrawNextSegment) {
+                    return SVGA.CreateElement(DrawSegmentFactory.NodeName, {
+                        "t": precise(cmd.Time, TIME_PRECISION)
+                    });
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.ToSVG.call(this, cmd);
+            };
+            DrawSegmentFactory.NodeName = "ds";
+            return DrawSegmentFactory;
+        })(CommandFactory);
+        SVGAnimation.DrawSegmentFactory = DrawSegmentFactory;
+        var ChangeBrushColorFactory = (function (_super) {
+            __extends(ChangeBrushColorFactory, _super);
+            function ChangeBrushColorFactory() {
+                _super.apply(this, arguments);
+            }
+            ChangeBrushColorFactory.prototype.FromSVG = function (node) {
+                if (node.localName === ChangeBrushColorFactory.NodeName) {
+                    return new ChangeBrushColor(new UI.Color("", SVGA.attr(node, "d")), SVGA.numAttr(node, "t"));
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.FromSVG.call(this, node);
+            };
+            ChangeBrushColorFactory.prototype.ToSVG = function (cmd) {
+                if (cmd instanceof ChangeBrushColor) {
+                    return SVGA.CreateElement(ChangeBrushColorFactory.NodeName, {
+                        "d": cmd.Color.CssValue,
+                        "t": precise(cmd.Time, TIME_PRECISION)
+                    });
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.ToSVG.call(this, cmd);
+            };
+            ChangeBrushColorFactory.NodeName = "c";
+            return ChangeBrushColorFactory;
+        })(CommandFactory);
+        SVGAnimation.ChangeBrushColorFactory = ChangeBrushColorFactory;
+        var ChangeBrushSizeFactory = (function (_super) {
+            __extends(ChangeBrushSizeFactory, _super);
+            function ChangeBrushSizeFactory() {
+                _super.apply(this, arguments);
+            }
+            ChangeBrushSizeFactory.prototype.FromSVG = function (node) {
+                if (node.localName === ChangeBrushSizeFactory.NodeName) {
+                    return new ChangeBrushSize(new UI.BrushSize("", SVGA.numAttr(node, "d"), SVGA.attr(node, "u")), SVGA.numAttr(node, "t"));
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.FromSVG.call(this, node);
+            };
+            ChangeBrushSizeFactory.prototype.ToSVG = function (cmd) {
+                if (cmd instanceof ChangeBrushSize) {
+                    return SVGA.CreateElement(ChangeBrushSizeFactory.NodeName, {
+                        "d": cmd.Size.Size,
+                        "u": cmd.Size.Unit,
+                        "t": precise(cmd.Time, TIME_PRECISION)
+                    });
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.ToSVG.call(this, cmd);
+            };
+            ChangeBrushSizeFactory.NodeName = "s";
+            return ChangeBrushSizeFactory;
+        })(CommandFactory);
+        SVGAnimation.ChangeBrushSizeFactory = ChangeBrushSizeFactory;
+        var ClearCanvasFactory = (function (_super) {
+            __extends(ClearCanvasFactory, _super);
+            function ClearCanvasFactory() {
+                _super.apply(this, arguments);
+            }
+            ClearCanvasFactory.prototype.FromSVG = function (node) {
+                if (node.localName === ClearCanvasFactory.NodeName) {
+                    return new ClearCanvas(SVGA.numAttr(node, "t"), new UI.Color("", SVGA.attr(node, "color")));
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.FromSVG.call(this, node);
+            };
+            ClearCanvasFactory.prototype.ToSVG = function (cmd) {
+                if (cmd instanceof ClearCanvas) {
+                    return SVGA.CreateElement(ClearCanvasFactory.NodeName, {
+                        "t": precise(cmd.Time, TIME_PRECISION),
+                        "color": cmd.Color.CssValue
+                    });
+                }
+                // else pass through the chain of responsibility
+                return _super.prototype.ToSVG.call(this, cmd);
+            };
+            ClearCanvasFactory.NodeName = "e";
+            return ClearCanvasFactory;
+        })(CommandFactory);
+        SVGAnimation.ClearCanvasFactory = ClearCanvasFactory;
+    })(SVGAnimation = VideoFormat.SVGAnimation || (VideoFormat.SVGAnimation = {}));
+})(VideoFormat || (VideoFormat = {}));
+/// <reference path="../../VideoData/Chunk" />
+/// <reference path="../../VideoData/Command" />
+/// <reference path="CommandFactories" />
+/// <reference path="../../Helpers/SVG" />
+var VideoFormat;
+(function (VideoFormat) {
+    var SVGAnimation;
+    (function (SVGAnimation) {
+        var SVG = Helpers.SVG;
+        var SVGA = Helpers.SVGA;
+        var VoidChunk = VideoData.VoidChunk;
+        var PathChunk = VideoData.PathChunk;
+        var EraseChunk = VideoData.EraseChunk;
+        /** Time is in miliseconds */
+        var TIME_PRECISION = 2;
         /**
-         * Return next state
+         * Chunk factories - implementing the chain of responsibility design pattern
          */
-        AnimatedSVGReader.prototype.GetNextState = function () {
-            // @todo
-            return null;
-        };
+        var ChunkFactory = (function () {
+            function ChunkFactory(next) {
+                this.next = next;
+            }
+            ChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
+                if (!!this.next) {
+                    return this.next.FromSVG(node, cmdFactory);
+                }
+                throw new Error("Chunk loading failed: Unsupported node " + node.nodeName + ".");
+            };
+            ChunkFactory.prototype.ToSVG = function (chunk, cmdFactory) {
+                if (!!this.next) {
+                    return this.next.ToSVG(chunk, cmdFactory);
+                }
+                throw new Error("Chunk export failed: Unsupported command " + typeof (chunk) + ".");
+            };
+            Object.defineProperty(ChunkFactory.prototype, "InitCommandsNodeName", {
+                get: function () { return "init"; },
+                enumerable: true,
+                configurable: true
+            });
+            ChunkFactory.prototype.InitCommandsFromSVG = function (node, cmdFactory) {
+                if (node.localName === this.InitCommandsNodeName) {
+                    var cmds = [];
+                    var cmd = node.firstElementChild;
+                    while (!!cmd) {
+                        cmds.push(cmdFactory.FromSVG(cmd));
+                        cmd = cmd.nextElementSibling;
+                    }
+                    return cmds;
+                }
+                throw new Error("Can't read init commands from " + node.nodeName);
+            };
+            ChunkFactory.prototype.InitCommandsToSVG = function (cmds, cmdFactory) {
+                var node = SVGA.CreateElement(this.InitCommandsNodeName);
+                return this.CommandsToSVG(node, cmds, cmdFactory);
+            };
+            ChunkFactory.prototype.CommandsToSVG = function (node, cmds, cmdFactory) {
+                for (var i = 0; i < cmds.length; i++) {
+                    node.appendChild(cmdFactory.ToSVG(cmds[i]));
+                }
+                return node;
+            };
+            return ChunkFactory;
+        })();
+        SVGAnimation.ChunkFactory = ChunkFactory;
+        var VoidChunkFactory = (function (_super) {
+            __extends(VoidChunkFactory, _super);
+            function VoidChunkFactory() {
+                _super.apply(this, arguments);
+            }
+            VoidChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
+                if (SVGA.attr(node, "type") === VoidChunkFactory.NodeName) {
+                    var chunk = new VoidChunk(SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    // load init commands
+                    var init = node.firstElementChild;
+                    chunk.InitCommands = this.InitCommandsFromSVG(init, cmdFactory);
+                    var cmd = init.nextElementSibling;
+                    while (!!cmd) {
+                        chunk.PushCommand(cmdFactory.FromSVG(cmd));
+                        cmd = cmd.nextElementSibling;
+                    }
+                    return chunk;
+                }
+                return _super.prototype.FromSVG.call(this, node, cmdFactory);
+            };
+            VoidChunkFactory.prototype.ToSVG = function (chunk, cmdFactory) {
+                if (chunk instanceof VoidChunk) {
+                    var node = SVG.CreateElement("g");
+                    SVGA.SetAttributes(node, {
+                        "type": VoidChunkFactory.NodeName,
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
+                        "lastErase": chunk.LastErase
+                    });
+                    node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
+                    this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+                    return node;
+                }
+                return _super.prototype.ToSVG.call(this, chunk, cmdFactory);
+            };
+            VoidChunkFactory.NodeName = "void";
+            return VoidChunkFactory;
+        })(ChunkFactory);
+        SVGAnimation.VoidChunkFactory = VoidChunkFactory;
+        var InstructionType;
+        (function (InstructionType) {
+            InstructionType[InstructionType["Move"] = 0] = "Move";
+            InstructionType[InstructionType["Line"] = 1] = "Line";
+            InstructionType[InstructionType["Curve"] = 2] = "Curve";
+            InstructionType[InstructionType["Arc"] = 3] = "Arc";
+            InstructionType[InstructionType["Close"] = 4] = "Close";
+        })(InstructionType || (InstructionType = {}));
+        var InstructionFactory = (function () {
+            function InstructionFactory(letter, type, coordsCount, next) {
+                this.letter = letter;
+                this.type = type;
+                this.coordsCount = coordsCount;
+                this.next = next;
+            }
+            InstructionFactory.prototype.Create = function (c) {
+                var letter = c.shift();
+                if (letter === this.letter) {
+                    var coords = [];
+                    for (var i = 0; i < this.coordsCount; i++) {
+                        coords.push(this.CreateVector2(c.shift()));
+                    }
+                    return {
+                        type: this.type,
+                        coords: coords
+                    };
+                }
+                else {
+                    if (!!this.next) {
+                        c.unshift(letter);
+                        return this.next.Create(c);
+                    }
+                    throw new Error("Unsupported instruction letter '" + letter + "'");
+                }
+            };
+            InstructionFactory.prototype.CreateVector2 = function (pair) {
+                var coords = pair.split(",");
+                if (coords.length !== 2) {
+                    throw new Error("Coordinates pair '" + pair + "' is not valid");
+                }
+                return new Helpers.Vector2(Number(coords[0]), Number(coords[1]));
+            };
+            return InstructionFactory;
+        })();
+        var ArcFactory = (function (_super) {
+            __extends(ArcFactory, _super);
+            function ArcFactory(next) {
+                _super.call(this, "A", InstructionType.Arc, 3, next);
+            }
+            ArcFactory.prototype.Create = function (c) {
+                var letter = c.shift();
+                if (letter === this.letter) {
+                    var coords = [];
+                    coords.push(this.CreateVector2(c.shift()));
+                    c.shift(); // radius
+                    coords.push(this.CreateVector2(c.shift()));
+                    coords.push(this.CreateVector2(c.shift()));
+                    return {
+                        type: this.type,
+                        coords: coords
+                    };
+                }
+                else {
+                    if (!!this.next) {
+                        c.unshift(letter);
+                        return this.next.Create(c);
+                    }
+                    throw new Error("Unsupported instruction letter '" + letter + "'");
+                }
+            };
+            return ArcFactory;
+        })(InstructionFactory);
+        var PathChunkFactory = (function (_super) {
+            __extends(PathChunkFactory, _super);
+            function PathChunkFactory(next) {
+                _super.call(this, next);
+                this.next = next;
+                this.instructionFactory = new InstructionFactory("C", InstructionType.Curve, 3, new InstructionFactory("L", InstructionType.Line, 1, new InstructionFactory("M", InstructionType.Move, 1, new ArcFactory())));
+            }
+            PathChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
+                if (SVGA.attr(node, "type") === PathChunkFactory.NodeName) {
+                    // [0] path chunk must have at least two child nodes
+                    if (node.childElementCount < 2) {
+                        throw new Error("Path chunk has only " + node.childElementCount + " nodes.");
+                    }
+                    // [1] first child must be a PATH
+                    var pathNode = node.firstElementChild;
+                    if (pathNode.localName !== "path") {
+                        throw new Error("Path chunk must begin with a <path> element, but " + pathNode.localName + " found instead");
+                    }
+                    // [2] second node must be init commands container
+                    var init = pathNode.nextElementSibling;
+                    if (init.localName !== this.InitCommandsNodeName) {
+                        throw new Error("Second child of chunk must be an <init> element, but " + init.localName + " found instead");
+                    }
+                    var initCmds = this.InitCommandsFromSVG(init, cmdFactory);
+                    // now the chunk instance can be created
+                    var chunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    chunk.InitCommands = initCmds;
+                    // [3 ..] all the others are cmds
+                    var cmd = init.nextElementSibling;
+                    while (!!cmd) {
+                        chunk.PushCommand(cmdFactory.FromSVG(cmd));
+                        cmd = cmd.nextElementSibling;
+                    }
+                    return chunk;
+                }
+                return _super.prototype.FromSVG.call(this, node, cmdFactory);
+            };
+            PathChunkFactory.prototype.ToSVG = function (chunk, cmdFactory) {
+                if (chunk instanceof PathChunk) {
+                    var node = SVG.CreateElement("g");
+                    SVGA.SetAttributes(node, {
+                        "type": PathChunkFactory.NodeName,
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
+                        "lastErase": chunk.LastErase
+                    });
+                    // [1] path
+                    node.appendChild(this.PathToSVGNode(chunk.Path));
+                    // [2] init commands
+                    node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
+                    // [3] all the commands
+                    this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+                    return node;
+                }
+                return _super.prototype.ToSVG.call(this, chunk, cmdFactory);
+            };
+            /**
+             * Deserilize path from an SVG "path" node
+             */
+            PathChunkFactory.prototype.SVGNodeToPath = function (node) {
+                var color = SVG.attr(node, "fill");
+                var path = new Drawing.Path(true, color); // curved = true/false doesn't make any difference - the data are already recorded  
+                // convert path data to sequence of segments 
+                var d = SVG.attr(node, "d");
+                node = null; // I don't need this reference any more
+                var c = d.split(" ");
+                var instructions = [];
+                // create list of instructions
+                while (c.length > 0) {
+                    instructions.push(this.instructionFactory.Create(c));
+                }
+                c = null; // drop references
+                d = null;
+                // first segment - zero length segment
+                var l = instructions.length - 1;
+                if (instructions.length >= 2 && instructions[0].type === InstructionType.Move && instructions[l].type === InstructionType.Arc) {
+                    path.Segments.push(new Drawing.ZeroLengthSegment(instructions[l].coords[2], instructions[0].coords[0]));
+                    instructions.pop(); // arc
+                    instructions.pop(); // line
+                    instructions.shift();
+                }
+                else {
+                    throw new Error("Only " + instructions.length + " valid instructions recognized in a path string");
+                }
+                // A] a dot: only one instruction's left -> it's the arc and I can determine the center and radius of the dot
+                if (instructions.length === 1) {
+                    var start = path.Segments[0].Right;
+                    var end = instructions[0].coords[2];
+                    //var radius = instructions[0].coords[0];
+                    path.Segments = [new Drawing.ZeroLengthSegment(start, end)]; // override the original zero length seg.
+                    return path;
+                }
+                // B] a whole path
+                // left and right parts are at the same distance from the ends of the path
+                l = instructions.length - 1;
+                var prevSegment = null;
+                for (var i = 0; i < Math.floor(instructions.length / 2); i++) {
+                    if (instructions[i].type === InstructionType.Line) {
+                        var qseg = new Drawing.QuadrilateralSegment(instructions[i].coords[0], instructions[l - i].coords[0]);
+                        path.Segments.push(qseg);
+                        if (prevSegment instanceof Drawing.CurvedSegment) {
+                            prevSegment.Left = instructions[l - i].coords[0];
+                        }
+                        prevSegment = qseg;
+                    }
+                    else if (instructions[i].type === InstructionType.Curve) {
+                        var right = new Helpers.BezierCurveSegment(null, instructions[i].coords[0], instructions[i].coords[2], instructions[i].coords[1]);
+                        var left = new Helpers.BezierCurveSegment(instructions[l - i].coords[2], instructions[l - i].coords[1], null, instructions[l - i].coords[0]);
+                        var seg = new Drawing.CurvedSegment(left, right);
+                        if (!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
+                            prevSegment.Left = seg.LeftBezier.Start;
+                            seg.RightBezier.Start = prevSegment.RightBezier.End;
+                        }
+                        else if (!!prevSegment && prevSegment instanceof Drawing.QuadrilateralSegment) {
+                            seg.RightBezier.Start = prevSegment.Right;
+                        }
+                        path.Segments.push(seg);
+                        prevSegment = seg;
+                    }
+                    else {
+                        throw new Error("Unsupported path segment type " + instructions[i].type + " ");
+                    }
+                }
+                // I need to fix last segment's left bezier End
+                if (!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
+                    prevSegment.Left = instructions[Math.floor(instructions.length / 2)].coords[2]; // this is the ARC cap of the path
+                }
+                return path;
+            };
+            /**
+             * Encode path into a SVG "path" element
+             */
+            PathChunkFactory.prototype.PathToSVGNode = function (path) {
+                var segments = path.Segments;
+                // arc cap at the start
+                var seg = segments[0];
+                var center = seg.Right.add(seg.Left).scale(0.5);
+                var startDirection = seg.Left.subtract(center);
+                var endDirection = seg.Right.subtract(center);
+                var arc = SVG.ArcString(seg.Right, center.distanceTo(seg.Right), Drawing.Path.angle(startDirection));
+                var right = SVG.MoveToString(segments[0].Right) + " "; // SPACE divider
+                var left = SVG.LineToString(segments[0].Left) + " " + arc;
+                for (var i = 0; i < segments.length - 1; i++) {
+                    var seg = segments[i];
+                    if (seg instanceof Drawing.CurvedSegment) {
+                        right += SVG.CurveToString(seg.RightBezier.StartCP, seg.RightBezier.EndCP, seg.RightBezier.End) + " "; // SPACE divider
+                        left = SVG.CurveToString(seg.LeftBezier.EndCP, seg.LeftBezier.StartCP, seg.LeftBezier.Start) + " " + left; // SPACE divider
+                    }
+                    else if (seg instanceof Drawing.QuadrilateralSegment) {
+                        right += SVG.LineToString(seg.Right) + " "; // SPACE divider
+                        left = SVG.LineToString(seg.Left) + " " + left; // SPACE divider
+                    }
+                    else {
+                        throw new Error("Unsupported segment type " + typeof (seg));
+                    }
+                }
+                // arc cap at the end
+                seg = segments[segments.length - 1];
+                center = seg.Right.add(seg.Left).scale(0.5);
+                startDirection = seg.Right.subtract(center);
+                endDirection = seg.Left.subtract(center);
+                var cap = SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection)) + " ";
+                return SVG.CreateElement("path", {
+                    "fill": path.Color,
+                    "d": right + cap + left
+                });
+            };
+            PathChunkFactory.NodeName = "path";
+            return PathChunkFactory;
+        })(ChunkFactory);
+        SVGAnimation.PathChunkFactory = PathChunkFactory;
+        var EraseChunkFactory = (function (_super) {
+            __extends(EraseChunkFactory, _super);
+            function EraseChunkFactory() {
+                _super.apply(this, arguments);
+            }
+            EraseChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
+                if (SVGA.attr(node, "type") === EraseChunkFactory.NodeName) {
+                    // [0] erase chunk must have at least two child nodes
+                    if (node.childElementCount < 2) {
+                        throw new Error("Erase chunk has only " + node.childNodes.length + " nodes.");
+                    }
+                    // [1] first child must be a PATH
+                    var rectNode = node.firstElementChild;
+                    if (rectNode.localName !== "rect") {
+                        throw new Error("Erase chunk must begin with a <rect> element, but " + rectNode.localName + " found instead");
+                    }
+                    // [2] second node must be init commands container
+                    var init = rectNode.nextElementSibling;
+                    if (init.localName !== this.InitCommandsNodeName) {
+                        throw new Error("Second child of chunk must be an <init> element, but " + init.localName + " found instead");
+                    }
+                    var initCmds = this.InitCommandsFromSVG(init, cmdFactory);
+                    // now the chunk instance can be created
+                    var chunk = new EraseChunk(new UI.Color("", SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    chunk.InitCommands = initCmds;
+                    // [3 ..] all the others are cmds
+                    var cmd = init.nextElementSibling;
+                    while (!!cmd) {
+                        chunk.PushCommand(cmdFactory.FromSVG(cmd));
+                        cmd = cmd.nextElementSibling;
+                    }
+                    return chunk;
+                }
+                return _super.prototype.FromSVG.call(this, node, cmdFactory);
+            };
+            EraseChunkFactory.prototype.ToSVG = function (chunk, cmdFactory) {
+                if (chunk instanceof EraseChunk) {
+                    var node = SVG.CreateElement("g");
+                    SVGA.SetAttributes(node, {
+                        "type": EraseChunkFactory.NodeName,
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
+                        "lastErase": chunk.LastErase
+                    });
+                    // [1] rect
+                    node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: "100%", height: "100%" }));
+                    // [2] init commands
+                    node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
+                    // [3] all the commands
+                    this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+                    return node;
+                }
+                return _super.prototype.ToSVG.call(this, chunk, cmdFactory);
+            };
+            EraseChunkFactory.NodeName = "erase";
+            return EraseChunkFactory;
+        })(ChunkFactory);
+        SVGAnimation.EraseChunkFactory = EraseChunkFactory;
+    })(SVGAnimation = VideoFormat.SVGAnimation || (VideoFormat.SVGAnimation = {}));
+})(VideoFormat || (VideoFormat = {}));
+/// <reference path="../../VideoData/Metadata" />
+/// <reference path="../../Helpers/SVG" />
+var VideoFormat;
+(function (VideoFormat) {
+    var SVGAnimation;
+    (function (SVGAnimation) {
+        var Metadata = VideoData.Metadata;
+        var SVGA = Helpers.SVGA;
+        var MetadataFactory = (function () {
+            function MetadataFactory() {
+            }
+            MetadataFactory.prototype.FromSVG = function (rootNode) {
+                var meta = new Metadata();
+                // [0] is this the correct element?
+                if (rootNode.localName !== "metadata") {
+                    throw new Error("MetadataFactory error parsing SVG: Wrong metadata element " + rootNode.localName);
+                }
+                // [1] video lenght			
+                var length = rootNode.firstElementChild;
+                if (length.localName !== "length") {
+                    throw new Error("MetadataFactory error parsing SVG: Expected 'length', found '" + length.nodeName + "'");
+                }
+                meta.Length = Number(length.textContent);
+                // [2] video width
+                var width = length.nextElementSibling;
+                length = null;
+                if (width.localName !== "width") {
+                    throw new Error("MetadataFactory error parsing SVG: Expected 'length', found '" + width.nodeName + "'");
+                }
+                meta.Width = Number(width.textContent);
+                // [3] video lenght
+                var height = width.nextElementSibling;
+                width = null;
+                if (height.localName !== "height") {
+                    throw new Error("MetadataFactory error parsing SVG: Expected 'length', found '" + height.nodeName + "'");
+                }
+                meta.Height = Number(height.textContent);
+                // [4] audio tracks
+                meta.AudioTracks = [];
+                var audioElement = height.nextElementSibling;
+                var audioSource = audioElement.firstElementChild;
+                while (!!audioSource) {
+                    var type = AudioData.AudioSource.StringToType(SVGA.attr(audioSource, "type"));
+                    meta.AudioTracks.push(new AudioData.AudioSource(SVGA.attr(audioSource, "src"), type));
+                    audioSource = audioSource.nextElementSibling;
+                }
+                // That's it.
+                return meta;
+            };
+            MetadataFactory.prototype.ToSVG = function (data) {
+                // the "root" element
+                var meta = SVGA.CreateElement("metadata");
+                // video lenght
+                var length = SVGA.CreateElement("length");
+                length.textContent = data.Length.toFixed(3);
+                meta.appendChild(length);
+                length = null;
+                // original video width
+                var width = SVGA.CreateElement("width");
+                width.textContent = data.Width.toFixed(0);
+                meta.appendChild(width);
+                width = null;
+                // original video height
+                var height = SVGA.CreateElement("height");
+                height.textContent = data.Height.toFixed(0);
+                meta.appendChild(height);
+                height = null;
+                // audio tracks
+                var audioElement = SVGA.CreateElement("audio");
+                for (var i = 0; i < data.AudioTracks.length; i++) {
+                    var audioSource = data.AudioTracks[i];
+                    var source = SVGA.CreateElement("source", {
+                        "type": audioSource.MimeType,
+                        "src": audioSource.Url
+                    });
+                    audioElement.appendChild(source);
+                    source = null;
+                }
+                meta.appendChild(audioElement);
+                // That's it.
+                return meta;
+            };
+            return MetadataFactory;
+        })();
+        SVGAnimation.MetadataFactory = MetadataFactory;
+    })(SVGAnimation = VideoFormat.SVGAnimation || (VideoFormat.SVGAnimation = {}));
+})(VideoFormat || (VideoFormat = {}));
+/// <reference path="../IO" />
+/// <reference path="../../VideoData/Chunk" />
+/// <reference path="ChunkFactories" />
+/// <reference path="CommandFactories" />
+/// <reference path="MetadataFactory" />
+var VideoFormat;
+(function (VideoFormat) {
+    var SVGAnimation;
+    (function (SVGAnimation) {
+        var Video = VideoData.Video;
+        var SVG = Helpers.SVG;
+        var SVGA = Helpers.SVGA;
         /**
-         *
+         * Read video information from an SVG file.
          */
-        AnimatedSVGReader.prototype.GetNextPrerenderedLine = function () {
-            // @todo
-            return null;
-        };
-        /**
-         *
-         */
-        AnimatedSVGReader.prototype.GetNextPrerenderedLineFinishTime = function () {
-            // @todo
-            return 0;
-        };
-        return AnimatedSVGReader;
-    })();
-    VideoFormat.AnimatedSVGReader = AnimatedSVGReader;
+        var IO = (function () {
+            function IO() {
+                this.VideoChunksLayerType = "video-chunks";
+                // chain of responsibility - command factory and chunk factory
+                // note: moving cursor is the most typical and far most frequent command - IT **MUST** BE FIRST IN THE CHAIN!
+                this.commandFactory = new SVGAnimation.MoveCursorFactory(new SVGAnimation.DrawSegmentFactory(new SVGAnimation.ChangeBrushColorFactory(new SVGAnimation.ChangeBrushSizeFactory(new SVGAnimation.ClearCanvasFactory()))));
+                this.chunkFactory = new SVGAnimation.VoidChunkFactory(new SVGAnimation.PathChunkFactory(new SVGAnimation.EraseChunkFactory()));
+                this.metadataFactory = new SVGAnimation.MetadataFactory();
+            }
+            /**
+             * Load video from defined URL
+             * @param	{VideoData.Video}	data	Recorded video data
+             * @return	{Blob}						The converted data.
+             */
+            IO.prototype.SaveVideo = function (data) {
+                // init the document
+                var type = document.implementation.createDocumentType('svg:svg', '-//W3C//DTD SVG 1.1//EN', 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd');
+                var doc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', type);
+                doc.documentElement.setAttributeNS('http://www.w3.org/2000/xmlns/', "xmlns:a", SVGA.Namespace);
+                SVG.SetAttributes(doc.rootElement, {
+                    width: data.Metadata.Width,
+                    height: data.Metadata.Height,
+                    viewBox: "0 0 " + data.Metadata.Width + " " + data.Metadata.Height
+                });
+                // save the metadata
+                doc.rootElement.appendChild(this.metadataFactory.ToSVG(data.Metadata));
+                // all the chunks
+                var chunks = SVG.CreateElement("g");
+                SVGA.SetAttributes(chunks, { "type": this.VideoChunksLayerType });
+                data.Rewind();
+                while (!!data.CurrentChunk) {
+                    chunks.appendChild(this.chunkFactory.ToSVG(data.CurrentChunk, this.commandFactory));
+                    data.MoveNextChunk();
+                }
+                doc.rootElement.appendChild(chunks);
+                // serialize the document to string and then create a blob out of it
+                var serializer = new XMLSerializer();
+                var blob = new Blob([serializer.serializeToString(doc)], { type: "application/svg+xml" });
+                return blob;
+            };
+            /**
+             * Read an XML document and if it is valid, return the data contianed.
+             * @param	{Document}	doc		Downloaded XML document.
+             * @return	{Video}				Video data
+             */
+            IO.prototype.LoadVideo = function (doc) {
+                if (doc instanceof Document === false) {
+                    throw new Error("SVGAnimation IO parsing error: Document must be an XML document");
+                }
+                var xml = doc;
+                if (xml.documentElement.childElementCount !== 2) {
+                    throw new Error("SVGAnimation document root element must have exactely two children nodes, but has " + xml.documentElement.childNodes.length + " instead");
+                }
+                var video = new Video();
+                // load video info
+                var metaNode = xml.documentElement.firstElementChild;
+                video.Metadata = this.metadataFactory.FromSVG(metaNode);
+                // load chunks of data
+                var chunksLayer = metaNode.nextElementSibling;
+                if (chunksLayer.localName !== "g" || SVGA.attr(chunksLayer, "type") !== this.VideoChunksLayerType) {
+                    throw new Error(("SVGAnimation IO parsing error: chunks layer must be a SVG\u00A0<g> node with a:type='" + this.VideoChunksLayerType + "',")
+                        + (" got <" + chunksLayer.localName + "> with a:type='" + SVGA.attr(chunksLayer, "type") + "'"));
+                }
+                var chunk = chunksLayer.firstElementChild;
+                while (!!chunk) {
+                    video.PushChunk(this.chunkFactory.FromSVG(chunk, this.commandFactory));
+                    chunk = chunk.nextElementSibling;
+                }
+                video.Rewind(); // currentChunk = 0
+                return video;
+            };
+            return IO;
+        })();
+        SVGAnimation.IO = IO;
+    })(SVGAnimation = VideoFormat.SVGAnimation || (VideoFormat.SVGAnimation = {}));
 })(VideoFormat || (VideoFormat = {}));
 /// <reference path="../Helpers/Errors" />
 /// <reference path="../Drawing/DrawingStrategy" />
 /// <reference path="../Drawing/SVGDrawer" />
 /// <reference path="../Settings/PlayerSettings" />
 /// <reference path="../UI/PlayerUI" />
-/// <reference path="../VideoData/AudioPlayer" />
+/// <reference path="../AudioData/AudioPlayer" />
 /// <reference path="../VideoData/Video" />
 /// <reference path="../VideoFormat/IO" />
-/// <reference path="../VideoFormat/AnimatedSVGReader" />
-var AudioPlayer = VideoData.AudioPlayer;
+/// <reference path="../VideoFormat/SVGAnimation/IO" />
+/// <reference path="../Helpers/VideoEvents" />
+/// <reference path="../UI/Cursor" />
+/// <reference path="../Helpers/State" />
 var VectorVideo;
 (function (VectorVideo) {
+    var AudioPlayer = AudioData.AudioPlayer;
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
+    var Errors = Helpers.Errors;
+    var ErrorType = Helpers.ErrorType;
     var Player = (function () {
         function Player(id, settings) {
+            var _this = this;
             this.settings = settings;
             var container = document.getElementById(id);
             if (!container) {
                 Helpers.Errors.Report(Helpers.ErrorType.Fatal, "Container #" + id + " doesn't exist. Video Player couldn't be initialised.");
             }
-            // init the UI
-            this.ui = new UI.PlayerUI(id, settings.Localization);
-            this.drawer = new Drawing.SVGDrawer(false);
-            this.ui.AcceptCanvas(this.drawer.GetCanvas());
+            if (!settings.Localization) {
+                // default localization
+                var loc = {
+                    NoJS: "Your browser does not support JavaScript or it is turned off. Video can't be recorded without enabled JavaScript in your browser.",
+                    DataLoadingFailed: "Unfortunatelly, downloading data failed.",
+                    Play: "Play",
+                    Pause: "Pause"
+                };
+                settings.Localization = loc;
+            }
+            // new paused timer
+            this.timer = new Helpers.VideoTimer(false);
+            // init the UI and bind it to an instance of a rendering strategy
+            this.ui = new UI.PlayerUI(id, settings.Localization, this.timer);
+            //this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.SVGDrawer(true);
+            this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.CanvasDrawer(true);
+            this.ui.AcceptCanvas(this.drawer.CreateCanvas());
+            container.appendChild(this.ui.GetHTML());
+            this.drawer.Stretch();
             // read the file
-            var reader = new VideoFormat.AnimatedSVGReader();
-            var videoFile = new VideoData.Video(settings.Source, reader);
-            var audioPlayer = new AudioPlayer(reader.GetInfo().AudioTracks);
-            // @todo
+            Helpers.File.ReadXmlAsync(settings.Source, function (xml) { return _this.AcceptXMLData(xml); }, function (errStatusCode) {
+                Errors.Report(ErrorType.Warning, _this.settings.Localization.DataLoadingFailed);
+            });
+            // Start and stop the video
+            VideoEvents.on(VideoEventType.Start, function () { return _this.Play(); });
+            VideoEvents.on(VideoEventType.Pause, function () { return _this.Pause(); });
+            VideoEvents.on(VideoEventType.ReachEnd, function () { return _this.Pause(); });
+            VideoEvents.on(VideoEventType.ClearCanvas, function (color) { return _this.ClearCavnas(color); });
+            VideoEvents.on(VideoEventType.ChangeColor, function (color) { return _this.drawer.SetCurrentColor(color); });
+            // Draw path segment by segment
+            VideoEvents.on(VideoEventType.DrawSegment, function () { return _this.DrawSegment(); });
+            VideoEvents.on(VideoEventType.DrawPath, function (path) {
+                _this.drawnPath.DrawWholePath();
+                _this.drawnPath = null; // it is already drawn!
+            });
         }
+        Player.prototype.AcceptXMLData = function (xml) {
+            var reader = new VideoFormat.SVGAnimation.IO();
+            this.video = reader.LoadVideo(xml);
+            this.audio = new AudioPlayer(this.video.Metadata.AudioTracks);
+            VideoEvents.trigger(VideoEventType.VideoInfoLoaded, this.video.Metadata);
+            var scalingFactor = this.drawer.SetupOutputCorrection(this.video.Metadata.Width, this.video.Metadata.Height);
+            VideoEvents.trigger(VideoEventType.CanvasScalingFactor, scalingFactor);
+            // do zero-time actions:
+            this.video.RewindMinusOne(); // churrent chunk = -1
+            this.MoveToNextChunk();
+        };
+        /**
+         * Start (resume) playing of the video from current position
+         */
+        Player.prototype.Play = function () {
+            var _this = this;
+            this.isPlaying = true;
+            this.timer.Resume();
+            this.audio.Play();
+            this.ticking = requestAnimationFrame(function () { return _this.Tick(); }); // start async ticking
+        };
+        /**
+         * Pause playing of the video immediately
+         */
+        Player.prototype.Pause = function () {
+            this.timer.Pause();
+            this.isPlaying = false;
+            this.audio.Pause();
+            cancelAnimationFrame(this.ticking);
+        };
+        Player.prototype.Tick = function () {
+            var _this = this;
+            this.Sync();
+            this.ticking = requestAnimationFrame(function () { return _this.Tick(); });
+        };
+        Player.prototype.Sync = function () {
+            // loop through the
+            while (!!this.video.CurrentChunk
+                && !!this.video.CurrentChunk.CurrentCommand
+                && this.video.CurrentChunk.CurrentCommand.Time <= this.timer.CurrentTime()) {
+                this.video.CurrentChunk.CurrentCommand.Execute();
+                this.video.CurrentChunk.MoveNextCommand();
+                // move to next chunk, if the last one just ended
+                if (this.video.CurrentChunk.CurrentCommand === undefined) {
+                    this.MoveToNextChunk();
+                }
+            }
+        };
+        Player.prototype.MoveToNextChunk = function () {
+            do {
+                this.video.MoveNextChunk();
+                if (!this.video.CurrentChunk) {
+                    this.ReachedEnd();
+                    break;
+                }
+                // set current brush color and size, as well as cursor position
+                // this will make sure that paths are rendered correctly even though I skip a lot of commands
+                this.video.CurrentChunk.ExecuteInitCommands();
+                // Prepare a path, if it is a PathChunk, of course                
+                if (this.video.CurrentChunk instanceof VideoData.PathChunk) {
+                    this.drawnPath = this.drawer.CreatePath();
+                    // copy the information
+                    this.drawnPath.Segments = this.video.CurrentChunk.Path.Segments;
+                    this.drawnSegment = 0; // rewind to the start
+                }
+                else {
+                    this.drawnPath = null;
+                }
+                if (this.video.PeekNextChunk()
+                    && this.video.PeekNextChunk().StartTime <= this.timer.CurrentTime()) {
+                    this.video.CurrentChunk.Render(); // render the whole chunk at once
+                }
+                else {
+                    // this chunk will not be rendered at once
+                    break;
+                }
+            } while (true);
+        };
+        /**
+         * Skip to a specific time on the timeline. This method is used mainly when the user clicks
+         * on the progressbar and the percents are calculated.
+         * @param   {number}    progress    The progress to jump to in percent (value in [0; 1]).
+         */
+        Player.prototype.JumpTo = function (progress) {
+            var wasPlaying = this.isPlaying;
+            this.Pause();
+            var time = progress * this.video.Metadata.Length * 1000; // convert to milliseconds
+            if (time >= this.timer.CurrentTime()) {
+                this.video.FastforwardErasedChunksUntil(time);
+            }
+            else {
+                this.video.RewindToLastEraseBefore(time);
+            }
+            this.timer.SetTime(time);
+            this.Sync(); // make as many steps as needed to sync canvas status
+            // video is paused, so ticking won't continue after it is synchronised
+            // rendering request will also be made
+            if (wasPlaying === true) {
+                this.Play(); // continue from the new point in time
+            }
+        };
+        /**
+         * Inform everyone, that I have reached the end
+         */
+        Player.prototype.ReachedEnd = function () {
+            VideoEvents.trigger(VideoEventType.ReachEnd);
+        };
+        Player.prototype.ClearCavnas = function (color) {
+            this.drawer.ClearCanvas(color);
+        };
+        Player.prototype.DrawSegment = function () {
+            if (this.drawnSegment === 0) {
+                this.drawnPath.StartDrawingPath(this.drawnPath.Segments[0]);
+                this.drawnSegment++;
+            }
+            else {
+                this.drawnPath.DrawSegment(this.drawnPath.Segments[this.drawnSegment++]);
+            }
+            // flush the changes
+            this.drawnPath.Draw();
+        };
         return Player;
     })();
     VectorVideo.Player = Player;
@@ -3185,17 +3899,16 @@ var VectorVideo;
 /// <reference path="../UI/Color" />
 /// <reference path="../UI/Brush" />
 /// <reference path="audio.d.ts" />
+/// <reference path="AudioPlayer" />
 /// <reference path="../Settings/RecorderSettings" /> 
 /// <reference path="../Helpers/Errors" />
 /// <reference path="../Helpers/VideoEvents" />
-/// <reference path="../VideoData/AudioPlayer" />
-var AudioRecording;
-(function (AudioRecording) {
+var AudioData;
+(function (AudioData) {
     var Errors = Helpers.Errors;
     var ErrorType = Helpers.ErrorType;
     var VideoEvents = Helpers.VideoEvents;
     var VideoEventType = Helpers.VideoEventType;
-    var AudioSource = VideoData.AudioSource;
     /**
      * The main audio recording class.
      * This implementation wraps the HTML5 API and takes care of everything needed on the client side.
@@ -3236,13 +3949,13 @@ var AudioRecording;
          * @param	success		Initialisation success callback
          */
         AudioRecorder.prototype.Init = function (success) {
-            var context = (new AudioContext() // FF, GCh
-                || null); // others
+            var _this = this;
             navigator.getUserMedia = (navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia);
-            var $this = this;
-            if (!!navigator.getUserMedia) {
+            if (!!navigator.getUserMedia && window.hasOwnProperty("AudioContext")) {
+                var context = (new AudioContext() // FF, GCh
+                    || null); // others
                 navigator.getUserMedia(
                 // constraints - we record only audio
                 {
@@ -3251,17 +3964,17 @@ var AudioRecording;
                 }, 
                 // success callback
                 function (localMediaStream) {
-                    if ($this.doNotStartRecording === false) {
-                        $this.input = context.createMediaStreamSource(localMediaStream);
+                    if (_this.doNotStartRecording === false) {
+                        _this.input = context.createMediaStreamSource(localMediaStream);
                         // create processing node
                         var bufferSize = 2048;
                         var recorder = context.createScriptProcessor(bufferSize, 1, 1);
-                        recorder.onaudioprocess = function (data) { return $this.processData(data); };
-                        $this.input.connect(recorder);
+                        recorder.onaudioprocess = function (data) { return _this.processData(data); };
+                        _this.input.connect(recorder);
                         recorder.connect(context.destination);
-                        $this.initSuccessful = true;
+                        _this.initSuccessful = true;
                         // create web worker audio processor
-                        $this.CreateAudioProcessor("web-socket", $this.settings, function () { return console.log("Audio recording is ready."); });
+                        _this.CreateAudioProcessor("web-socket", _this.settings, function () { return console.log("Audio recording is ready."); });
                         // call callback and register the tool for later
                         if (!!success) {
                             success();
@@ -3395,7 +4108,7 @@ var AudioRecording;
                                 var sources = [];
                                 for (var i = 0; i < msg.files.length; i++) {
                                     var file = msg.files[i];
-                                    var source = new AudioSource(file.url, file.type);
+                                    var source = new AudioData.AudioSource(file.url, AudioData.AudioSource.StringToType(file.type));
                                     sources.push(source);
                                 }
                                 success(sources);
@@ -3439,8 +4152,8 @@ var AudioRecording;
         };
         return AudioRecorder;
     })();
-    AudioRecording.AudioRecorder = AudioRecorder;
-})(AudioRecording || (AudioRecording = {}));
+    AudioData.AudioRecorder = AudioRecorder;
+})(AudioData || (AudioData = {}));
 /// <reference path="../Helpers/State" />
 /// <reference path="ICursor" />
 /// <reference path="../Helpers/VideoTimer" />
@@ -3702,6 +4415,7 @@ var VideoData;
             this.currentTouch = null;
         };
         TouchEventsAPI.prototype.TouchMove = function (event) {
+            event.preventDefault();
             var touch = this.filterTouch(event.changedTouches);
             if (touch === null) {
                 return;
@@ -3876,15 +4590,14 @@ var VideoData;
     VideoData.WacomTablet = WacomTablet;
 })(VideoData || (VideoData = {}));
 /// <reference path="./DrawingStrategy.ts" />
-/// <reference path="../helpers/Vector.ts" />
-/// <reference path="../helpers/State.ts" />
-/// <reference path="../helpers/HTML.ts" />
-/// <reference path="../helpers/SVG.ts" />
-/// <reference path="../helpers/Spline.ts" />
-/// <reference path="../helpers/VideoEvents.ts" />
+/// <reference path="../Helpers/Vector.ts" />
+/// <reference path="../Helpers/State.ts" />
+/// <reference path="../Helpers/HTML.ts" />
+/// <reference path="../Helpers/SVG.ts" />
+/// <reference path="../Helpers/Spline.ts" />
+/// <reference path="../Helpers/VideoEvents.ts" />
 /// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
-/// <reference path="DynaDraw" />
 /// <reference path="Path" />
 var Drawing;
 (function (Drawing) {
@@ -3894,19 +4607,26 @@ var Drawing;
      * and renders the lines on the blackboard.
      * This class uses HTML5 Canvas 2D Context for visualising the lines.
      */
-    var CanvasDrawer = (function (_super) {
-        __extends(CanvasDrawer, _super);
+    var CanvasDrawer = (function () {
+        /**
+         * Init a new drawer.
+         * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
+         */
+        function CanvasDrawer(curved) {
+            if (curved === void 0) { curved = true; }
+            this.curved = curved;
+        }
         /**
          * Create a new renderer that will produce output into the CANVAS elemement usning HTML5.
          */
-        function CanvasDrawer(slowSimulation, canvas) {
-            _super.call(this, slowSimulation);
-            this.canvas = !!canvas ? canvas : HTML.CreateElement("canvas");
+        CanvasDrawer.prototype.CreateCanvas = function () {
+            this.canvas = HTML.CreateElement("canvas");
             this.context = this.canvas.getContext("2d");
-            this.canvasWrapper = new UI.SimpleElement("div");
-            HTML.SetAttributes(this.canvasWrapper.GetHTML(), { class: "vector-video-canvas-wrapper" });
-            this.canvasWrapper.GetHTML().appendChild(this.canvas);
-        }
+            return this.canvas;
+        };
+        /**
+         * Make ths canvas as large as possible (fill the parent element)
+         */
         CanvasDrawer.prototype.Stretch = function () {
             // this is event handler - "this" isn't SVGDrawer here!
             var parent = this.canvas.parentElement;
@@ -3916,37 +4636,346 @@ var Drawing;
                 width: width,
                 height: height
             });
-            // set the dark background color
-            this.ClearCanvas();
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+        };
+        CanvasDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
+            var wr = sourceWidth / this.canvas.width;
+            var hr = sourceHeight / this.canvas.height;
+            var min = Math.min(wr, hr);
+            // prepare scale uniformly 
+            this.context.scale(min, min);
+            // translate the (0,0) point
+            if (wr < hr) {
+            }
+            else if (hr < wr) {
+            }
+            // else - the ratios match      
+            return min;
         };
         /**
          * Make the canvas blank.
          */
-        CanvasDrawer.prototype.ClearCanvas = function () {
-            this.context.fillStyle = UI.Color.BackgroundColor.CssValue;
+        CanvasDrawer.prototype.ClearCanvas = function (color) {
+            this.context.fillStyle = color.CssValue;
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         };
         /**
-         * Start drawing a line.
-         * @param   point       Start point of the line.
-         * @param   pressure    The pressure of the pointing device in this point.
+         * Set color of a path, that will be drawn in the future.
          */
-        CanvasDrawer.prototype.StartLine = function (point, pressure) {
-            var path = new Drawing.CanvasPath(this.settings.Color, this.context);
-            this.dynaDraw.StartPath(point, pressure, this.settings.Size, path);
+        CanvasDrawer.prototype.SetCurrentColor = function (color) {
+            this.currentColor = color;
         };
         /**
-         * Scale the content according to given factor
+         * Start drawing a line.
          */
-        CanvasDrawer.prototype.Scale = function (center, factor) {
-            this.context.scale(factor, factor);
-            this.context.translate(-center.X, -center.Y);
-            this.RedrawEverything();
+        CanvasDrawer.prototype.CreatePath = function () {
+            return new Drawing.CanvasPath(this.curved, this.currentColor.CssValue, this.context);
         };
         return CanvasDrawer;
-    })(Drawing.DrawingStrategy);
+    })();
     Drawing.CanvasDrawer = CanvasDrawer;
+})(Drawing || (Drawing = {}));
+/// <reference path="Path" />
+/// <reference path="../Helpers/VideoTimer" />
+var Drawing;
+(function (Drawing) {
+    var Vector2 = Helpers.Vector2;
+    var VideoEvents = Helpers.VideoEvents;
+    var VideoEventType = Helpers.VideoEventType;
+    /**
+     * This class is an implementation of the algorithm originally created
+     * in 1989 by Paul Haeberli - see http://www.sgi.com/grafica/dyna/index.html
+     * The algorithm is based on physical properties of an object which is guided
+     * by mouse movement.
+     */
+    var DynaDraw = (function () {
+        /**
+         * Initialise new instance of DynaDraw
+         */
+        function DynaDraw(pathFactory, slowSimulation, minBrushSize, maxBrushSize, timer) {
+            var _this = this;
+            this.pathFactory = pathFactory;
+            this.slowSimulation = slowSimulation;
+            this.minBrushSize = minBrushSize;
+            this.maxBrushSize = maxBrushSize;
+            /** Physical constants */
+            this.minMass = 1;
+            this.maxMass = 10;
+            this.minFriction = 0.4; // 0.4 is experimentaly derived constant, that gives nice results for all weights
+            this.maxFriction = 0.6;
+            /**
+             * Each brush has different properties - larger brushes are heavier and have greater drag
+             */
+            this.brushes = {};
+            this.oneFrame = 1000 / 60; // 60 Hz in milliseconds
+            // 						
+            //this.cursor = new BrushTip(slowSimulation, timer); // when slow simulation is on, use width adjustments when moving fast
+            this.cursor = new BrushTip(true, timer);
+            // start the periodical simulation right away!
+            if (slowSimulation === true) {
+                requestAnimationFrame(function (time) {
+                    _this.lastAnimationTime = time;
+                    _this.Tick(time);
+                });
+            }
+            else {
+                requestAnimationFrame(function () { return _this.TickWhile(); });
+            }
+        }
+        /**
+         * Set current brush size
+         * @param   size    The new size of the brush (line thickness)
+         */
+        DynaDraw.prototype.SetBrushSize = function (size) {
+            this.currentBrushSize = size;
+        };
+        DynaDraw.prototype.interpolateMass = function (brushSize) {
+            return this.minMass + (this.maxMass - this.minMass) * (brushSize - this.minBrushSize) / (this.maxBrushSize - this.minBrushSize);
+        };
+        DynaDraw.prototype.interpolateFriction = function (brushSize) {
+            return this.maxFriction - (this.maxFriction - this.minFriction) * (brushSize - this.minBrushSize) / (this.maxBrushSize - this.minBrushSize);
+        };
+        DynaDraw.prototype.GetBrush = function (brushSize) {
+            if (!this.brushes[brushSize]) {
+                this.brushes[brushSize] = new BrushInstance(this.interpolateMass(brushSize), this.interpolateFriction(brushSize), brushSize);
+            }
+            return this.brushes[brushSize];
+        };
+        /**
+         * Process next state and
+         */
+        DynaDraw.prototype.ObserveCursorMovement = function (cursor) {
+            try {
+                var nextPoint = new Vector2(cursor.X, cursor.Y);
+                if (cursor.Pressure > 0) {
+                    if (!this.lastState || this.lastState.Pressure === 0) {
+                        // start a new path - prepare new chunk		
+                        this.path = this.pathFactory();
+                        VideoEvents.trigger(VideoEventType.StartPath, this.path);
+                        this.StartPath(nextPoint, cursor.Pressure);
+                    }
+                    else {
+                        this.NextPoint(nextPoint, cursor.Pressure);
+                    }
+                }
+                else if (this.lastState && this.lastState.Pressure > 0) {
+                    this.EndPath(nextPoint, this.lastState.Pressure);
+                }
+            }
+            catch (err) {
+                console.log("ProcessNewState error: ", err);
+            }
+            this.lastState = cursor;
+        };
+        /**
+         * Start drawing a new path with a given color and brush size.
+         * @param	{Vector2}		position	Cursor state information
+         * @param	{number}		pressure	Cursor pressure
+         */
+        DynaDraw.prototype.StartPath = function (position, pressure) {
+            this.cursor.Reset(position, this.GetBrush(this.currentBrushSize.Size));
+            this.position = position;
+            this.pressure = pressure;
+            this.cursor.StartPath(this.path, position, pressure);
+        };
+        /**
+         * Animate cursor movement
+         * @param	{Vector2}		position	Cursor state information
+         * @param	{number}		pressure	Cursor pressure
+         */
+        DynaDraw.prototype.NextPoint = function (position, pressure) {
+            this.position = position;
+            this.pressure = pressure;
+        };
+        /**
+         * Stop drawing the line when the mouse or digital pen is released.
+         * @param	{Vector2}		position	Cursor state information
+         * @param	{number}		pressure	Cursor pressure
+         */
+        DynaDraw.prototype.EndPath = function (position, pressure) {
+            this.position = position;
+        };
+        /**
+         * Simulate brush's movement frame by frame as long as it keeps moving.
+         * This approach will be more responsive (the path will always reach the cursor before it moves in a different direction),
+         * but the resulting curves aren't as nice and smooth as with the regular simulation.
+         */
+        DynaDraw.prototype.TickWhile = function () {
+            var _this = this;
+            if (!!this.position) {
+                var d2 = 0; // squared distance the brush has traveled
+                var step = 0;
+                do {
+                    d2 = this.cursor.ApplyForce(this.position, 1);
+                    step += d2;
+                    if (step > this.currentBrushSize.Size) {
+                        this.cursor.Draw(this.path, this.pressure);
+                        step = 0;
+                    }
+                } while (d2 > 0);
+                // draw the rest
+                if (step > 0) {
+                    this.cursor.Draw(this.path, this.pressure);
+                }
+                this.position = null; // skip Apply(..) that will return false next time
+            }
+            // do the next tick
+            requestAnimationFrame(function (time) { return _this.TickWhile(); }); // ~ 60 FPS
+        };
+        DynaDraw.prototype.Tick = function (time) {
+            var _this = this;
+            if (!!this.position) {
+                if (this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
+                    this.cursor.Draw(this.path, this.pressure);
+                }
+                else {
+                    this.position = null; // skip Apply(..) that will return false next time	
+                }
+            }
+            // do the next tick
+            this.lastAnimationTime = time;
+            requestAnimationFrame(function (time) { return _this.Tick(time); }); // ~ 60 FPS
+            //setTimeout(() => this.Tick(time + 1), 1); // ~ 1000 FPS
+            //setTimeout(() => this.Tick(time + 30), 30); // ~ 30 FPS
+            //setTimeout(() => this.Tick(time + 200), 200); // ~ 30 FPS
+        };
+        return DynaDraw;
+    })();
+    Drawing.DynaDraw = DynaDraw;
+    /**
+     * Set of brush properties that have effect on the outcome
+     */
+    var BrushInstance = (function () {
+        function BrushInstance(mass, friction, size) {
+            this.mass = mass;
+            this.friction = friction;
+            this.size = size;
+        }
+        Object.defineProperty(BrushInstance.prototype, "Mass", {
+            get: function () { return this.mass; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrushInstance.prototype, "Friction", {
+            get: function () { return this.friction; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrushInstance.prototype, "Size", {
+            get: function () { return this.size; },
+            enumerable: true,
+            configurable: true
+        });
+        return BrushInstance;
+    })();
+    /**
+     * Brush with all it's physical properties
+     * - implementation of the "filter" in the original algorithm
+     */
+    var BrushTip = (function () {
+        function BrushTip(calculateSpeed, timer) {
+            this.calculateSpeed = calculateSpeed;
+            this.timer = timer;
+        }
+        /**
+         * @param	{Vector2}		position	The starting point of the cursor.
+         * @param	{BrushInstance} brush  		Physical properties of the brush.
+         */
+        BrushTip.prototype.Reset = function (position, brush) {
+            this.brush = brush;
+            this.position = position;
+            this.startPosition = position;
+            this.previousPosition = position;
+            this.previousPressure = -1; // negative means, there is no pressure information yet
+            this.mousePosition = position;
+            this.acceleration = new Vector2(0, 0);
+            this.velocity = new Vector2(0, 0);
+            this.firstSegment = true;
+        };
+        /**
+         * Apply force created by mouse movement
+         * @param 	{Vector2}	mouse 			Mouse position
+         * @param	{number}	elapsedFrames	The number of frames elapsed since last movement
+         * @return	{number}					Brush movement distance squared
+         */
+        BrushTip.prototype.ApplyForce = function (mouse, elapsedFrames) {
+            // calculate the force
+            var force = mouse.subtract(this.position);
+            if (force.getSizeSq() < 1 /* Force */) {
+                return 0; // too subtle movement
+            }
+            // calculate acceleration and velocity
+            this.acceleration = force.scale(1 / this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
+            this.velocity = this.velocity.add(this.acceleration);
+            if (this.velocity.getSizeSq() < 1 /* Velocity */) {
+                return 0; // nearly no movement (a "heavy" brush)
+            }
+            // destroy unnecessary references
+            this.mousePosition = mouse;
+            mouse = null;
+            force = null;
+            this.acceleration = null;
+            // calculate the angle of the mouse
+            this.angle = this.velocity.getNormal();
+            // apply the drag of the digital drawing tool
+            this.velocity = this.velocity.scale((1 - this.brush.Friction) * elapsedFrames); // more friction means less movement
+            // update position
+            this.position = this.position.add(this.velocity);
+            return this.velocity.getSizeSq(); // there is something to render
+        };
+        /**
+         * Draw next segment
+         */
+        BrushTip.prototype.Draw = function (path, pressure) {
+            // the quicker the brush moves, the smaller print it leaves 
+            var relativeSpeed = this.calculateSpeed === true ? this.velocity.getSize() / (this.brush.Size * this.brush.Size) : 0; // set to 0 if no speed correction is used
+            var width = this.getRadius(pressure, relativeSpeed);
+            var delta = this.angle.scale(width);
+            if (this.firstSegment) {
+                path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta));
+                this.firstSegment = false;
+            }
+            path.ExtendPath(this.position.add(delta), this.position.subtract(delta));
+            path.Draw();
+        };
+        BrushTip.prototype.StartPath = function (path, pt, pressure) {
+            path.StartPath(pt, this.getRadius(pressure, 0));
+        };
+        /**
+         * Calculate current radius from pressure and speed of the cursor.
+         */
+        BrushTip.prototype.getRadius = function (pressure, speed) {
+            // I must interpolate the pressure between the last point and current pressure in the 
+            if (this.previousPressure < 0)
+                this.previousPressure = pressure;
+            var interpolatedPressure = this.interpolatePressure(pressure);
+            var radius = this.speedFactor(speed) * this.brush.Size * interpolatedPressure / 2;
+            // save for next time
+            this.previousPosition = this.position;
+            this.previousPressure = interpolatedPressure;
+            return radius;
+        };
+        /**
+         * Get current pressure - achieve smooth pressure gradients
+         */
+        BrushTip.prototype.interpolatePressure = function (mousePressure) {
+            var d1 = this.position.distanceTo(this.previousPosition);
+            var d2 = this.position.distanceTo(this.mousePosition);
+            if (d1 === 0 && d2 === 0) {
+                return mousePressure; // I don't have to interpolate
+            }
+            return (d1 / (d1 + d2)) * (mousePressure - this.previousPressure) + this.previousPressure;
+        };
+        /**
+         * Determine the effect of the speed on thickness of the path
+         */
+        BrushTip.prototype.speedFactor = function (speed) {
+            return Math.max(1 - speed, 0.4);
+        };
+        /** Mouse movement threshold - ingore too subtle mouse movements */
+        BrushTip.threshold = 0.001;
+        return BrushTip;
+    })();
 })(Drawing || (Drawing = {}));
 /// <reference path="BasicElements" />
 /// <reference path="Buttons" />
@@ -3970,16 +4999,14 @@ var UI;
          * @param	brushSizes		List of possible brush sizes
          * @param	localization	List of translated strings
          */
-        function RecorderUI(id, colorPallete, brushSizes, localization) {
+        function RecorderUI(id, colorPallete, brushSizes, localization, timer) {
             _super.call(this, "div", id + "-recorder");
             this.id = id;
             this.localization = localization;
+            this.timer = timer;
             /** Ticking interval */
             this.tickingInterval = 100;
             this.GetHTML().classList.add("vector-video-wrapper");
-            // prepare timer
-            this.recordingTimer = new Helpers.VideoTimer();
-            this.recordingTimer.Pause();
             // prepare the board
             this.board = this.CreateBoard();
             this.AddChild(this.board);
@@ -3994,18 +5021,14 @@ var UI;
             colorsPanel.GetHTML().classList.add("vector-video-colors");
             var sizesPanel = this.CreateBrushSizesPanel(brushSizes);
             sizesPanel.GetHTML().classList.add("vector-video-sizes");
-            var erasePanel = this.CreateErasePanel();
-            erasePanel.GetHTML().classList.add("vector-video-erase");
-            controls.AddChildren([buttons, colorsPanel, sizesPanel, erasePanel]);
+            var eraserPanel = this.CreateEraserPanel();
+            eraserPanel.GetHTML().classList.add("vector-video-erase");
+            var eraseAllPanel = this.CreateEraseAllPanel();
+            eraseAllPanel.GetHTML().classList.add("vector-video-erase");
+            controls.AddChildren([buttons, colorsPanel, sizesPanel, eraserPanel, eraseAllPanel]);
             this.controls = controls;
             this.AddChild(this.controls);
         }
-        Object.defineProperty(RecorderUI.prototype, "Timer", {
-            /** Access to the timer for "everyone"" */
-            get: function () { return this.recordingTimer; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(RecorderUI.prototype, "Width", {
             /** Get the width of the board in pixels. */
             get: function () {
@@ -4034,7 +5057,7 @@ var UI;
          * Integrate the canvas into the UI elements tree
          */
         RecorderUI.prototype.AcceptCanvas = function (canvas) {
-            this.board.AddChild(canvas);
+            this.board.GetHTML().appendChild(canvas);
         };
         /**
          * Create the
@@ -4048,13 +5071,14 @@ var UI;
          */
         RecorderUI.prototype.CreateButtonsPanel = function () {
             var _this = this;
+            var title = new UI.SimpleElement("h2", this.localization.RecPause);
             var buttonsPanel = new UI.Panel("div", this.id + "-panels");
             // the rec/pause button:
-            this.recPauseButton = new UI.IconButton("rec", this.localization.Record, function (e) { return _this.RecordPause(); });
+            this.recPauseButton = new UI.IconButton("icon-rec", this.localization.Record, function (e) { return _this.RecordPause(); });
             // the upload button:
-            this.uploadButton = new UI.IconButton("upload", this.localization.Upload, function (e) { return _this.InitializeUpload(); });
+            this.uploadButton = new UI.IconButton("icon-upload", this.localization.Upload, function (e) { return _this.InitializeUpload(); });
             Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
-            buttonsPanel.AddChildren([this.recPauseButton, this.uploadButton]);
+            buttonsPanel.AddChildren([title, this.recPauseButton, this.uploadButton]);
             return buttonsPanel;
         };
         /**
@@ -4065,13 +5089,11 @@ var UI;
                 this.PauseRecording();
                 this.uploadButton.GetHTML().removeAttribute("disabled");
                 this.GetHTML().classList.remove("recording");
-                this.recordingTimer.Pause();
             }
             else {
                 this.StartRecording();
                 Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
                 this.GetHTML().classList.add("recording");
-                this.recordingTimer.Resume();
             }
         };
         /**
@@ -4080,7 +5102,7 @@ var UI;
         RecorderUI.prototype.StartRecording = function () {
             var _this = this;
             this.isRecording = true;
-            this.recPauseButton.ChangeIcon("pause");
+            this.recPauseButton.ChangeIcon("icon-pause");
             this.board.IsRecording = true;
             this.ticking = setInterval(function () { return _this.Tick(); }, this.tickingInterval);
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.Start);
@@ -4090,7 +5112,7 @@ var UI;
          */
         RecorderUI.prototype.PauseRecording = function () {
             this.isRecording = false;
-            this.recPauseButton.ChangeIcon("rec");
+            this.recPauseButton.ChangeIcon("icon-rec");
             this.board.IsRecording = false;
             clearInterval(this.ticking);
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.Pause);
@@ -4099,9 +5121,12 @@ var UI;
          * Update the displayed time
          */
         RecorderUI.prototype.Tick = function () {
-            this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.recordingTimer.CurrentTime()));
+            this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.timer.CurrentTime()));
         };
         RecorderUI.prototype.InitializeUpload = function () {
+            // disable the record and upload buttons
+            Helpers.HTML.SetAttributes(this.recPauseButton.GetHTML(), { "disabled": "disabled" });
+            Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
             // trigger upload
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.StartUpload);
         };
@@ -4111,8 +5136,11 @@ var UI;
          */
         RecorderUI.prototype.CreateColorsPanel = function (colorPallete) {
             var panel = new UI.Panel("div", "color-pallete");
+            var title = new UI.SimpleElement("h2", this.localization.ChangeColor);
+            panel.AddChild(title);
             for (var i = 0; i < colorPallete.length; i++) {
-                panel.AddChild(new UI.ChangeColorButton(colorPallete[i]));
+                var btn = new UI.ChangeColorButton(colorPallete[i]);
+                panel.AddChild(btn);
             }
             return panel;
         };
@@ -4122,29 +5150,49 @@ var UI;
          */
         RecorderUI.prototype.CreateBrushSizesPanel = function (brushSizes) {
             var panel = new UI.Panel("div", "brush-sizes");
+            var title = new UI.SimpleElement("h2", this.localization.ChangeSize);
+            panel.AddChild(title);
             for (var i = 0; i < brushSizes.length; i++) {
-                panel.AddChild(new UI.ChangeBrushSizeButton(brushSizes[i]));
+                var btn = new UI.ChangeBrushSizeButton(brushSizes[i]);
+                panel.AddChild(btn);
             }
             return panel;
         };
         /**
          * Create a panel containing the eraser brush and the "erase all button"
          */
-        RecorderUI.prototype.CreateErasePanel = function () {
+        RecorderUI.prototype.CreateEraserPanel = function () {
+            var panel = new UI.Panel("div", this.id + "-erase");
+            var title = new UI.SimpleElement("h2", this.localization.Erase);
+            panel.AddChild(title);
+            this.switchToEraserButton = new UI.ChangeColorButton(UI.Color.BackgroundColor);
+            // the eraser button
+            panel.AddChild(this.switchToEraserButton);
+            return panel;
+        };
+        /**
+         * Create a panel containing the eraser brush and the "erase all button"
+         */
+        RecorderUI.prototype.CreateEraseAllPanel = function () {
             var _this = this;
             var panel = new UI.Panel("div", this.id + "-erase");
-            // the eraser button
-            panel.AddChild(new UI.ChangeColorButton(UI.Color.BackgroundColor));
+            var title = new UI.SimpleElement("h2", this.localization.EraseAll);
+            panel.AddChild(title);
             // the "erase all" button:
-            var eraseBtn = new UI.IconButton("erase", this.localization.EraseAll, function (e) { return _this.EraseAll(); });
-            panel.AddChild(eraseBtn);
+            this.eraseAllButton = new UI.ChangeColorButton(UI.Color.BackgroundColor, function () { return _this.EraseAll(); });
+            Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, function (color) {
+                _this.currentColor = color;
+                _this.eraseAllButton.SetColor(color);
+            });
+            panel.AddChild(this.eraseAllButton);
             return panel;
         };
         /**
          * Clear the canvas
          */
         RecorderUI.prototype.EraseAll = function () {
-            Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas);
+            Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas, this.currentColor);
+            this.switchToEraserButton.SetColor(this.currentColor);
         };
         return RecorderUI;
     })(UI.Panel);
@@ -4152,7 +5200,7 @@ var UI;
 })(UI || (UI = {}));
 /// <reference path="../Settings/BrushSettings" />
 /// <reference path="../Settings/RecorderSettings" />
-/// <reference path="../AudioRecording/AudioRecorder" />
+/// <reference path="../AudioData/AudioRecorder" />
 /// <reference path="../VideoData/PointingDevice" />
 /// <reference path="../VideoData/Mouse" />
 /// <reference path="../VideoData/Touch" />
@@ -4160,26 +5208,29 @@ var UI;
 /// <reference path="../VideoData/WacomTablet" />
 /// <reference path="../Drawing/SVGDrawer" />
 /// <reference path="../Drawing/CanvasDrawer" />
-/// <reference path="../VideoData/VideoInfo" />
+/// <reference path="../Drawing/DynaDraw" />
+/// <reference path="../VideoData/Metadata" />
+/// <reference path="../VideoData/Video" />
 /// <reference path="../Helpers/File" />
 /// <reference path="../UI/RecorderUI" />
 /// <reference path="../UI/BasicElements" />
-/// <reference path="../VideoFormat/IO" />
-/// <reference path="../VideoFormat/AnimatedSVGWriter" />
 /// <reference path="../Localization/IRecorderLocalization" />
+/// <reference path="../VideoFormat/SVGAnimation/IO" />
 var VectorVideo;
 (function (VectorVideo) {
+    var Video = VideoData.Video;
     var Mouse = VideoData.Mouse;
     var WacomTablet = VideoData.WacomTablet;
     var TouchEventsAPI = VideoData.TouchEventsAPI;
     var PointerEventsAPI = VideoData.PointerEventsAPI;
     var SVGDrawer = Drawing.SVGDrawer;
-    var AudioRecorder = AudioRecording.AudioRecorder;
+    var AudioRecorder = AudioData.AudioRecorder;
     var Errors = Helpers.Errors;
     var ErrorType = Helpers.ErrorType;
     var VideoEvents = Helpers.VideoEvents;
     var VideoEventType = Helpers.VideoEventType;
-    var VideoInfo = VideoData.VideoInfo;
+    var Metadata = VideoData.Metadata;
+    var CursorState = Helpers.CursorState;
     var Recorder = (function () {
         /**
          * Create a new instance of recorder.
@@ -4190,14 +5241,19 @@ var VectorVideo;
             var _this = this;
             this.id = id;
             this.settings = settings;
-            this.current = {
-                Color: "#fff",
-                Size: 3
-            };
             // do not start recording until the user want's to start
             this.isRecording = false;
-            this.lastTime = 0;
-            this.data = [];
+            // create paused stopwatch
+            this.timer = new Helpers.VideoTimer(false);
+            // recording is allowed even when not recording - but will be blcoked
+            // when upload starts
+            this.recordingBlocked = false;
+            // prepare data storage
+            this.data = new Video();
+            this.lastEraseData = 0;
+            //
+            // THE UI
+            //
             // select the container - it must exist
             var container = document.getElementById(id);
             if (!container) {
@@ -4217,16 +5273,19 @@ var VectorVideo;
                 colors.push(new UI.Color("green", "#8cfa59"));
                 colors.push(new UI.Color("blue", "#59a0fa"));
                 colors.push(new UI.Color("yellow", "#fbff06"));
+                colors.push(UI.Color.BackgroundColor);
                 settings.ColorPallete = colors;
             }
             if (!settings.BrushSizes || settings.BrushSizes.length === 0) {
                 // default brush sizes
                 var brushes = [];
                 brushes.push(new UI.BrushSize("pixel", 2, "px"));
-                brushes.push(new UI.BrushSize("tiny", 5, "px"));
-                brushes.push(new UI.BrushSize("small", 20, "px"));
-                brushes.push(new UI.BrushSize("medium", 30, "px"));
-                brushes.push(new UI.BrushSize("large", 40, "px"));
+                brushes.push(new UI.BrushSize("odd", 3, "px"));
+                brushes.push(new UI.BrushSize("tiny", 4, "px"));
+                brushes.push(new UI.BrushSize("ok", 6, "px"));
+                brushes.push(new UI.BrushSize("small", 8, "px"));
+                brushes.push(new UI.BrushSize("medium", 10, "px"));
+                brushes.push(new UI.BrushSize("large", 15, "px"));
                 brushes.push(new UI.BrushSize("extra", 80, "px"));
                 settings.BrushSizes = brushes;
             }
@@ -4234,12 +5293,14 @@ var VectorVideo;
                 // default localization
                 var loc = {
                     NoJS: "Your browser does not support JavaScript or it is turned off. Video can't be recorded without enabled JavaScript in your browser.",
-                    Record: "Record video",
+                    RecPause: "Control recording",
+                    Record: "Start",
                     Pause: "Pause recording",
                     Upload: "Upload",
                     ChangeColor: "Change brush color",
                     ChangeSize: "Change brush size",
-                    EraseAll: "Erase all",
+                    Erase: "Eraser",
+                    EraseAll: "Erase everything",
                     WaitingText: "Please be patient. Uploading video usually takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window.",
                     UploadWasSuccessful: "Upload was successful",
                     RedirectPrompt: "Upload was successful - do you want to view your just recorded video?",
@@ -4251,27 +5312,28 @@ var VectorVideo;
             VideoEvents.on(VideoEventType.ChangeBrushSize, function (size) { return _this.ChangeBrushSize(size); });
             VideoEvents.on(VideoEventType.ChangeColor, function (color) { return _this.ChangeColor(color); });
             VideoEvents.on(VideoEventType.CursorState, function (state) { return _this.ProcessCursorState(state); });
-            VideoEvents.on(VideoEventType.ClearCanvas, function () { return _this.ClearCanvas(); });
+            VideoEvents.on(VideoEventType.ClearCanvas, function (color) { return _this.ClearCanvas(color); });
             VideoEvents.on(VideoEventType.Start, function () { return _this.Start(); });
             VideoEvents.on(VideoEventType.Continue, function () { return _this.Continue(); });
             VideoEvents.on(VideoEventType.Pause, function () { return _this.Pause(); });
             VideoEvents.on(VideoEventType.StartUpload, function () { return _this.StartUpload(); });
-            // the most important part - the drawer
-            if (!!settings.DrawingStrategy) {
-                this.drawer = settings.DrawingStrategy;
-            }
-            else {
-                // default drawing strategy is SVG
-                this.drawer = new SVGDrawer(true);
-            }
-            // create UI and connect it to the drawer			
-            this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization);
-            this.ui.AcceptCanvas(this.drawer.GetCanvas());
-            container.appendChild(this.ui.GetHTML());
-            this.drawer.Stretch(); // adapt to the environment
+            // Record paths
+            VideoEvents.on(VideoEventType.StartPath, function (path) {
+                _this.PushChunk(new VideoData.PathChunk(path, _this.timer.CurrentTime(), _this.lastEraseData));
+                _this.data.CurrentChunk.PushCommand(new VideoData.DrawNextSegment(_this.timer.CurrentTime())); // draw the start dot
+            });
+            VideoEvents.on(VideoEventType.DrawSegment, function () { return _this.data.CurrentChunk.PushCommand(new VideoData.DrawNextSegment(_this.timer.CurrentTime())); });
             var min = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size < currentValue.Size ? previousValue : currentValue; }).Size;
             var max = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size > currentValue.Size ? previousValue : currentValue; }).Size;
-            this.drawer.InitDynaDraw(min, max, this.ui.Timer);
+            // the most important part - the rendering and drawing strategy
+            // - default drawing strategy is using SVG
+            this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
+            this.dynaDraw = new Drawing.DynaDraw(function () { return _this.drawer.CreatePath(); }, true, min, max, this.timer);
+            // create UI and connect it to the drawer			
+            this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization, this.timer);
+            this.ui.AcceptCanvas(this.drawer.CreateCanvas());
+            container.appendChild(this.ui.GetHTML());
+            this.drawer.Stretch(); // adapt to the environment
             // select best input method
             var wacomApi = WacomTablet.IsAvailable();
             if (window.hasOwnProperty("PointerEvent")) {
@@ -4289,9 +5351,15 @@ var VectorVideo;
                 var touch = new TouchEventsAPI(container);
                 console.log("Mouse and Touch Events API are used.");
             }
-            // set default color and size of the brush
-            VideoEvents.trigger(VideoEventType.ChangeColor, settings.ColorPallete[0]);
-            VideoEvents.trigger(VideoEventType.ChangeBrushSize, settings.BrushSizes[0]);
+            // init board state
+            this.currColor = UI.Color.ForegroundColor;
+            this.currSize = brushes.length > 0 ? brushes[0] : new UI.BrushSize("default", 5, "px");
+            this.lastCurState = new CursorState(0, 0, 0, 0); // reset the cursor
+            // set default bg color and init the first chunk
+            this.ClearCanvas(UI.Color.BackgroundColor);
+            // init some values for the brush - user will change it immediately, but some are needed from the very start
+            VideoEvents.trigger(VideoEventType.ChangeColor, this.currColor);
+            VideoEvents.trigger(VideoEventType.ChangeColor, this.currSize);
         }
         /**
          * Start recording. Everything must be initialised
@@ -4299,6 +5367,8 @@ var VectorVideo;
          */
         Recorder.prototype.Start = function () {
             this.isRecording = true;
+            this.PushChunk(new VideoData.VoidChunk(this.timer.CurrentTime(), this.lastEraseData));
+            this.timer.Resume();
             if (this.audioRecorder) {
                 this.audioRecorder.Start();
             }
@@ -4308,6 +5378,8 @@ var VectorVideo;
          */
         Recorder.prototype.Pause = function () {
             this.isRecording = false;
+            this.PushChunk(new VideoData.VoidChunk(this.timer.CurrentTime(), this.lastEraseData));
+            this.timer.Pause();
             if (this.audioRecorder) {
                 this.audioRecorder.Pause();
             }
@@ -4317,31 +5389,38 @@ var VectorVideo;
          */
         Recorder.prototype.Continue = function () {
             this.isRecording = true;
+            this.timer.Resume();
             if (this.audioRecorder) {
                 this.audioRecorder.Continue();
             }
+            this.PushChunk(new VideoData.VoidChunk(this.timer.CurrentTime(), this.lastEraseData));
         };
         /**
          * Stop recording and upload the recorded data.
          */
         Recorder.prototype.StartUpload = function () {
-            var info = new VideoInfo;
-            // @todo technical data from current settings
-            this.isRecording = false;
+            var _this = this;
+            // do not record any new data
+            this.recordingBlocked = true;
+            // prepare metadata based on current status
+            var info = new Metadata();
+            info.Length = this.timer.CurrentTime();
+            info.Width = this.ui.Width;
+            info.Height = this.ui.Height;
+            info.AudioTracks = [];
+            this.data.Metadata = info;
             if (!!this.audioRecorder
                 && this.audioRecorder.isRecording()) {
-                var $this = this;
                 this.audioRecorder.Stop(function (files) {
-                    info.AudioTracks = files;
-                    $this.UploadData(info);
+                    _this.data.Metadata.AudioTracks = files;
+                    _this.UploadData();
                 }, function () {
-                    $this.FinishRecording(false); // upload failed
+                    _this.FinishRecording(false); // upload of audio failed
                 });
             }
             else {
                 // there was no audio
-                info.AudioTracks = []; // no audio
-                this.UploadData(info);
+                this.UploadData();
             }
         };
         /**
@@ -4350,8 +5429,9 @@ var VectorVideo;
          */
         Recorder.prototype.ChangeBrushSize = function (size) {
             // User can change the size even if recording hasn't started or is paused
-            //this.data.push(); // @todo
-            this.drawer.SetBrushSize(size);
+            this.currSize = size;
+            !this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.ChangeBrushSize(size, this.timer.CurrentTime()));
+            this.dynaDraw.SetBrushSize(size);
         };
         /**
          * User want's to change brush color.
@@ -4359,28 +5439,35 @@ var VectorVideo;
          */
         Recorder.prototype.ChangeColor = function (color) {
             // User can change the color even if recording hasn't started or is paused
-            //this.data.push(); // @todo
-            this.drawer.SetBrushColor(color);
+            this.currColor = color;
+            !this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.ChangeBrushColor(color, this.timer.CurrentTime()));
+            this.drawer.SetCurrentColor(color);
         };
         /**
          * User moved the mouse or a digital pen.
          */
         Recorder.prototype.ProcessCursorState = function (state) {
-            //if(this.isRecording === true) { // user can prepare something - everything will be drawn at once
-            // add data only if recording is in progress
-            //this.data.push(state); // @todo
-            this.drawer.ProcessNewState(state);
-            //}
+            this.lastCurState = state;
+            !this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.MoveCursor(state.X, state.Y, state.Pressure, this.timer.CurrentTime()));
+            this.dynaDraw.ObserveCursorMovement(state);
         };
         /**
          * User moved the mouse or a digital pen.
          */
-        Recorder.prototype.ClearCanvas = function () {
-            //if(this.isRecording === true) { // user can prepare something - everything will be drawn at once
+        Recorder.prototype.ClearCanvas = function (color) {
             // add data only if recording is in progress
-            //this.data.push(state); // @todo
-            this.drawer.ClearCanvas();
-            //}
+            var time = this.timer.CurrentTime();
+            this.lastEraseData = this.PushChunk(new VideoData.EraseChunk(color, time, this.lastEraseData));
+            this.data.CurrentChunk.PushCommand(new VideoData.ClearCanvas(time, color));
+            this.drawer.ClearCanvas(color);
+        };
+        Recorder.prototype.PushChunk = function (chunk) {
+            // set init commands
+            chunk.InitCommands.push(new VideoData.ChangeBrushSize(this.currSize, chunk.StartTime));
+            chunk.InitCommands.push(new VideoData.ChangeBrushColor(this.currColor, chunk.StartTime));
+            chunk.InitCommands.push(new VideoData.MoveCursor(this.lastCurState.X, this.lastCurState.Y, this.lastCurState.Pressure, chunk.StartTime));
+            // now push it
+            return this.data.PushChunk(chunk);
         };
         //
         // Upload the result
@@ -4389,20 +5476,16 @@ var VectorVideo;
          * Upload the recorded data to the server.
          * @param	info	Information about the video.
          */
-        Recorder.prototype.UploadData = function (info) {
+        Recorder.prototype.UploadData = function () {
             var _this = this;
-            // update info according to recorded data
-            info.Length = this.lastTime;
-            // board data
-            info.Width = this.ui.Width;
-            info.Height = this.ui.Height;
-            info.BackgroundColor = this.ui.BackgroundColor;
             // get the recorded XML
-            var writer = new VideoFormat.AnimatedSVGWriter();
-            var xml = writer.ToString();
+            var writer = new VideoFormat.SVGAnimation.IO();
+            var xml = writer.SaveVideo(this.data);
+            console.log(xml);
+            Helpers.File.Download(xml, "recorded.svg");
             // if I need saving the data to local computer in the future
             VideoEvents.on(VideoEventType.DownloadData, function () {
-                Helpers.File.StartDownloadingXml(xml);
+                Helpers.File.Download(xml, "recorded-animation.svg");
             });
             // Upload the data via POST Ajax request
             var req = new XMLHttpRequest();
@@ -4420,7 +5503,7 @@ var VectorVideo;
                     _this.FinishRecording(false); // upload failed
                 }
             };
-            req.send(xml);
+            //req.send(xml);
         };
         /**
          * Redirect the user after successfully finishing recording.

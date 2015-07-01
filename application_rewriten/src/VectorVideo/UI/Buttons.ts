@@ -17,19 +17,15 @@ module UI {
 		/** Reference to the active button. */
 		private static active: Button;
 		
-		constructor(private color: Color) {						
+		/** Current color of this button. */
+		private color: Color;
+		
+		constructor(color: Color, callback?: Function) {						
 			super(""); // empty text			
-			
-			// make the button a color option
-			Helpers.HTML.SetAttributes(this.GetHTML(), {
-				class: "option",
-				"data-color": color.CssValue,
-				title: color.Name,
-				style: "background-color: " + color.CssValue					
-			});			
+			this.SetColor(color);
 			
 			// announce color change when the button is clicked
-			this.GetHTML().onclick = (e) => this.ChangeColor(e);
+			this.GetHTML().onclick = (e) => !!callback ? callback() : this.ChangeColor(e); // if there is some expicit callback, then call it
 		}
 		
 		/**
@@ -45,6 +41,18 @@ module UI {
 			// announce the change
 			ChangeColorButton.active = this;
 			VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
+		}
+	
+		public SetColor(color: Color): void {
+			this.color = color;
+			
+			// make the button a color option
+			Helpers.HTML.SetAttributes(this.GetHTML(), {
+				class: "option",
+				"data-color": color.CssValue,
+				title: color.Name,
+				style: "background-color: " + color.CssValue					
+			});			
 		}
 		
 	}
@@ -66,9 +74,13 @@ module UI {
 						height: ${size.CssValue};
 						border-radius: ${size.Size / 2}${size.Unit}; 
 						display: inline-block;
-						background: black;`				
+						background: black;
+						margin-top: ${-size.Size / 2}${size.Unit};`,
+				class: "dot",
+				"data-size": size.Size				
 			});
-			this.GetHTML().appendChild(dot);			
+			//dot.textContent = size.Size.toString();
+			this.GetHTML().appendChild(dot);
 					
 			// make the button a color option
 			Helpers.HTML.SetAttributes(this.GetHTML(), {

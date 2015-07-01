@@ -4,8 +4,10 @@ module Localization {
 	/**
 	 * 
 	 */
-	export interface IPlayerLocalization {		
+	export interface IPlayerLocalization {
+		// erros		
 		NoJS: string,
+		DataLoadingFailed: string,
 		
 		// buttons
 		Play: string,

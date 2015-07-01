@@ -29,16 +29,20 @@ module Helpers {
     export class BezierCurveSegment {
         /** The point, wher the spline starts */
         get Start(): Vector2 { return this.start; }
+        set Start(vec: Vector2) { this.start = vec; }
         
         /** The control point adjecent to the starting point */
         get StartCP(): Vector2 { return this.startCP; }
+        set StartCP(vec: Vector2) { this.startCP = vec; }
         
         /** The point, where the spline ends */
         get End(): Vector2 { return this.end; }
+        set End(vec: Vector2) { this.end = vec; }
         
         /** The control point adjecent to the ending point */
-        get EndCP(): Vector2 {return this.endCP; }   
-     
+        get EndCP(): Vector2 {return this.endCP; }
+        set EndCp(vec: Vector2) { this.endCP = vec; }
+        
         /**
          * Repersents one segment of a bezier curve
          * @param   start   Previous point on the spline

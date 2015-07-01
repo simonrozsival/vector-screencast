@@ -1,17 +1,29 @@
 @import (less) "./variables/variables.less";
 
-.vector-video-board {
-	min-height: 100%;
-	width: 100%;
-	position: relative;
+.vector-video-wrapper {
 	overflow: hidden;
+	width: 100%;
+	height: 100%;
 	
-	.recording & {
-		cursor: none; // custom cursor
-	}
-	
-	.vector-video-canvas-wrapper {
+	.vector-video-board {
+		min-height: 100%;
 		width: 100%;
-		height: 100%;
+		position: relative;
+		
+		.recording & {
+			cursor: none; // custom cursor
+		}
+		
+		.vector-video-canvas-wrapper {
+			width: 100%;
+			height: 100%;
+		}
+			
+		// unselectable!
+		-webkit-user-select: none;        
+		-moz-user-select: none;
+		-ms-user-select: none; /* IE10+ */
+		-o-user-select: none;
+		user-select: none;
 	}
 }

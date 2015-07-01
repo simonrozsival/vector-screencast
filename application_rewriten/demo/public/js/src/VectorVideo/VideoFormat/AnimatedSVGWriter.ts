@@ -4,7 +4,7 @@
 /// <reference path="../Helpers/State" />
 /// <reference path="../Helpers/SVG" />
 
-import VideoInfo = VideoData.VideoInfo;
+import Metadata = Video.Metadata;
 import State = Helpers.State;
 //import SVG = Helpers.SVG;
 
@@ -31,7 +31,7 @@ module VideoFormat {
 		/**
 		 * Encode the video information into the SVG format
 		 */
-		public SetInfo(info: VideoInfo) : void {
+		public SetInfo(info: Metadata) : void {
 			// store width, height and background information 
 			
 			

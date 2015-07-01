@@ -8,6 +8,8 @@
 module UI {
 	
 	import HTML = Helpers.HTML;
+	import VideoEvents = Helpers.VideoEvents;
+	import VideoEventType = Helpers.VideoEventType;
 	
 	/**
 	 * The board itself.
@@ -38,6 +40,7 @@ module UI {
 		}
 						
 		/**
+		 * Create a new board
 		 * @param	id	HTML element id attribute value
 		 */
 		constructor(id: string) {
@@ -49,13 +52,15 @@ module UI {
 			this.AddChild(<IElement> this.cursor);
 			
 			// make board's position relative for the cursor			
-			Helpers.HTML.SetAttributes(this.GetHTML(), { position: "relative" });
+			HTML.SetAttributes(this.GetHTML(), { position: "relative" });
 			
 			// move the cursor
-			Helpers.VideoEvents.on(Helpers.VideoEventType.CursorState, 		(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));
-			Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeBrushSize, 	(state: BrushSize)				=> this.UpdateCursorSize(state));
-			Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, 		(state: Color)					=> this.UpdateCursorColor(state));
-			Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, 		(state: Color)					=> this.UpdateCursorColor(state));
+			VideoEvents.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));
+			VideoEvents.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));			
+			VideoEvents.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)				=> this.UpdateCursorSize(state));
+			VideoEvents.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
+			VideoEvents.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
+			VideoEvents.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)			=> this.UpdateCursorScale(scalingFactor));
 		}
 				
 		/**
@@ -73,10 +78,17 @@ module UI {
 		}
 		
 		/**
-		 * Position the element
+		 * 
 		 */
 		private UpdateCursorColor(color: Color): void {			
 			this.cursor.ChangeColor(color);
+		}		
+		
+		/**
+		 * Position the element
+		 */
+		private UpdateCursorScale(scalingFactor: number): void {			
+			this.cursor.SetScalingFactor(scalingFactor);
 		}
 	}
 	

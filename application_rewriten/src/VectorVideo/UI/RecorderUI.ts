@@ -27,12 +27,6 @@ module UI {
 		/** Is recording running? */
 		private isRecording: boolean;
 		
-		/** Informative recording timer */
-		private recordingTimer: Helpers.VideoTimer;
-		
-		/** Access to the timer for "everyone"" */
-		public get Timer(): Helpers.VideoTimer { return this.recordingTimer; }
-		
 		/** Get the width of the board in pixels. */
 		public get Width(): number {
 			return this.board.Width;
@@ -58,15 +52,12 @@ module UI {
 		constructor(private id: string,
 					colorPallete: Array<Color>, 
 					brushSizes: Array<BrushSize>,
-					private localization: Localization.IRecorderLocalization) {
+					protected localization: Localization.IRecorderLocalization,
+					protected timer: Helpers.VideoTimer) {
 						
 			super("div", `${id}-recorder`);
 			this.GetHTML().classList.add("vector-video-wrapper");
-			
-			// prepare timer
-			this.recordingTimer = new Helpers.VideoTimer();
-			this.recordingTimer.Pause();
-								
+											
 			// prepare the board
 			this.board = this.CreateBoard();
 			this.AddChild(<IElement> this.board);
@@ -86,10 +77,13 @@ module UI {
 			var sizesPanel: IElement = this.CreateBrushSizesPanel(brushSizes);
 			sizesPanel.GetHTML().classList.add("vector-video-sizes");
 			
-			var erasePanel: IElement = this.CreateErasePanel();
-			erasePanel.GetHTML().classList.add("vector-video-erase");
+			var eraserPanel: IElement = this.CreateEraserPanel();
+			eraserPanel.GetHTML().classList.add("vector-video-erase");
 			
-			controls.AddChildren([ buttons, colorsPanel, sizesPanel, erasePanel ]);
+			var eraseAllPanel: IElement = this.CreateEraseAllPanel();
+			eraseAllPanel.GetHTML().classList.add("vector-video-erase");
+			
+			controls.AddChildren([ buttons, colorsPanel, sizesPanel, eraserPanel, eraseAllPanel ]);
 			
 			this.controls = controls;
 			this.AddChild(this.controls);			
@@ -98,8 +92,8 @@ module UI {
 		/**
 		 * Integrate the canvas into the UI elements tree
 		 */
-		public AcceptCanvas(canvas: IElement) {
-			this.board.AddChild(canvas);
+		public AcceptCanvas(canvas: Element) {
+			this.board.GetHTML().appendChild(canvas);
 		}
 		
 		/**
@@ -120,16 +114,18 @@ module UI {
 		 * Create a panel containing the REC/Pause button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
+			var title: SimpleElement = new SimpleElement("h2", this.localization.RecPause);
+			
 			var buttonsPanel: Panel = new Panel("div", `${this.id}-panels`);
 			
 			// the rec/pause button:
-			this.recPauseButton = new IconButton("rec", this.localization.Record, (e) => this.RecordPause());
+			this.recPauseButton = new IconButton("icon-rec", this.localization.Record, (e) => this.RecordPause());
 			
 			// the upload button:
-			this.uploadButton = new IconButton("upload", this.localization.Upload, (e) => this.InitializeUpload());
+			this.uploadButton = new IconButton("icon-upload", this.localization.Upload, (e) => this.InitializeUpload());
 			Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });	
 			
-			buttonsPanel.AddChildren([ this.recPauseButton, this.uploadButton ]);
+			buttonsPanel.AddChildren([ title, this.recPauseButton, this.uploadButton ]);
 			return buttonsPanel;
 		}
 				
@@ -141,12 +137,10 @@ module UI {
 				this.PauseRecording();
 				this.uploadButton.GetHTML().removeAttribute("disabled");
 				this.GetHTML().classList.remove("recording");
-				this.recordingTimer.Pause();
 			} else {
 				this.StartRecording();
 				Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
 				this.GetHTML().classList.add("recording");
-				this.recordingTimer.Resume();
 			}
 		}
 		
@@ -162,7 +156,7 @@ module UI {
 		private StartRecording() : void {
 			this.isRecording = true;
 			
-			this.recPauseButton.ChangeIcon("pause");
+			this.recPauseButton.ChangeIcon("icon-pause");
 			this.board.IsRecording = true;
 			
 			this.ticking = setInterval(() => this.Tick(), this.tickingInterval);
@@ -175,7 +169,7 @@ module UI {
 		private PauseRecording() : void {
 			this.isRecording = false;			
 			
-			this.recPauseButton.ChangeIcon("rec");
+			this.recPauseButton.ChangeIcon("icon-rec");
 			this.board.IsRecording = false;
 			
 			clearInterval(this.ticking);
@@ -186,10 +180,13 @@ module UI {
 		 * Update the displayed time
 		 */
 		private Tick() : void {
-			this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.recordingTimer.CurrentTime()));
+			this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.timer.CurrentTime()));
 		}
 				
 		private InitializeUpload() {
+			// disable the record and upload buttons
+			Helpers.HTML.SetAttributes(this.recPauseButton.GetHTML(), { "disabled": "disabled" });
+			Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
 			// trigger upload
 			Helpers.VideoEvents.trigger(Helpers.VideoEventType.StartUpload);
 		}
@@ -198,10 +195,14 @@ module UI {
 		 * Create a panel for changing colors
 		 * @param	brushSizes	List of possible brush colors
 		 */
-		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {			
+		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
 			var panel = new Panel("div", "color-pallete");
+			var title: SimpleElement = new SimpleElement("h2", this.localization.ChangeColor);
+			panel.AddChild(title);
+					
 			for(var i = 0; i < colorPallete.length; i++) {
-				panel.AddChild(new ChangeColorButton(colorPallete[i]));				
+				var btn = new ChangeColorButton(colorPallete[i]);
+				panel.AddChild(btn);
 			}
 			
 			return panel;
@@ -211,28 +212,57 @@ module UI {
 		 * Create a panel for changing brush size
 		 * @param	brushSizes	List of possible brush sizes
 		 */
-		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {			
+		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {					
 			var panel = new Panel("div", "brush-sizes");
+			var title: SimpleElement = new SimpleElement("h2", this.localization.ChangeSize);
+			panel.AddChild(title);
+			
 			for(var i = 0; i < brushSizes.length; i++) {
-				panel.AddChild(new ChangeBrushSizeButton(brushSizes[i]));				
+				var btn = new ChangeBrushSizeButton(brushSizes[i]);
+				panel.AddChild(btn);			
 			}
 			
 			return panel;
 		}	
 		
+		/** Current selected color */
+		private currentColor: UI.Color;
+		
+		private switchToEraserButton: ChangeColorButton;
+		
+		private eraseAllButton: ChangeColorButton;
+		
 		/**
 		 * Create a panel containing the eraser brush and the "erase all button"
 		 */
-		private CreateErasePanel() : Panel {
+		private CreateEraserPanel() : Panel {			
 			var panel: Panel = new Panel("div", `${this.id}-erase`);
+			var title: SimpleElement = new SimpleElement("h2", this.localization.Erase);
+			panel.AddChild(title);
 			
+			this.switchToEraserButton = new ChangeColorButton(UI.Color.BackgroundColor);
 			// the eraser button
-			panel.AddChild(new ChangeColorButton(UI.Color.BackgroundColor));	
+			panel.AddChild(this.switchToEraserButton);
+			
+			return panel;
+		}
+		
+		/**
+		 * Create a panel containing the eraser brush and the "erase all button"
+		 */
+		private CreateEraseAllPanel() : Panel {			
+			var panel: Panel = new Panel("div", `${this.id}-erase`);
+			var title: SimpleElement = new SimpleElement("h2", this.localization.EraseAll);
+			panel.AddChild(title);
 			
 			// the "erase all" button:
-			var eraseBtn: Button = new IconButton("erase", this.localization.EraseAll, (e) => this.EraseAll());	
+			this.eraseAllButton = new ChangeColorButton(UI.Color.BackgroundColor, () => this.EraseAll());	
+			Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, (color: UI.Color) => {
+				this.currentColor = color;
+				this.eraseAllButton.SetColor(color);
+			});
 			
-			panel.AddChild(eraseBtn);
+			panel.AddChild(this.eraseAllButton);
 			return panel;
 		}
 		
@@ -240,7 +270,8 @@ module UI {
 		 * Clear the canvas
 		 */
 		private EraseAll(): void {
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas);
+			Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas, this.currentColor);
+			this.switchToEraserButton.SetColor(this.currentColor);			
 		}
 	}	
 }

@@ -14,24 +14,41 @@ module UI {
 		
 		/** Visual representation of the progress bar */
 		private progresbar: IElement;
+		/** Visual representation of the buffering bar */
+		private bufferbar: IElement;
+		/** Hovering helper */
+		private arrow: IElement;
 		
 		constructor(id: string) {
 			super("div", id);
 			this.length = 0;
 			
+			//
+			this.GetHTML().classList.add("ui-progressbar");
+			
 			// create progress bar
 			var bar: SimpleElement = new SimpleElement("div");
-			bar.GetHTML().classList.add("ui-progressbar");			
+			bar.GetHTML().classList.add("ui-progress");			
 			this.progresbar = bar;
 			this.AddChild(bar);
+			
+			// create progress bar
+			bar = new SimpleElement("div");
+			bar.GetHTML().classList.add("ui-buffer");			
+			this.bufferbar = bar;
+			this.AddChild(bar);
+			
+			// skipping helper
+			this.arrow = new SimpleElement("div", "0:00");
+			this.arrow.GetHTML().classList.add("ui-arrow");
+			this.AddChild(this.arrow);
 			
 			// init progresbar with
 			this.Sync(0);
 			
 			// change video position, when the bar is clicked
-			this.GetHTML().onclick = this.OnClick;
-			
-			// @todo show preloaded content
+			this.GetHTML().onclick = (e: MouseEvent) => this.OnClick(e);
+			this.GetHTML().onmousemove = (e: MouseEvent) => this.OnMouseMove(e);
 		}
 		
 		/**
@@ -43,10 +60,29 @@ module UI {
 		}
 	
 		/**
+		 * Show the user an information about the point he is pointing to
+		 */
+		private OnMouseMove(e: MouseEvent) : void {
+			var progress: number = (e.clientX - this.GetHTML().clientLeft) / this.GetHTML().clientWidth;
+			var time: string = Helpers.millisecondsToString(progress * this.length);
+			this.arrow.GetHTML().textContent = time;
+			this.arrow.GetHTML().style.left = `${progress * 100}%`;  
+		}
+		
+		/**
 		 * Synchronize progress bar width with current time 
+		 * @param	{number} 	time	What is the current progress in milliseconds.
 		 */
 		public Sync(time: number) : void {
-			this.progresbar.GetHTML().style.width = this.length > 0 ? `${time / this.length * 100}` : "O%";
+			this.progresbar.GetHTML().style.width = this.length > 0 ? `${time / this.length * 100}%` : "O%";
+		}
+		
+		/**
+		 * Synchronize buffer bar width with current time 
+		 * @param	{number} 	time	How much is loaded in seconds.
+		 */
+		public SetBuffer(time: number) : void {
+			this.bufferbar.GetHTML().style.width = this.length > 0 ? `${time / this.length * 100}%` : "O%";
 		}
 		
 		/**

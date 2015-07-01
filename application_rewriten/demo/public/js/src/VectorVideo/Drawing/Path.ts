@@ -8,20 +8,47 @@ module Drawing {
 	import SVG = Helpers.SVG;
 	import Vector2 = Helpers.Vector2;
 	
+	import VideoEvents = Helpers.VideoEvents;
+	import VideoEventType = Helpers.VideoEventType;
+	
 	
 	interface PathPoint {
 		Left: Vector2;
 		Right: Vector2;
-		Time: number;
 	}
-	
+		
 	export class Path {		
 				
-		/** Current path point */
-		private iterator: number;
 				
 		/** List of all points that were drawn */
 		protected segments: Array<Segment>;		
+		
+		/** Access to all segments of the path. */
+		public get Segments(): Array<Segment> {
+			return this.segments;
+		}
+				
+		/** Assign set of all segments at once. */
+		public set Segments(value: Array<Segment>) {
+			this.segments = value;
+		}
+		
+		/** Segment to extend */
+		protected lastDrawnSegment: Segment;
+		
+		/** Access the segment that was drawn previousely. */
+		public get LastDrawnSegment(): Segment {
+			return this.lastDrawnSegment;
+		}
+				
+		/** Init the last drawn segment position. */
+		public set LastDrawnSegment(value: Segment) {
+			this.lastDrawnSegment = value;
+		}
+		
+		
+		/** Current path point */
+		private iterator: number;
 		
 		/** List of raw points along the path */		
 		private pathPoints: Array<PathPoint>;
@@ -49,7 +76,7 @@ module Drawing {
 		/**
 		 * Init a new colored path
 		 */
-		constructor(protected color: string, protected wireframe?: boolean) {
+		constructor(protected curved: boolean, protected color: string, protected wireframe?: boolean) {
 			if(this.wireframe === undefined) {
 				this.wireframe = false;
 			}
@@ -58,15 +85,24 @@ module Drawing {
 			this.pathPoints = [];
 		}
 		
+		/**
+		 * Path of the color fill.
+		 */
+		public get Color(): string {
+			return this.color;
+		}
+		
 		public StartPath(pt: Vector2, radius: number): void {
-			this.DrawStartDot(pt, radius);
-						
+			this.segments = [ new ZeroLengthSegment(pt.add(new Vector2(0, radius)), pt.add(new Vector2(0, -radius))) ];		
 			this.startPosition = pt;
 			this.startRadius = radius;			
 			this.iterator = -1;
+			
+			this.DrawStartDot(pt, radius);
+			this.lastDrawnSegment = this.segments[0];				
 		}		
 		
-		protected DrawStartDot(pt: Vector2, radius: number): void {
+		public DrawStartDot(pt: Vector2, radius: number): void {
 			throw new Error("Not impelmented");
 		}
 		
@@ -74,10 +110,15 @@ module Drawing {
 		 * Before rendering the first segment, save the coordinates of the left and right
 		 * point as soon, as the direction is known.
 		 */
-		public InitPath(right: Vector2, left: Vector2, time: number): void {
-			this.segments.push(new ZeroLengthSegment(left, right, time));
-			this.pathPoints.push({ Left: left, Right: right, Time: time });
-			this.iterator = 0;			
+		public InitPath(right: Vector2, left: Vector2): void {
+			this.segments = [ new ZeroLengthSegment(left, right) ]; // override the first segment
+			this.pathPoints.push({ Left: left, Right: right });
+			this.iterator = 0;
+		}
+		
+		public StartDrawingPath(seg: ZeroLengthSegment): void {
+			this.DrawStartDot(seg.Left.add(seg.Right).scale(0.5), seg.Left.distanceTo(seg.Right) / 2);
+			this.lastDrawnSegment = seg;
 		}
 		
 		/**
@@ -85,30 +126,35 @@ module Drawing {
 		 * @param	{Vector2}	right	"Right" point of the segment.
 		 * @param	{Vector2}	left	"Left"	point of the segment.
 		 */
-		public ExtendPath(right: Vector2, left: Vector2, time: number): void {
+		public ExtendPath(right: Vector2, left: Vector2): void {
 			// draw the segment
-			var segment: Segment = this.DrawSegment(right, left, time);
+			var segment: Segment = this.CalculateSegment(right, left);
+			this.DrawSegment(segment);
+			VideoEvents.trigger(VideoEventType.DrawSegment, segment);
 			
 			// and push it to the list
 			this.segments.push(segment);
-			this.pathPoints.push({ Left: left, Right: right, Time: time });
+			this.pathPoints.push({ Left: left, Right: right });
 			this.iterator++;
 		}
 				
-		private DrawSegment(right: Vector2, left: Vector2, time: number): Segment {			
-			return this.CalculateAndDrawCurvedSegment(right, left, time);
+		private CalculateSegment(right: Vector2, left: Vector2): Segment {
+			if(this.curved) {
+				return this.CalculateCurvedSegment(right, left);				
+			}
 			
-			// return this.CalculateAndDrawQuarilateralSegment(right, left, time);
+			return this.CalculateQuarilateralSegment(right, left);
 		}
 		
-		private CalculateAndDrawCurvedSegment(right: Vector2, left: Vector2, time: number): Segment {			
+		private CalculateCurvedSegment(right: Vector2, left: Vector2): Segment {			
 			var leftBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
 			var rightBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);			
-			var segment: CurvedSegment = new CurvedSegment(leftBezier, rightBezier, time)
+			var segment: CurvedSegment = new CurvedSegment(leftBezier, rightBezier)
 			this.DrawCurvedSegment(segment);
 						
 			return segment;
 		}		
+		
 		
 		/**
 		 * 
@@ -120,10 +166,8 @@ module Drawing {
 		/**
 		 * 
 		 */
-		private CalculateAndDrawQuarilateralSegment(right: Vector2, left: Vector2, time: number): Segment {
-			var segment: QuadrilateralSegment = new QuadrilateralSegment(left, right, time);
-			this.DrawQuadrilateralSegment(segment);
-			return segment;			
+		private CalculateQuarilateralSegment(right: Vector2, left: Vector2): Segment {
+			return new QuadrilateralSegment(left, right);
 		}
 		
 		/**
@@ -137,27 +181,45 @@ module Drawing {
 		 * 
 		 */
 		public Draw(): void {
-			// No need to draw anything more..
+			// This si up to concrete ancestors..
+		}
+		
+		public DrawSegment(seg: Segment) {
+			if(seg instanceof CurvedSegment) {
+				this.DrawCurvedSegment(seg);
+			} else if (seg instanceof QuadrilateralSegment) {
+				this.DrawQuadrilateralSegment(seg);				
+			}
+			
+			this.lastDrawnSegment = seg;
 		}
 		
 		/**
 		 * Helper functions for determining, what is the angle between the x axis and vector in radians.
 		 * Math.atan(vec) function does this, but the angle is counterclockwise and rotated by PI/2...
 		 */
-		protected angle(vec: Vector2): number {			
+		public static angle(vec: Vector2): number {			
 			return Math.atan2(-vec.X, vec.Y) - Math.PI/2; /// :-) 
 		}
 		
 		/**
 		 * Draw everything from the begining
 		 */
-		public Redraw(): void {
+		public DrawWholePath(): void {
 			this.iterator = 0;
-			this.DrawStartDot(this.startPosition, this.startRadius);
+			
+			// if there's nothing to draw, run away!
+			if(this.segments.length === 0) return;
+			
+			var start = this.segments[0].Left.add(this.segments[0].Right).scale(0.5);
+			var radius = start.distanceTo(this.segments[0].Left);
+			this.DrawStartDot(start, radius);
+			this.lastDrawnSegment = this.segments[0];
+			
 			while (this.iterator < this.segments.length) {
-				this.CalculateAndDrawCurvedSegment(this.LastPoint.Right, this.LastPoint.Left, this.LastPoint.Time);			
-				this.iterator++;
+				this.DrawSegment(this.segments[this.iterator++]);
 			}
+			this.Draw(); // flush
 		}
 	}
 	
@@ -166,8 +228,6 @@ module Drawing {
 		
 		// SVG elements, which make up the whole path
 		private path: Element;
-		private startDot: Element;
-		private endDot: Element;
 		
 		// path segments
 		private right: string;
@@ -177,15 +237,12 @@ module Drawing {
 		/**
 		 * Initialise new SVG path
 		 */
-		constructor(color: string, private canvas: Element) {
-			super(color);
+		constructor(curved: boolean, color: string, private canvas: Element) {
+			super(curved, color);
 		}
 			
 		
-		protected DrawStartDot(position: Vector2, radius: number): void {
-			// init SVG
-			this.startDot = SVG.CreateDot(position, radius, this.color);
-			
+		public DrawStartDot(position: Vector2, radius: number): void {			
 			var options: any;
 			if(this.wireframe) {
 				// "wireframe" is better for debuging:
@@ -201,16 +258,45 @@ module Drawing {
 			}				
 			this.path = SVG.CreateElement("path", options);
 			
-			// prepare paths
-			this.right = SVG.MoveToString(position);
-			this.left = "Z";
-			this.cap = SVG.LineToString(position);
+			// arc cap at the start
+			var left = position.add(new Vector2(-radius, 0));
+			var right = position.add(new Vector2(radius, 0));
 			
-			// connect SVG's with the canvas
-			this.canvas.appendChild(this.startDot);						
+			var center = right.add(left).scale(0.5);
+			var startDirection = left.subtract(center);
+			var endDirection = right.subtract(center);
+			var arc = SVG.ArcString(right, center.distanceTo(right), Path.angle(startDirection));
+				
+			// prepare paths
+			this.right = SVG.MoveToString(right);
+			this.left = `${SVG.LineToString(left)} ${arc}`;			
+			this.cap = SVG.ArcString(left, center.distanceTo(left), Path.angle(endDirection));
+			SVG.SetAttributes(this.path, { d: this.right + this.cap + this.left });
+			
+			// connect SVG's with the canvas				
 			this.canvas.appendChild(this.path);
 		}
+		
+		/**
+		 * Before rendering the first segment, save the coordinates of the left and right
+		 * point as soon, as the direction is known.
+		 */
+		public InitPath(right: Vector2, left: Vector2): void {
+			super.InitPath(right, left);
+			this.StartDrawingPath(<ZeroLengthSegment> this.segments[0]);
+		}
+		
+		public StartDrawingPath(segment: ZeroLengthSegment): void {
+			var center = segment.Right.add(segment.Left).scale(0.5);
+			var startDirection = segment.Left.subtract(center);
+			var endDirection = segment.Right.subtract(center);
+			var arc = SVG.ArcString(segment.Right, center.distanceTo(segment.Right), Path.angle(startDirection));
 				
+			// prepare paths
+			this.right = SVG.MoveToString(segment.Right);
+			this.left = `${SVG.LineToString(segment.Left)} ${arc}`;
+		}
+						
 		/**
 		 * Extend the SVG path with a curved segment.
 		 */
@@ -225,7 +311,7 @@ module Drawing {
 			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
 			var startDirection: Vector2 = segment.Right.subtract(center);
 			var endDirection: Vector2 = segment.Left.subtract(center);
-			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));				
+			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));				
 		}		
 		
 		/**
@@ -233,7 +319,7 @@ module Drawing {
 		 */		
 		protected DrawQuadrilateralSegment(segment: QuadrilateralSegment): void {			
 			this.right += SVG.LineToString(segment.Right);
-			this.left = SVG.LineToString(this.LastPoint.Left) + " " + this.left;
+			this.left = SVG.LineToString(this.lastDrawnSegment.Left) + " " + this.left;
 			
 			// A] - a simple line at the end of the line 
 			// this.cap = SVG.LineToString(left);
@@ -242,7 +328,14 @@ module Drawing {
 			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
 			var startDirection: Vector2 = segment.Right.subtract(center);
 			var endDirection: Vector2 = segment.Left.subtract(center);
-			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), this.angle(startDirection));
+			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
+		}
+				
+		/**
+		 * Create path string.
+		 */
+		public GetPathString(): string {
+			return this.right + this.cap + this.left;
 		}
 				
 		/**
@@ -250,7 +343,7 @@ module Drawing {
 		 */
 		public Draw(): void {
 			SVG.SetAttributes(this.path, {
-				d: this.right + this.cap + this.left 
+				d:  this.GetPathString()
 			});
 		}		
 	}	
@@ -259,54 +352,46 @@ module Drawing {
 	export class CanvasPath extends Path {
 						
 		/** Init empty path */
-		constructor(color: string, private context: CanvasRenderingContext2D) {
-			super(color);
+		constructor(curved: boolean, color: string, private context: CanvasRenderingContext2D) {
+			super(curved, color);
+			this.context.fillStyle = this.color;			
 		}
 		
-		protected DrawStartDot(position: Vector2, radius: number): void {			
+		public DrawStartDot(position: Vector2, radius: number): void {			
 			// now draw the start dot
-			this.DrawDot(position, radius);		
+			this.context.beginPath();
+			this.DrawDot(position, radius);
+			this.Draw();
 		}
 		
 		/**
 		 * Helper function that draws a dot of the curve's color
 		 * with specified radius in the given point.
 		 */
-		private DrawDot(c: Vector2, r: number) {			
-			this.context.beginPath();
+		private DrawDot(c: Vector2, r: number) {
 			this.context.arc(c.X, c.Y, r, 0, 2*Math.PI, true);
-			this.context.closePath();
-			this.context.fillStyle = this.color;
-			this.context.fill();						
 		}		
 		
 		/**
 		 * Draw a simple quadrilateral segment
 		 */
-		protected DrawQuarilateralSegment(segment: QuadrilateralSegment): void { 
-			this.context.beginPath();
-			this.context.moveTo(this.LastPoint.Right.X, this.LastPoint.Right.Y);
-			this.context.lineTo(this.LastPoint.Left.X, this.LastPoint.Left.Y);			
+		protected DrawQuadrilateralSegment(segment: QuadrilateralSegment): void {
+			this.context.moveTo(this.lastDrawnSegment.Right.X, this.lastDrawnSegment.Right.Y);
+			this.context.lineTo(this.lastDrawnSegment.Left.X, this.lastDrawnSegment.Left.Y);			
 			this.context.lineTo(segment.Left.X, segment.Left.Y);
 			
 			// an "arc cap"
 			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
 			var startDirection: Vector2 = segment.Right.subtract(center);
 			var endDirection: Vector2 = segment.Left.subtract(center);
-			this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), this.angle(startDirection), this.angle(endDirection), false);		
-			//
-			
-			this.context.closePath();
-			
-			this.context.fillStyle = this.color;
-			this.context.fill();
+			this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), Path.angle(startDirection), Path.angle(endDirection), false);		
+			//		
 		}
 		
 		/**
 		 * Draw a curved segment using bezier curves.
 		 */
-		protected DrawCurvedSegment(segment: CurvedSegment): void {
-			this.context.beginPath();
+		protected DrawCurvedSegment(segment: CurvedSegment): void {						
 			this.context.moveTo(segment.RightBezier.Start.X, segment.RightBezier.Start.Y);	
 			this.context.lineTo(segment.LeftBezier.Start.X, segment.LeftBezier.Start.Y);
 						
@@ -317,25 +402,23 @@ module Drawing {
 			var center: Vector2 = segment.RightBezier.End.add(segment.LeftBezier.End).scale(0.5);
 			var startDirection: Vector2 = segment.RightBezier.End.subtract(center);
 			var endDirection: Vector2 = segment.LeftBezier.End.subtract(center);
-			this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), this.angle(startDirection), this.angle(endDirection), false);
+			this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), Path.angle(startDirection), Path.angle(endDirection), false);
 			
 			// B] - line cap	
 			// this.context.lineTo(segment.RightBezier.End.X, segment.RightBezier.End.Y);
 			
 			// right curve
-			this.context.bezierCurveTo(segment.RightBezier.EndCP.X, segment.RightBezier.EndCP.Y, segment.RightBezier.StartCP.X, segment.RightBezier.StartCP.Y, segment.RightBezier.Start.X, segment.RightBezier.Start.Y);			
-			
-			this.context.closePath();
-			
-			if(this.wireframe) {
-				// "wireframe" is better for debuging:
-				this.context.strokeStyle = this.color;
-				this.context.stroke();				
-			} else {
-				// filled shape is necessary for production:
-				this.context.fillStyle = this.color;
-				this.context.fill();				
-			}			
+			this.context.bezierCurveTo(segment.RightBezier.EndCP.X, segment.RightBezier.EndCP.Y, segment.RightBezier.StartCP.X, segment.RightBezier.StartCP.Y, segment.RightBezier.Start.X, segment.RightBezier.Start.Y);
+											
+		}
+		
+		/**
+		 * Fill all drawn segments
+		 */
+		public Draw(): void {			
+			this.context.closePath();		
+			this.context.fill();	
+			this.context.beginPath();			
 		}
 	}	
 }

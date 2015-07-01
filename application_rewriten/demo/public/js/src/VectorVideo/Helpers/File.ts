@@ -52,18 +52,19 @@ module Helpers {
 		 * @param	success	Success callback
 		 * @param 	error	Error callback		
 		 */
-		public static ReadXmlAsync(url: string, success: (xml: XMLDocument) => void, error: Function) : void {
+		public static ReadXmlAsync(url: string, success: (xml: XMLDocument) => any, error: (errStatus: number) => any) : void {
 			var req = new XMLHttpRequest();
 			req.open("GET", url, true);
-			req.onerror = (e) => error();
-			req.ontimeout = (e) => error();
+			req.onerror = (e) => error(req.status);
+			req.ontimeout = (e) => error(req.status);
 			req.onload = (e) => {
 				if(req.status === 200) {
 					success(<XMLDocument> req.responseXML);
 				} else {
-					error();
+					error(req.status);
 				}
 			};
+			req.send();
 		}
 		
 		/**
@@ -74,7 +75,7 @@ module Helpers {
 			var a = HTML.CreateElement("a", {
 				css: "display: none"
 			});
-			document.appendChild(a);
+			document.documentElement.appendChild(a);
 			
 			var url = URL.createObjectURL(blob);
 			HTML.SetAttributes(a, {

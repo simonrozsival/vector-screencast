@@ -7,27 +7,26 @@
 /// <reference path="../helpers/VideoEvents.ts" />
 /// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
-
-/// <reference path="DynaDraw" />
 /// <reference path="Path" />
 
 module Drawing {
 
-    import Vector2 = Helpers.Vector2;
-    import BrushSettings = Settings.BrushSettings;
-    import Spline = Helpers.Spline;
-    import BezierCurveSegment = Helpers.BezierCurveSegment;
     import HTML = Helpers.HTML;
     import SVG = Helpers.SVG;
-    import VideoTimer = Helpers.VideoTimer;
-    import CursorState = Helpers.CursorState;
-
+    
     /**
      * This is the main drawing class - processes cursor states
      * and renders the lines on the blackboard.
      * This class uses SVG (http://www.w3.org/TR/SVG) for visualising the lines.
      */
-    export class SVGDrawer extends DrawingStrategy {
+    export class SVGDrawer implements DrawingStrategy {
+        
+        /**
+         * Init a new drawer.
+         * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
+         */
+        constructor(protected curved: boolean = true) { }
+        
         
         /** SVG element */
         private svg: Element;
@@ -38,17 +37,14 @@ module Drawing {
         /** Background layer */
         private bg: Element;          
         
-        constructor(slowSimulation: boolean) {
-            super(slowSimulation);
-            
+        public CreateCanvas(): Element {            
             // create the SVG canvas that will be drawn onto
             this.svg = SVG.CreateElement("svg");
             
             // background:
             var backgroundLayer: Element = SVG.CreateElement("g");
             this.bg = SVG.CreateElement("rect", {
-                id: "background",
-                fill: UI.Color.BackgroundColor.CssValue
+                id: "background"
             });
             backgroundLayer.appendChild(this.bg);
             this.svg.appendChild(backgroundLayer);
@@ -57,13 +53,16 @@ module Drawing {
             this.canvas = SVG.CreateElement("g", {
                 id: "canvas"
             });
-            this.svg.appendChild(this.canvas);            
+            this.svg.appendChild(this.canvas);    
             
-            this.canvasWrapper.GetHTML().appendChild(this.svg);              
+            return this.svg;      
         }
         
+        /**
+         * Make ths canvas as large as possible (fill the parent element)
+         */
         public Stretch(): void {
-            var parent = this.canvasWrapper.GetHTML().parentElement;
+            var parent = this.svg.parentElement;
             var width: number = parent.clientWidth;
             var height: number = parent.clientHeight;            
 
@@ -71,35 +70,61 @@ module Drawing {
                 width: width,
                 height: height
             });
-            this.svg = null; // remove reference
             
             Helpers.SVG.SetAttributes(this.bg, {
                 width: width,
                 height: height
-            });
-            this.bg = null; // remove reference
-            
+            });            
             Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
         }
         
         /**
          * Make the canvas blank.
          */
-        public ClearCanvas(): void {            
+        public ClearCanvas(color: UI.Color): void {            
             // remove all drawn parts
             while (!!this.canvas.firstChild) {
                 this.canvas.removeChild(this.canvas.firstChild);
             }
+            
+            // change the bg color
+            SVG.SetAttributes(this.bg, { fill: color.CssValue });
         }
+    
+    
+        
+        /** Currenb brush color */
+        protected currentColor: UI.Color;
+    
+        /**
+         * Set color of a path, that will be drawn in the future.
+         * @param   {string} color       Color of the new path.
+         */
+        public SetCurrentColor(color: UI.Color): void {
+            this.currentColor = color;
+        }
+    
     
         /**
          * Start drawing a line.
-         * @param   point       Start point of the line.
-         * @param   pressure    The pressure of the pointing device in this point.
          */
-        protected StartLine(point: Vector2, pressure: number): void {
-            var path: SvgPath = new SvgPath(this.settings.Color, this.canvas);
-            this.dynaDraw.StartPath(point, pressure, this.settings.Size, path);
+        public CreatePath(): Path {
+            return new SvgPath(this.curved, this.currentColor.CssValue, this.canvas);
+        }
+        
+                
+        public SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number {
+            var wr = sourceWidth / this.svg.clientWidth;
+            var hr = sourceHeight / this.svg.clientHeight;
+            var min = Math.min(wr, hr);
+                        
+            // prepare scaling and translating
+            SVG.SetAttributes(this.svg, {
+                //"viewBox": `${this.svg.clientWidth - (min * sourceWidth / 2)} ${this.svg.clientHeight - (min * sourceHeight / 2)}  ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
+                "viewBox": `0 0 ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
+            });
+            
+            return min;
         }
     
     }    

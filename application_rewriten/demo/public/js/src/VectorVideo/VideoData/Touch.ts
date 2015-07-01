@@ -21,7 +21,7 @@ module VideoData {
 		
 		private currentTouch: number;
 		
-		private TouchStart(event: TouchEvent): void {
+		private TouchStart(event: TouchEvent): void {			
 			event.preventDefault();
 			var touches: TouchList = event.changedTouches;
 			
@@ -55,7 +55,9 @@ module VideoData {
 			this.currentTouch = null;			
 		}
 		
-		protected TouchMove(event: TouchEvent): void {			
+		protected TouchMove(event: TouchEvent): void {
+			event.preventDefault();			
+				
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
 				return;

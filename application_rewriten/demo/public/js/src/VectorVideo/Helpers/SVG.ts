@@ -1,12 +1,15 @@
 /// <reference path="vector.ts" />
 /// <reference path="HTML.ts" />
+/// <reference path="HelperFunctions" />
 
 /**
  * SVG helper
  * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function, moveToString: Function, lineToString: Function, curveToString: Function}}
  */
 module Helpers {
-
+    
+    import precise = Helpers.precise;
+    
     export class SVG {
         
         /** XML namespace of SVG */
@@ -21,9 +24,9 @@ module Helpers {
          */
         public static CreateDot(center: Vector2, radius: number, color: string): Element {
             return this.CreateElement("circle", {
-                cx: center.X,
-                cy: center.Y,
-                r: radius,
+                cx: precise(center.X),
+                cy: precise(center.Y),
+                r: precise(radius),
                 fill: color,
                 stroke: "transparent"
             });
@@ -38,9 +41,9 @@ module Helpers {
         public static CreateCircle(center: Vector2, radius: number, color: string): Element {
             if (radius > 0) {
                 return this.CreateElement("circle", {
-                    cx: center.X,
-                    cy: center.Y,
-                    r: radius,
+                    cx: precise(center.X),
+                    cy: precise(center.Y),
+                    r: precise(radius),
                     stroke: color,
                     fill: "transparent",
                     "stroke-width": 1
@@ -62,7 +65,7 @@ module Helpers {
                 return this.CreateElement("path", {
                     fill: "transparent",
                     stroke: color,
-                    "stroke-width": width,
+                    "stroke-width": precise(width),
                     d: this.MoveToString(start) + " " + this.LineToString(end)
                 });
             }
@@ -103,7 +106,7 @@ module Helpers {
          * @param   a   End point
          */
         public static MoveToString(a: Vector2): string {
-            return `M ${a.X},${a.Y}`;
+            return `M ${precise(a.X)},${precise(a.Y)}`;
         }
         
         /**
@@ -111,7 +114,7 @@ module Helpers {
          * @param   a   End point
          */
         public static LineToString(a: Vector2): string {
-            return `L ${a.X},${a.Y}`;
+            return `L ${precise(a.X)},${precise(a.Y)}`;
         }
         
         /**
@@ -121,16 +124,97 @@ module Helpers {
          * @param   c   The end point of the curve
          */
         public static CurveToString(a: Vector2, b: Vector2, c: Vector2): string {
-            return `C ${a.X},${a.Y} ${b.X},${b.Y} ${c.X},${c.Y}`;
+            return `C ${precise(a.X)},${precise(a.Y)} ${precise(b.X)},${precise(b.Y)} ${precise(c.X)},${precise(c.Y)}`;
         }
         
         /**
          * Returns string for SVG path - an arc
          */
         public static ArcString(end: Vector2, radius: number, startAngle: number): string {
-            return `A ${radius},${radius} ${startAngle} 0,0 ${end.X},${end.Y}`;
+            return `A ${precise(radius)},${precise(radius)} ${startAngle} 0,0 ${precise(end.X)},${precise(end.Y)}`;
         }
 
+        
+        /**
+         * Read attribute value
+         */
+    	public static attr(node: Node, name: string): string {
+    		var attr: Attr = node.attributes.getNamedItemNS(null, name);
+    		if(!!attr) {
+    			return attr.textContent;			
+    		}		
+    		
+    		throw new Error(`Attribute ${name} is missing in ${node.localName}`);
+    	}
+    		
+        /**
+         * Read numberic value of an attribute
+         */
+    	public static numAttr(node: Node, name: string): number {
+    		return Number(node.attributes.getNamedItemNS(null, name).textContent);
+    	}	
     }
+    
+    
+    export class SVGA {
+        
+        /** XML namespace of SVG */
+        private static namespace: string = "http://www.rozsival.com/2015/vector-video";
+        public static get Namespace(): string { return this.namespace; }
+                
+        /**
+         * Creates an element with specified properties.
+         */
+        public static CreateElement(name: string, attributes?: IAttributes): Node {
+            var el = document.createElementNS(this.namespace, `a:${name}`);
+            if (!!attributes) { // !! = convert to boolean
+                this.SetAttributes(el, attributes);
+            }
+
+            return el;
+        }
+        
+        /**
+         * Assign a set of attributes to an element.
+         * @param   el          The element
+         * @param   attributes  The set of attributes
+         */
+        public static SetAttributes(el: Node, attributes: IAttributes): void {
+            if(!el) {
+                console.log(attributes);
+            }
+            
+            for (var attr in attributes) {
+                var a: Attr = document.createAttributeNS(this.namespace, `a:${attr}`);
+                a.textContent = attributes[attr];
+                el.attributes.setNamedItemNS(a);
+            }
+        }
+        
+        /**
+         * Read attribute value
+         */
+    	public static attr(node: Node, name: string, defaultValue?: string): string {
+    		var attr: Attr = node.attributes.getNamedItemNS(this.Namespace, name);
+    		if(!!attr) {
+    			return attr.textContent;
+    		}		
+    		
+            if(!!defaultValue) {
+                return defaultValue;
+            }
+            
+    		throw new Error(`Attribute ${name} is missing in ${node.localName}`);
+    	}
+    		
+        /**
+         * Read numberic value of an attribute
+         */
+    	public static numAttr(node: Node, name: string, defaultValue?: number): number {
+    		return Number(SVGA.attr(node, name, defaultValue !== undefined ? defaultValue.toString() : undefined));
+    	}	
+    	
+    }
+
 
 }

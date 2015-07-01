@@ -92,7 +92,8 @@ var Demo;
             var _this = this;
             try {
                 // real file name
-                var filename = this.publicRoot + req.url;
+                var realName = req.url.lastIndexOf("?") === -1 ? req.url : req.url.substr(0, req.url.lastIndexOf("?"));
+                var filename = this.publicRoot + realName;
                 var stream = Server.fs.createReadStream(filename); // https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options
                 // try to identify the mime type of the file
                 var type = mime.lookup(filename);

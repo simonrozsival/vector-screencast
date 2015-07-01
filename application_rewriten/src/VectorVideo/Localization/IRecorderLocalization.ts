@@ -12,11 +12,13 @@ module Localization {
 		WaitingText: string
 		
 		// buttons
+		RecPause: string,
 		Record: string,
 		Pause: string,
 		Upload: string,
 		ChangeColor: string,
 		ChangeSize: string,
+		Erase: string,
 		EraseAll: string
 		
 	}

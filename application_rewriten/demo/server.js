@@ -53,25 +53,33 @@ function UploadResult(req, res) {
     console.log("\nIncomming result:");
     var name = GenerateRandomFileName();
     var fileName = publicRoot + dataRoot + "/" + name; // real path of the file on the disk
-    
-	// due to the protocol, request body will be the recording XML file
-	// audio files are already uploaded and references to them are inside the XML
-    fs.writeFile(fileName, req.body, function(err) {
-        if (!!err) { // !! - convert value to boolean
-            console.log("can't write file");
-			res.statusCode = 500;
-			res.statusMessage = "Internal Server Error";
-			res.write("Error 500: Internal Server Error", "utf-8");
+	
+	var data = "";
+	req.on("data", function (chunk) {
+		data += chunk.toString();
+	});
+	
+	req.on("end", function() {
+		// due to the protocol, request body will be the recording XML file
+		// audio files are already uploaded and references to them are inside the XML
+	    fs.writeFile(fileName, data, function(err) {
+	        if (!!err) { // !! - convert value to boolean
+	            console.log("can't write file");
+				res.statusCode = 500;
+				res.statusMessage = "Internal Server Error";
+				res.write("Error 500: Internal Server Error", "utf-8");
+				res.end();
+	            return;
+	        }
+	    
+	        // upload was successful - send a JSON response with a redirect 
+	        console.log("upload finished " + name);
+			res.statusCode = 200;
+			res.setHeader("content-type", "application/json");
+	        res.write("{ success: true, redirect: '/play.html?source=" + name + "' }", "utf-8");
 			res.end();
-            return;
-        }
-    
-        // upload was successful - send a JSON response with a redirect 
-        console.log("upload finished " + name);
-		res.setHeader("content-type", "application/json");
-        res.write("{ success: true, redirect: '/play.html?source=" + name + "' }", "utf-8");
-		res.end();
-    });
+	    });		
+	});
 }
 
 /**

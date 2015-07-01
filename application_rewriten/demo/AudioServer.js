@@ -32,6 +32,7 @@ var AudioRecording;
             this.server.on("error", function (error) { return console.log("ERROR: " + error); });
         }
         Server.prototype.HandleClient = function (socket) {
+            var _this = this;
             try {
                 // serve the client
                 console.log(colors.blue("Handling new client"));
@@ -39,14 +40,16 @@ var AudioRecording;
                 var $this = this;
                 // generate random unique file
                 var name = this.GetTempFileName(this.cfg.outputDir, ".wav");
+                var recordingEndedProperly = false;
                 socket.on("message", function (message, flags) {
                     if (!flags.binary) {
                         var msg = JSON.parse(message);
                         if (!!msg && msg.type === "start") {
-                            fileWriter = $this.InitRecording(name, msg);
+                            fileWriter = _this.InitRecording(name, msg);
                         }
                         else if (!!msg && msg.type === "end") {
-                            $this.FinishRecording(name, fileWriter, socket);
+                            recordingEndedProperly = true;
+                            _this.FinishRecording(name, fileWriter, socket);
                         }
                         else {
                             // error - unsupported message
@@ -68,8 +71,17 @@ var AudioRecording;
                 // stream was closed
                 socket.on("close", function () {
                     console.log("stream closed");
-                    if (fileWriter !== null) {
-                        fileWriter.end();
+                    if (!recordingEndedProperly) {
+                        if (fileWriter !== null) {
+                            fileWriter.end();
+                            fs.unlink(name, function (err) {
+                                if (err) {
+                                    console.log(colors.red("Can't delete tmp wav file " + name));
+                                    return;
+                                }
+                                console.log(colors.yellow("Tmp file " + name + " was deleted as stream was closed and not ended properly"));
+                            });
+                        }
                     }
                 });
             }
@@ -102,8 +114,8 @@ var AudioRecording;
                 else {
                     console.log(colors.red("Can't report the result - socket is already closed"));
                 }
-                console.log("Results: ", colors.green(results ? results.length : 0));
-                console.log(colors.gray("=================================================="));
+                // now close the socket
+                socket.close();
             });
         };
         Server.prototype.GetTempFileName = function (dir, ext) {
@@ -127,15 +139,14 @@ var AudioRecording;
                             type: "audio/wav"
                         }];
                     if (files.length > 0) {
-                        //                     // I don't need the Wav any more
-                        //                     fs.unlink(input, function(err) {
-                        //                         if(err) {
-                        //                             console.log(colors.red(`Can't delete tmp wav file ${input}`));
-                        //                             return;
-                        //                         }
-                        // 
-                        //                         console.log(colors.green(`Tmp file ${input} was deleted`));
-                        //                     });
+                        // I don't need the Wav any more
+                        fs.unlink(input, function (err) {
+                            if (err) {
+                                console.log(colors.red("Can't delete tmp wav file " + input));
+                                return;
+                            }
+                            console.log(colors.green("Tmp file " + input + " was deleted"));
+                        });
                         resultFileNames = files;
                     }
                     if (success) {
@@ -173,36 +184,33 @@ var AudioRecording;
             return false;
         }
         // prepare the process
-        var input = cfg.input;
-        var name = input.substr(0, input.lastIndexOf(".")); // trim the extension
-        var outputDir = cfg.outputDir || "./";
+        var name = cfg.input.substr(0, cfg.input.lastIndexOf(".")); // trim the extension
+        cfg.outputDir = cfg.outputDir || "./";
         var formats = cfg.formats || ["mp3"];
         var done = 0;
         var successful = [];
         var debug = cfg.debug === undefined ? true : cfg.debug;
+        var overrideArg = (cfg.hasOwnProperty("override") && cfg.override !== undefined) ? (cfg.override === true ? "-y" : "-n")
+            : "-y"; // override files without asking is the default
         // Convert the WAV to specified file types and return all the successfuly created ones.
         for (var i in formats) {
             var ext = formats[i];
-            var output = outputDir + name + "." + ext;
-            console.log("Trying to convert %s to %s.", input, output);
-            var overrideArg = (cfg.hasOwnProperty("override") && cfg.override !== undefined) ? (cfg.override === true ? "-y" : "-n")
-                : "-y"; // override files without asking is the default            
-            var ffmpeg = spawn("ffmpeg", [
-                "-i", input,
-                "-ac", cfg.channels || "1",
-                "-ab", cfg.quality || "64",
-                "-loglevel", debug ? "verbose" : "quiet",
-                overrideArg,
-                output
-            ]);
-            ffmpeg.on("exit", function (code) {
-                console.log("FFmpeg exited with code %s", code);
-                if (code === 0) {
-                    successful.push({
-                        url: output,
-                        type: "audio/" + ext
-                    });
+            convertTo(cfg, name, ext, overrideArg, debug, 
+            // success
+            function (ext) {
+                successful.push({
+                    url: name + "." + ext,
+                    type: "audio/" + ext
+                });
+                if (++done === formats.length) {
+                    // I'm done - all files have aleready been done
+                    if (cfg.hasOwnProperty("success")) {
+                        cfg.success(successful);
+                    }
                 }
+            }, 
+            // fail
+            function (ext) {
                 if (++done === formats.length) {
                     // I'm done - all files have aleready been done
                     if (cfg.hasOwnProperty("success")) {
@@ -210,12 +218,34 @@ var AudioRecording;
                     }
                 }
             });
-            // define what to do, if something goes wrong
-            ffmpeg.stderr.on("data", function (err) {
-                console.log("FFmpeg err: %s", err);
-            });
         }
     }
     AudioRecording.convert = convert;
+    function convertTo(cfg, name, ext, overrideArg, debug, success, error) {
+        var output = cfg.outputDir + name + "." + ext;
+        console.log(colors.gray("Trying to convert " + cfg.input + " to " + output + "."));
+        var ffmpeg = spawn("ffmpeg", [
+            "-i", cfg.input,
+            "-ac", cfg.channels || "1",
+            "-ab", cfg.quality || "64",
+            "-loglevel", debug ? "verbose" : "quiet",
+            overrideArg,
+            output
+        ]);
+        ffmpeg.on("exit", function (code) {
+            if (code === 0) {
+                console.log(colors.gray("[" + colors.green("OK") + "] " + ext));
+                success(ext);
+            }
+            else {
+                console.log(colors.gray("[" + colors.red("XX") + "] " + ext));
+                error(ext);
+            }
+        });
+        // define what to do, if something goes wrong
+        ffmpeg.stderr.on("data", function (err) {
+            console.log("FFmpeg err: %s", err);
+        });
+    }
 })(AudioRecording || (AudioRecording = {}));
 //# sourceMappingURL=AudioServer.js.map

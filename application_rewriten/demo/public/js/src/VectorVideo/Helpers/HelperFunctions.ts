@@ -1,4 +1,14 @@
- module Helpers {     
+ module Helpers {  
+     
+     
+    const COORDS_PRECISION = 3;
+    
+    /**
+     * Prints a number rounded and with trimmed trailing zeros.
+     */
+    export function precise(n: number, precision: number = COORDS_PRECISION): string {
+        return Number(n.toFixed(precision)).toString(); // isn't there a better way?
+    }   
     
     /**
     * Converts an integer value of seconds to a human-readable time format - "0:00"

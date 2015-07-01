@@ -69,7 +69,7 @@ module Helpers {
 		/**
 		 * Creates a timer and resets it.
 		 */
-		constructor() {
+		constructor(running?: boolean) {
 			/** @type {Date|object} */
 			if(!window.performance) {
 				this.clock = Date;
@@ -77,7 +77,7 @@ module Helpers {
 				this.clock = window.performance; // High resolution timer
 			}
 			
-			this.paused = false;
+			this.paused = !running; // default is false
 			this.Reset();
 		}
 	}

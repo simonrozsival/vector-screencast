@@ -1,17 +1,25 @@
 @import (less) "./variables/variables.less";
 
 .vector-video-controls {
-	padding: 20px;
-	width: 100%;
-	overflow: hidden;
+	padding: @btn-size / 2;
+	min-width: 100%;
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	background: fade(@light, 70%);
-	transition: all 0.3s;
+	background: fade(@foreground, 40%);
+	border-top: @btn-size transparent;
 	
-	.recording &.autohide {
-		bottom: -(2*20px + @btn-height) + 10px;
+	/// make the hiding animated
+	transition: all 0.3s;
+	-webkit-animation-delay: 2s; /* Chrome, Safari, Opera */
+    animation-delay: 2s;
+	
+	font-family: @font-family;
+	font-weight: @font-weight;
+	
+	.recording &.autohide,
+	.playing &.autohide {
+		bottom: -(2*@btn-size) + 10px;
 		
 		&:hover {
 			bottom: 0;
@@ -19,14 +27,72 @@
 	}
 	
 	/** progressbar */
-	.progress-bar {
-		content: " "; // it must not be empty!
-		display: block;
-		height: 5px;
+	.ui-progressbar {
 		position: absolute;
-		top: 1px;
+		top: 0;
 		left: 0;
-		background: @highlight;		
+		width: 100%;
+		height: 10px;
+		background: @background;	
+		cursor: pointer; // user can skip by clicking on the timeline
+			
+		.ui-progress {
+			content: " "; // it must not be empty!
+			display: block;
+			height: 5px;
+			background: @contrastant;
+			z-index: 200;	
+			transition: all 0.2s;
+		}		
+		
+		.ui-buffer {			
+			content: " "; // it must not be empty!
+			display: block;
+			height: 5px;
+			background: @foreground;
+			z-index: 100;
+			transition: all 0.1s;
+		}
+		
+		@arrowSize: @btn-size / 4;
+		.ui-arrow {
+			content: " ";
+			display: none;
+			
+			background: @contrastant;
+			color: @white;
+			text-align: center;
+			border-radius: 2px;
+			
+			position: absolute;
+			margin-left: -@btn-size;
+			top: -@btn-size - @arrowSize;
+			width: 2*@btn-size;
+			height: @btn-size;
+			line-height: @btn-size;
+			
+			&:after {					
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-width: @arrowSize @arrowSize 0 @arrowSize;
+				border-color: @contrastant transparent transparent transparent;
+				content: " ";
+				display: block;
+				position: absolute;
+				left: 50%;
+				margin-left: -@arrowSize;
+			}
+		}
+		
+		&:hover .ui-arrow {
+			display: block;
+		}
+	}
+	
+	button {
+		float: left;
+		font-family: @font-family;
 	}
 	
 	// unselectable!
@@ -35,108 +101,6 @@
 	-ms-user-select: none; /* IE10+ */
 	-o-user-select: none;
 	user-select: none;
-
-	button {
-		transition: all 0.2s;
-		height: @btn-height;
-		cursor: pointer;
-		margin-right: 10px;
-		color: @btn-default-txt;		
-		border: 2px solid @light;
-		border-radius: 4px;
-		background: @light;
-		//box-shadow: 0 0 10px @dark inset;		
-		font-size: 18px;
-
-		&:not(:disabled) {
-			&:hover,
-			&.active {
-				border-color: @white;
-			}
-	
-			&:active,
-			&:focus {
-				outline: none;
-			}			
-		}
-
-		&.option {
-			position: relative;
-			margin: 2px 22px 2px 2px;
-			width: @btn-height;
-			float: left;
-			background: @light;
-			overflow: hidden;
-			
-			&.active {
-				transform: scale(1.1);
-				border-color: @white;
-			}
-			
-			&:hover {
-				border-color: @white;
-			}
-		}
-		
-		.icon {
-			width: 20px;
-			height: 20px;
-			margin-right: 10px;
-			float: left;
-			
-			&.rec {
-				border-radius: 20px;
-				border: none;
-				background-color: @btn-red-bg;
-			}
-			
-			&.play {
-				width: 0;
-				height: 0;
-				border-style: solid;
-				border-width: 10px 0 10px 20px;
-				border-color: transparent transparent transparent @dark;
-			}
-			
-			&.pause {				
-				width: 20px;
-				height: 20px;
-				background: @dark; 
-			}
-			
-			&.upload {
-				width: 0;
-				height: 0;
-				border-style: solid;
-				border-width: 0 10px 20px 10px;
-				border-color: transparent transparent @dark transparent;
-			}
-		}
-		
-		&:disabled {
-			cursor: default;
-			background: @dark;
-			
-			.icon {				
-				&.rec {
-					background-color: @light;
-				}
-				
-				&.play {
-					border-color: transparent transparent transparent @light;
-				}
-				
-				&.pause {				
-					background: @light; 
-				}
-				
-				&.upload {
-					border-color: transparent transparent @light transparent;
-				}
-			}			
-		}
-		
-	}
 }
 
 .video-time {
@@ -155,22 +119,38 @@
 #video-time {
 	text-align: left;
 	float: left;
-	margin-right: @btn-height*1.5;
+	margin-right: @btn-size*1.5;
+}
+
+.ui-time {
+	color: white;
+	line-height: @btn-size;
+	
+	span {
+		display: inline-block;
+		margin: 0 3px;
+	}
 }
 
 /** recorder **/
 
 .vector-video-buttons,
 .vector-video-colors,
-.vector-video-eraser {
+.vector-video-sizes,
+.vector-video-erase {
 	float: left;
-	margin-right: @btn-height*1.5;
+	margin-right: @btn-size;
+	
+	h2 {
+		font-size: @font-size / 2;
+		font-weight: @font-weight;
+		font-family: @font-family;
+		color: white;
+		text-transform: uppercase;
+	}
 }
 
 .vector-video-sizes {
-	float: left;
-	margin-right: @btn-height*1.5;
-
 	button {
 		.dot {
 			background: transparent;

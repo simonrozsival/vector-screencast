@@ -68,20 +68,22 @@ module AudioRecording {
                 var $this: Server = this;
                 
                 // generate random unique file
-                var name: string = this.GetTempFileName(this.cfg.outputDir, ".wav");            
+                var name: string = this.GetTempFileName(this.cfg.outputDir, ".wav");   
+                var recordingEndedProperly: boolean = false;          
         
-                socket.on("message", function(message, flags) {                
+                socket.on("message", (message, flags) => {                
                     if(!flags.binary) {
                         var msg: any = JSON.parse(message);
                         if (!!msg && msg.type === "start") {
-                            fileWriter = $this.InitRecording(name, msg);                        
+                            fileWriter = this.InitRecording(name, msg);                        
                         } else if (!!msg && msg.type === "end") {
-                            $this.FinishRecording(name, fileWriter, socket);
+                            recordingEndedProperly = true;
+                            this.FinishRecording(name, fileWriter, socket);
                         } else {
                             // error - unsupported message
-                            console.log(colors.red("Unsupported message"), message);
+                            console.log(colors.red("Unsupported message"), message);                        
                             socket.close();
-                        }
+                        }                        
                     } else {
                         if(!!fileWriter) {
                             fileWriter.file.write(message);
@@ -94,10 +96,20 @@ module AudioRecording {
                 });
         
                 // stream was closed
-                socket.on("close", function() {
+                socket.on("close", () => {
                     console.log("stream closed");
-                    if(fileWriter !== null) {
-                        fileWriter.end();
+                    if(!recordingEndedProperly) {
+                        if(fileWriter !== null) {
+                            fileWriter.end();
+                            fs.unlink(name, (err) => {
+                                if(err) {
+                                    console.log(colors.red(`Can't delete tmp wav file ${name}`));
+                                    return;
+                                }
+        
+                                console.log(colors.yellow(`Tmp file ${name} was deleted as stream was closed and not ended properly`));
+                            });
+                        }                        
                     }
                 });
             } catch (e) {
@@ -132,9 +144,9 @@ module AudioRecording {
                 } else {
                     console.log(colors.red("Can't report the result - socket is already closed"));
                 }
-                 
-                console.log("Results: ", colors.green(results ? results.length : 0));
-                console.log(colors.gray("=================================================="));
+                
+                 // now close the socket
+                socket.close(); 
             });
         }
 
@@ -161,15 +173,15 @@ module AudioRecording {
                             type:   "audio/wav"
                         }];
                     if(files.length > 0) {
-    //                     // I don't need the Wav any more
-    //                     fs.unlink(input, function(err) {
-    //                         if(err) {
-    //                             console.log(colors.red(`Can't delete tmp wav file ${input}`));
-    //                             return;
-    //                         }
-    // 
-    //                         console.log(colors.green(`Tmp file ${input} was deleted`));
-    //                     });
+                        // I don't need the Wav any more
+                        fs.unlink(input, function(err) {
+                            if(err) {
+                                console.log(colors.red(`Can't delete tmp wav file ${input}`));
+                                return;
+                            }
+    
+                            console.log(colors.green(`Tmp file ${input} was deleted`));
+                        });
     
                         resultFileNames = files;
                     }

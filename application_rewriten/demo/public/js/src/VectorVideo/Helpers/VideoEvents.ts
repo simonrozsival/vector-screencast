@@ -8,30 +8,47 @@ module Helpers {
      * The list of supported video events.
      */
     export enum VideoEventType {
-        Start = 0,
-        Pause = 1,
-        Continue = 2,
-        Stop = 3,
-        ReachEnd = 4,
-        Replay = 5,
-        JumpTo = 6,
-        BufferStatus = 7,
-        CursorState = 8,
-        ChangeColor = 9,
-        ChangeBrushSize = 10,
-        CurrentTime = 11,
-        Render = 12,
-        ClearCanvas = 13,
-        VideoInfoLoaded = 14,
-        CanvasSize = 15,
-        CanvasOffset = 16,
-        RegisterRecordingTool = 17,
-        RecordingToolFinished = 18,
-        RecordingFinished = 19,
-        StartUpload = 20,
-        DownloadData = 21,
-    }
-    var eventTypesCount: number = 22; // !!!! do not forget to update if you update VideoEventType enum
+        
+        Start,
+        Pause,
+        Continue,
+        Stop,
+        ReachEnd,
+        Replay,
+        JumpTo,
+        
+        VideoInfoLoaded,
+        BufferStatus,
+        
+        CursorState,
+        ChangeColor,
+        ChangeBrushSize,
+        
+        StartPath,
+        DrawSegment,
+        DrawPath,
+        
+        CurrentTime,
+        Render,
+        
+        ClearCanvas,
+        CanvasSize,
+        CanvasScalingFactor,
+        
+        RegisterRecordingTool,
+        RecordingToolFinished,
+        RecordingFinished,
+        
+        StartUpload,
+        DownloadData,
+        
+        
+        
+        
+        // DO NOT ADD NEW EVENTS UNDERNEATH:    
+        // hack:
+        length
+    } // if nothing follows "length", then VideoEventType.length gives the total count of valid values        
     
     
     class VideoEvent {
@@ -66,7 +83,8 @@ module Helpers {
         public trigger(args: Array<any>): void {
             for (var i = 0; i < this.listeners.length; i++) {
                 var cmd = this.listeners[i];
-                this.triggerAsync(cmd, args);      
+                cmd.apply(this, args);
+                //this.triggerAsync(cmd, args);      
                 /* TYPESCRIPT 1.6
                 await this.triggerAsync(cmd, arguments);
                 */
@@ -103,13 +121,12 @@ module Helpers {
     export class VideoEvents {
         
         /** Registered events */
-        private static events: IEvents = new Array(eventTypesCount);
+        private static events: IEvents = new Array(VideoEventType.length);
          
         /**
          * Register new event listener
          */
         public static on(type: VideoEventType, command: Function) {
-
             if (!VideoEvents.events[<number> type]) {
                 VideoEvents.events[<number> type] = new VideoEvent(type);
             }
@@ -121,7 +138,7 @@ module Helpers {
          * Unregister event listener
          */
         public static off(type: VideoEventType, command: Function) {
-            if (type in VideoEvents.events === true) {
+            if (!!VideoEvents.events[<number> type]) {
                 VideoEvents.events[<number> type].off(command);
             }
         }

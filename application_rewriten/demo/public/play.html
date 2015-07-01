@@ -3,11 +3,12 @@
     <head>
         <meta charset="utf-8">
         <meta name="robots" value="noindex, nofollow"> <!-- this is just a demo app, no indexing by search engines please -->
-        <title>Record a new vector video</title>
+        <title>Play a vector video</title>
 
         <!-- CSS -->
+        <link rel="stylesheet" media="screen,projection,tv" href="/css/demo-skin.css">
         <link rel="stylesheet" media="screen,projection,tv" href="/css/themes/default.min.css">
-        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="shortcut icon" href="/favicon.png">
     </head>
     <body>
         <!--
@@ -38,7 +39,10 @@
             // create the recorder
             var player = new VectorVideo.Player("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
-                Source: sourceFile
+                Source: sourceFile,
+                
+                DrawingStrategy: new Drawing.CanvasDrawer()
+                //DrawingStrategy: new Drawing.SVGDrawer()
             });
         };
         

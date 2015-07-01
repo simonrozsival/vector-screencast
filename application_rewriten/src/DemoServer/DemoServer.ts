@@ -107,7 +107,9 @@ module Demo {
 		private TryServeStatic(req: any, res: any): boolean {
 			try {
 				// real file name
-				var filename: string = this.publicRoot + req.url;
+				var realName: string = req.url.lastIndexOf("?") === -1 ? req.url : req.url.substr(0, req.url.lastIndexOf("?"));
+				
+				var filename: string = this.publicRoot + realName;
 				var stream: any = Server.fs.createReadStream(filename); // https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options
 				
 				// try to identify the mime type of the file

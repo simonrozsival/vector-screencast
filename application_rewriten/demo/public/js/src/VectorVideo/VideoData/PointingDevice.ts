@@ -8,6 +8,7 @@ module VideoData {
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
 	import CursorState = Helpers.CursorState;
+	import State = Helpers.State;
 	import Timer = Helpers.VideoTimer;
 
 

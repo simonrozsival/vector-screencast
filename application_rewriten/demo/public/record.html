@@ -8,7 +8,7 @@
         <!-- CSS -->
         <link rel="stylesheet" media="screen,projection,tv" href="/css/demo-skin.css">
         <link rel="stylesheet" media="screen,projection,tv" href="/css/themes/default.min.css">
-        <link rel="shortcut icon" href="/img/favicon.ico">
+        <link rel="shortcut icon" href="/favicon.png">
     </head>
     <body>
         <!--
@@ -36,10 +36,10 @@
                     path: "/upload/audio"
                 },
                 
+                DrawingStrategy: new Drawing.CanvasDrawer(true)
                 //DrawingStrategy: new Drawing.CanvasDrawer(false)
-                //DrawingStrategy: new Drawing.CanvasDrawer(true)
+                //DrawingStrategy: new Drawing.SVGDrawer(true)
                 //DrawingStrategy: new Drawing.SVGDrawer(false)
-                DrawingStrategy: new Drawing.SVGDrawer(true)
             });
         };
         </script>

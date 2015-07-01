@@ -24,52 +24,78 @@ module AudioRecording {
         }
 
         // prepare the process
-        var input = cfg.input;
-        var name = input.substr(0, input.lastIndexOf(".")); // trim the extension
-        var outputDir = cfg.outputDir || "./";
+        var name = cfg.input.substr(0, cfg.input.lastIndexOf(".")); // trim the extension
+        cfg.outputDir = cfg.outputDir || "./";
         var formats = cfg.formats || [ "mp3" ];
         var done = 0;
         var successful: Array<IAudio> = [];
+        
         var debug: boolean = cfg.debug === undefined ? true : cfg.debug;
+        var overrideArg = (cfg.hasOwnProperty("override") && cfg.override !== undefined)  ? (cfg.override === true ? "-y" : "-n")
+                                                        : "-y"; // override files without asking is the default
 
         // Convert the WAV to specified file types and return all the successfuly created ones.
         for (var i in formats) {
             var ext = formats[i];
-            var output = outputDir + name + "." + ext;
-            console.log("Trying to convert %s to %s.", input, output);
-
-            var overrideArg = (cfg.hasOwnProperty("override") && cfg.override !== undefined)  ? (cfg.override === true ? "-y" : "-n")
-                                                            : "-y"; // override files without asking is the default            
-            var ffmpeg = spawn("ffmpeg", [
-                "-i", input,
-                "-ac", cfg.channels || "1", // mono is default
-                "-ab", cfg.quality || "64",
-                "-loglevel", debug ? "verbose" : "quiet",
-                overrideArg,
-                output
-            ]);
-                        
-            ffmpeg.on("exit", function(code) {
-                console.log("FFmpeg exited with code %s", code);
-                if(code === 0) {
+            convertTo(cfg, name, ext, overrideArg, debug,
+                
+                // success
+                (ext) => {
                     successful.push({
-                        url:    output,
-                        type:   "audio/" + ext   
+                        url:    `${name}.${ext}`,
+                        type:   `audio/${ext}`  
                     });
-                }
-
-                if(++done === formats.length) {
-                    // I'm done - all files have aleready been done
-                    if(cfg.hasOwnProperty("success")) {
-                        cfg.success(successful);
+                    
+                    if(++done === formats.length) {
+                        // I'm done - all files have aleready been done
+                        if(cfg.hasOwnProperty("success")) {
+                            cfg.success(successful);
+                        }
                     }
-                }
-            });
+                },
             
-            // define what to do, if something goes wrong
-            ffmpeg.stderr.on("data", function(err) {
-                console.log("FFmpeg err: %s", err);
-            });
+                // fail
+                (ext: string) => {                    
+                    if(++done === formats.length) {
+                        // I'm done - all files have aleready been done
+                        if(cfg.hasOwnProperty("success")) {
+                            cfg.success(successful);
+                        }
+                    }
+                } 
+            
+            );
         }
+    }
+    
+    function convertTo(cfg: IConvertorConfig, name: string, ext: string, overrideArg: string, debug: boolean,
+                            success: (ext: string) => any, error: (ext: string) => any) {
+                                
+        var output = cfg.outputDir + name + "." + ext;
+        console.log(colors.gray(`Trying to convert ${cfg.input} to ${output}.`));            
+            
+        var ffmpeg = spawn("ffmpeg", [
+            "-i", cfg.input,
+            "-ac", cfg.channels || "1", // mono is default
+            "-ab", cfg.quality || "64",
+            "-loglevel", debug ? "verbose" : "quiet",
+            overrideArg,
+            output
+        ]);
+        
+        ffmpeg.on("exit", (code) => {
+            if(code === 0) {
+                console.log(colors.gray(`[${colors.green("OK")}] ${ext}`));            
+                success(ext);
+            } else {
+                console.log(colors.gray(`[${colors.red("XX")}] ${ext}`));
+                error(ext);
+            }
+        });
+        
+        // define what to do, if something goes wrong
+        ffmpeg.stderr.on("data", (err) => {
+            console.log("FFmpeg err: %s", err);
+        });
     }
 }

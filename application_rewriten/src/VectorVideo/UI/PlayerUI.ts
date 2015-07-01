@@ -24,15 +24,15 @@ module UI {
 			
 		/** Is recording running? */
 		private isPlaying: boolean;
-		
+				
 		/**  */
 		private currentTime: IElement;
 		
 		/**  */
 		private timeline: TimeLine;
-		
+				
 		/**  */
-		private Length: number;
+		private videoDuration: number;
 		
 		/**
 		 * Create a new instance of Player UI
@@ -40,9 +40,11 @@ module UI {
 		 * @param	localization	List of translated strings 
 		 */
 		constructor(private id: string,					
-					private localization: Localization.IPlayerLocalization) {
+					private localization: Localization.IPlayerLocalization,
+					private timer: Helpers.VideoTimer) {
 						
 			super("div", `${id}-player`);
+			this.GetHTML().classList.add("vector-video-wrapper");
 								
 			// prepare the board
 			this.board = this.CreateBoard();
@@ -50,11 +52,25 @@ module UI {
 			
 			// prepare the panels
 			var controls: Panel = new Panel("div", `${id}-controls`);
-			var buttons: IElement = this.CreateButtonsPanel();			
-			controls.AddChildren([ buttons ]);
+			controls.GetHTML().classList.add("vector-video-controls", "autohide", "ui-control");
+			
+			var buttons: IElement = this.CreateButtonsPanel();
+			this.timeline = this.CreateTimeLine();
+			var timeStatus = this.CreateTimeStatus();
+			
+			controls.AddChildren([ buttons, this.timeline, timeStatus ]);
 			this.AddChild(controls);
 			
+			// Set the duration of the video as soon as available
+			VideoEvents.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
+				this.videoDuration = meta.Length;
+				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
+				this.timeline.Length = meta.Length;
+			});
+			VideoEvents.on(VideoEventType.BufferStatus, (status: number) => this.timeline.SetBuffer(status));
+			
 			// allow keyboard
+			this.BindKeyboardShortcuts();
 		}
 		
 		/**
@@ -72,10 +88,10 @@ module UI {
 						this.PlayPause();
 						break;			
 					case leftArrow:
-						this.timeline.SkipTo(this.time - skipTime);
+						this.timeline.SkipTo(this.timer.CurrentTime() - skipTime);
 						break;
 					case rightArrow:
-						this.timeline.SkipTo(this.time + skipTime);
+						this.timeline.SkipTo(this.timer.CurrentTime() + skipTime);
 						break;		
 				}
 			};
@@ -84,8 +100,8 @@ module UI {
 		/**
 		 * Integrate the canvas into the UI elements tree
 		 */
-		public AcceptCanvas(canvas: IElement) {
-			this.board.AddChild(canvas);
+		public AcceptCanvas(canvas: Element) {
+			this.board.GetHTML().appendChild(canvas);
 		}
 		
 		/**
@@ -97,15 +113,15 @@ module UI {
 		}
 		
 		/** PLAY/PAUSE button */
-		private playPauseButton: Button;
+		private playPauseButton: IconButton;
 		
 		/**
 		 * Create a panel containing the PLAY/PAUSE button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
 			var buttonsPanel: Panel = new Panel("div", `${this.id}-pannels`);
-			this.playPauseButton = new Button(this.localization.Play, this.PlayPause);
-			buttonsPanel.AddChildren([ this.playPauseButton ]);						
+			this.playPauseButton = new IconButton("icon-play", this.localization.Play, (e) => this.PlayPause());
+			buttonsPanel.AddChildren([ this.playPauseButton ]);
 			return buttonsPanel;
 		}
 		
@@ -115,8 +131,10 @@ module UI {
 		private PlayPause() : void {
 			if(this.isPlaying === true) {
 				this.PausePlaying();
+				this.GetHTML().classList.remove("playing");
 			} else {
 				this.StartPlaying();
+				this.GetHTML().classList.add("playing");
 			}
 		}
 				
@@ -125,12 +143,12 @@ module UI {
 		 */
 		private StartPlaying() : void {
 			this.isPlaying = true;
-			this.playPauseButton.GetHTML().classList.add("ui-playing");
-			this.playPauseButton.GetHTML().innerText = this.localization.Pause;
+			this.playPauseButton.ChangeIcon("icon-pause");
+			this.playPauseButton.ChangeContent(this.localization.Pause);
 			VideoEvents.trigger(VideoEventType.Start);
 						
 			// update time periodically
-			this.ticking = setInterval(this.UpdateCurrentTime, this.tickingInterval);
+			this.ticking = setInterval(() => this.UpdateCurrentTime(), this.tickingInterval);
 		}
 		
 		/**
@@ -138,46 +156,45 @@ module UI {
 		 */
 		private PausePlaying() : void {
 			this.isPlaying = false;			
-			this.playPauseButton.GetHTML().classList.remove("ui-playing");
-			this.playPauseButton.GetHTML().innerText = this.localization.Play;
+			this.playPauseButton.ChangeIcon("icon-play");
+			this.playPauseButton.ChangeContent(this.localization.Play);
 			VideoEvents.trigger(VideoEventType.Pause);
 			
 			// do not update the status and timeline while paused
 			clearInterval(this.ticking);
 		}
 						
-		private CreateTimeLine() : IElement {
-			var timeline: Panel = new TimeLine(`${this.id}-timeline`);			
+		private CreateTimeLine() : TimeLine {
+			var timeline: TimeLine = new TimeLine(`${this.id}-timeline`);			
 			return timeline;
 		}
 		
+		private totalTime: IElement;
+		
 		private CreateTimeStatus() : IElement {			
-			var status: Panel = new Panel("div", `${this.id}-timeline`);
+			var status: Panel = new Panel("div", `${this.id}-current-time`);
+			status.GetHTML().classList.add("ui-time");
 			
-			var currentTime: IElement = new SimpleElement("span", "0:00");
-			var slash: IElement = new SimpleElement("span", "&nbsp;/&nbsp;");
-			var totalTime: IElement = new SimpleElement("span", "0:00");
+			this.currentTime = new SimpleElement("span", "0:00");
+			var slash: IElement = new SimpleElement("span", " / ");
+			this.totalTime = new SimpleElement("span", "0:00");
 			
-			status.AddChildren([ currentTime, slash, totalTime ]); 
+			status.AddChildren([ this.currentTime, slash, this.totalTime ]); 
 			return status;
 		}
 		
 		/** Ticking interval handler */
 		private ticking: number;
 		
-		/** The time of recording in milliseconds */
-		private time: number = 0;
-		
-		/** Ticking interval */
-		private tickingInterval: number = 100;
+		/** Ticking interval - not too often, but precise enough */
+		private tickingInterval: number = 200;
 		
 		/**
 		 * @param	time	Current time in seconds
 		 */
 		private UpdateCurrentTime() : void {
-			this.time += this.tickingInterval;
-			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.time);
-			this.timeline.GetHTML().style.width = this.Length > 0 ? `${this.time/this.Length}%` : "0%";
+			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.timer.CurrentTime());
+			this.timeline.Sync(this.timer.CurrentTime());
 		}
 	}
 	

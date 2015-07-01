@@ -1,5 +1,138 @@
 
-
 button {
+	position: relative;
+	transition: all 0.2s;
+	height: @btn-size;
+	cursor: pointer;
+	margin-right: @btn-size / 4;
+	color: @text-color;		
+	font-weight: @font-weight;
+	border: 1px solid fade(@background, 90%);
+	border-radius: 4px;
+	background: fade(@foreground, 50%);
+	font-size: @btn-font-size;
+
+	&:not(:disabled) {
+		&:hover,
+		&.active {
+			border-color: @highlight;
+		}
+
+		&:active,
+		&:focus {
+			outline: none;
+		}			
+	}
+
+	&.option {
+		width: @btn-size;
+		overflow: hidden;
+		
+		&.active {			
+			transform: scale(1.1);
+			border-width: 2px;	
+		}
+		
+		.dot {
+			position: absolute;
+			top: 50%;
+		}
+	}
+	
+	.icon {
+		width: @btn-icon-size;
+		height: @btn-icon-size;
+		margin-right: @btn-icon-size / 2;
+		float: left;
+		transition: all 0.3s;
+		
+		&.icon-rec {
+			border-radius: @btn-icon-size - 4px;
+			border: 2px solid @red;
+			background-color: transparent;
+		}
+		
+		&.icon-play {
+			width: 0;
+			height: 0;
+			border-style: solid;
+			border-width: @btn-icon-size/2 0 @btn-icon-size/2 @btn-icon-size;
+			border-color: transparent transparent transparent @contrastant;
+		}
+		
+		&.icon-pause {
+			border: 2px solid @background;
+			background: transparent; 
+		}
+		
+		&.icon-upload {				
+			position: relative;
+			width: @btn-icon-size;
+			height: @btn-icon-size;
+			
+			&:before, &:after {
+				content: "";
+				position: absolute;
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-color: transparent;
+				border-bottom: 0;
+			}
+			
+		  	.tri-down:before {
+				bottom: -16px;
+				left: 21px;
+				
+				border-top-color: @background;
+				border-width: 16px;
+			}
+		}
+		
+		&.icon-erase {
+			position: relative;
+			width: 20px;
+			height: 20px;
+			
+			&:before, &:after {
+				position: absolute;
+				content: ' ';
+				height: 22px;
+				width: 2px;
+				background-color: @background;
+			}
+
+			&:before {
+				transform: rotate(45deg);
+			}
+
+			&:after {
+				transform: rotate(-45deg);
+			}
+		}
+	}
+	
+	&:disabled {
+		cursor: default;
+		background: @background;
+		
+		.icon {				
+			&.icon-rec {
+				background-color: @foreground;
+			}
+			
+			&.icon-play {
+				border-color: transparent transparent transparent @foreground;
+			}
+			
+			&.icon-pause {				
+				background: @foreground; 
+			}
+			
+			&.icon-upload {
+				border-color: transparent transparent @foreground transparent;
+			}
+		}			
+	}
 	
 }
