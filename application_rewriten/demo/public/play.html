@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" value="noindex, nofollow"> <!-- this is just a demo app, no indexing by search engines please -->
         <title>Play a vector video</title>
 
@@ -40,9 +41,10 @@
             var player = new VectorVideo.Player("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 Source: sourceFile,
+                Autohide: true,
                 
-                //DrawingStrategy: new Drawing.CanvasDrawer()
-                DrawingStrategy: new Drawing.SVGDrawer()
+                DrawingStrategy: new Drawing.CanvasDrawer()
+                //DrawingStrategy: new Drawing.SVGDrawer()
             });
         };
         

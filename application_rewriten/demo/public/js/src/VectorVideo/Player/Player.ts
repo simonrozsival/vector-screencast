@@ -1,6 +1,7 @@
 /// <reference path="../Helpers/Errors" />
 /// <reference path="../Drawing/DrawingStrategy" />
 /// <reference path="../Drawing/SVGDrawer" />
+/// <reference path="../Drawing/CanvasDrawer" />
 /// <reference path="../Settings/PlayerSettings" />
 /// <reference path="../UI/PlayerUI" />
 /// <reference path="../AudioData/AudioPlayer" />
@@ -10,7 +11,6 @@
 /// <reference path="../Helpers/VideoEvents" />
 /// <reference path="../UI/Cursor" />
 /// <reference path="../Helpers/State" />
-
 
 module VectorVideo {
     
@@ -80,13 +80,19 @@ module VectorVideo {
             this.timer = new Helpers.VideoTimer(false);
                        
             // init the UI and bind it to an instance of a rendering strategy
-            this.ui = new UI.PlayerUI(id, settings.Localization, this.timer);
-            //this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.SVGDrawer(true);
+            this.ui = !!settings.UI ? settings.UI : new UI.PlayerUI(id);
+            this.ui.Timer = this.timer;
+            this.ui.Localization = settings.Localization;
+            this.ui.CreateHTML(!!settings.Autohide);
+            
+            // init drawing strategy
             this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.CanvasDrawer(true);
+            
+            // bind drawing strategy with the UI
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch();
-            
+                        
             if(!!settings.ShowControls) {
                 this.ui.HideControls();
             }

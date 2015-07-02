@@ -41,6 +41,12 @@ module UI {
 		public get BackgroundColor(): string {
 			return Color.BackgroundColor.CssValue;
 		}
+
+		/** Translated strings */
+		public Localization: Localization.IRecorderLocalization;
+		
+		/** (High res.) timer */
+		public Timer: Helpers.VideoTimer;
 			
 		/**
 		 * Create a new instance of Recorder UI
@@ -49,30 +55,35 @@ module UI {
 		 * @param	brushSizes		List of possible brush sizes
 		 * @param	localization	List of translated strings 
 		 */
-		constructor(private id: string,
-					colorPallete: Array<Color>, 
-					brushSizes: Array<BrushSize>,
-					protected localization: Localization.IRecorderLocalization,
-					protected timer: Helpers.VideoTimer) {
+		constructor(private id: string) {
 						
 			super("div", `${id}-recorder`);
-			this.AddClass("vector-video-wrapper");
-											
+			this.AddClass("vector-video-wrapper");											
+		}
+		
+		public CreateHTML(autohide: boolean, colorPallete: Array<Color>, brushSizes: Array<BrushSize>): void {			
 			// prepare the board
 			this.board = this.CreateBoard();
 			
 			// prepare the panels
-			this.controls = new Panel("div", `${id}-controls`)
+			this.controls = new Panel("div", `${this.id}-controls`)
 									.AddChildren(
-										this.CreateButtonsPanel().AddClass("vector-video-buttons"),			
-										this.CreateColorsPanel(colorPallete).AddClass("vector-video-colors"),			
-									this.CreateBrushSizesPanel(brushSizes).AddClass("vector-video-sizes"),			
-										this.CreateEraserPanel().AddClass("vector-video-erase"),			
-										this.CreateEraseAllPanel().AddClasses("vector-video-erase")		
+										this.CreateButtonsPanel().AddClass("ui-controls-panel"),			
+										this.CreateColorsPanel(colorPallete).AddClass("ui-controls-panel"),
+										this.CreateBrushSizesPanel(brushSizes).AddClass("ui-controls-panel"),			
+										this.CreateEraserPanel().AddClass("ui-controls-panel"),			
+										this.CreateEraseAllPanel().AddClass("ui-controls-panel")		
 									)
-									.AddClasses("vector-video-controls", "autohide", "ui-control");
+									.AddClasses("ui-controls", "ui-control");
+									
+			// if autohiding is requested, add 'autohide' class
+			!!autohide && this.controls.AddClass("autohide");
 			
-			this.AddChildren(<IElement> this.board, this.controls);
+			this.AddChildren(
+				this.board,
+				new Panel("div").AddClass("ui-controls-wrapper")
+								.AddChild(this.controls)
+			);
 		}
 		
 		/**
@@ -103,16 +114,19 @@ module UI {
 			
 			var buttonsPanel: Panel = new Panel("div", `${this.id}-panels`);
 			// the rec/pause button:
-			this.recPauseButton = new IconButton("icon-rec", this.localization.Record, (e) => this.RecordPause());
+			this.recPauseButton = new IconButton("icon-rec", this.Localization.Record, (e) => this.RecordPause());
 			
 			// the upload button:
-			this.uploadButton = new IconButton("icon-upload", this.localization.Upload, (e) => this.InitializeUpload());
+			this.uploadButton = new IconButton("icon-upload", this.Localization.Upload, (e) => this.InitializeUpload());
 			Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });	
 			
 			buttonsPanel.AddChildren(
-				new H2(this.localization.RecPause),
-				this.recPauseButton,
-				this.uploadButton
+				new H2(this.Localization.RecPause),
+				new Panel("div").AddClass("btn-group")
+						.AddChildren(
+							this.recPauseButton,
+							this.uploadButton
+						)
 			);
 			return buttonsPanel;
 		}
@@ -168,7 +182,7 @@ module UI {
 		 * Update the displayed time
 		 */
 		private Tick() : void {
-			this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.timer.CurrentTime()));
+			this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.Timer.CurrentTime()));
 		}
 				
 		private InitializeUpload() {
@@ -184,33 +198,36 @@ module UI {
 		 * @param	brushSizes	List of possible brush colors
 		 */
 		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
-			var panel = new Panel("div", "color-pallete");
-			var title: SimpleElement = new H2(this.localization.ChangeColor);
-			panel.AddChild(title);
-					
+			var colorsGroup = new Panel("div").AddClass("btn-group");					
 			for(var i = 0; i < colorPallete.length; i++) {
 				var btn = new ChangeColorButton(colorPallete[i]);
-				panel.AddChild(btn);
+				colorsGroup.AddChild(btn);
 			}
 			
-			return panel;
+			return new Panel("div")
+						.AddClass("color-pallete")
+						.AddChildren(
+							new H2(this.Localization.ChangeColor),				
+							colorsGroup
+						);
 		}		
 		
 		/**
 		 * Create a panel for changing brush size
 		 * @param	brushSizes	List of possible brush sizes
 		 */
-		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {					
-			var panel = new Panel("div", "brush-sizes");
-			var title: SimpleElement = new H2(this.localization.ChangeSize);
-			panel.AddChild(title);
-			
+		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {
+			var sizesGroup = new Panel("div").AddClass("btn-group");
 			for(var i = 0; i < brushSizes.length; i++) {
-				var btn = new ChangeBrushSizeButton(brushSizes[i]);
-				panel.AddChild(btn);			
+				sizesGroup.AddChild(new ChangeBrushSizeButton(brushSizes[i]));			
 			}
 			
-			return panel;
+			return new Panel("div")
+						.AddClass("brush-sizes")
+						.AddChildren(
+							new H2(this.Localization.ChangeSize),
+							sizesGroup
+						);
 		}	
 		
 		/** Current selected color */
@@ -227,7 +244,7 @@ module UI {
 			this.switchToEraserButton = new ChangeColorButton(UI.Color.BackgroundColor);
 			return new Panel("div", `${this.id}-erase`)
 						.AddChildren(
-							new H2(this.localization.Erase),
+							new H2(this.Localization.Erase),
 							this.switchToEraserButton
 						);
 		}
@@ -237,7 +254,7 @@ module UI {
 		 */
 		private CreateEraseAllPanel() : Panel {			
 			var panel: Panel = new Panel("div", `${this.id}-erase`);
-			var title: SimpleElement = new H2(this.localization.EraseAll);
+			var title: SimpleElement = new H2(this.Localization.EraseAll);
 			panel.AddChild(title);
 			
 			// the "erase all" button:

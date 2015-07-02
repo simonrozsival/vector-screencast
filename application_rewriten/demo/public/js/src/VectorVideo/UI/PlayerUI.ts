@@ -27,49 +27,34 @@ module UI {
 		
 		private reachedEnd: boolean;
 				
-		/**  */
+		/** Container of current time */
 		private currentTime: IElement;
 		
-		/**  */
+		/** Panel containing crutial player controls, such as play/pause button or volume controls */
 		private controls: Panel;
 		
-		/**  */
+		/** The animated timeline which also enable the user to skip to different parts of the video.  */
 		private timeline: TimeLine;
 				
-		/**  */
+		/** Button for toggling autohiding on and off */
+		private hidingButton: IconOnlyButton;
+				
+		/** The total duration of the video in milliseconds */
 		private videoDuration: number;
+				
+		public Localization: Localization.IPlayerLocalization;
+		
+		public Timer: Helpers.VideoTimer;
 		
 		/**
 		 * Create a new instance of Player UI
 		 * @param	id				Unique ID of this recorder instance
 		 * @param	localization	List of translated strings 
 		 */
-		constructor(private id: string,					
-					private localization: Localization.IPlayerLocalization,
-					private timer: Helpers.VideoTimer) {
+		constructor(private id: string) {
 						
 			super("div", `${id}-player`);
 			this.AddClass("vector-video-wrapper");
-			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.localization.Busy });
-								
-			// prepare the board
-			this.board = this.CreateBoard();
-			
-			// prepare the panels
-			this.timeline = this.CreateTimeLine();			
-			this.controls = <Panel> new Panel("div", `${id}-controls`)
-								.AddChildren(this.CreateButtonsPanel(), this.timeline, this.CreateTimeStatus(), this.CreateAudioControls())
-								.AddClasses("vector-video-controls", "autohide", "ui-control");
-			
-			this.AddChildren(this.board, this.controls);
-			
-			// Set the duration of the video as soon as available
-			VideoEvents.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
-				this.videoDuration = meta.Length;
-				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
-				this.timeline.Length = meta.Length;
-			});
-			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
 			
 			// React to events triggered from outside
 			VideoEvents.on(VideoEventType.Start, () => this.StartPlaying());
@@ -83,6 +68,49 @@ module UI {
 			// set current state
 			this.isPlaying = false;
 			this.reachedEnd = false;
+		}
+		
+		public CreateHTML(autohide: boolean): void {			
+			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.Localization.Busy });
+								
+			// prepare the board
+			this.board = this.CreateBoard();
+			
+			// prepare the timeline and other controls
+			this.timeline = this.CreateTimeLine();	
+			this.hidingButton = <IconOnlyButton> new IconOnlyButton("icon-hidding-toggle", "", (e: Event) => this.ToggleAutohiding())
+												.AddClasses("autohiding-toggle", autohide ? "show" : "hide");
+															
+			this.controls = new Panel("div", `${this.id}-controls`)
+									.AddClasses("ui-controls", "ui-control")
+									.AddChildren(
+										this.CreateButtonsPanel(),
+										this.timeline,
+										this.CreateTimeStatus(),
+										this.CreateAudioControls()				
+									);										
+									
+			// if autohiding is requested, add 'autohide' class
+			!!autohide && this.controls.AddClass("autohide");
+			
+			
+			this.AddChildren(
+				this.board,
+				new Panel("div")
+					.AddClass("ui-controls-wrapper")
+					.AddChildren(
+						this.controls,
+						this.hidingButton
+					)
+			);
+			
+			// Set the duration of the video as soon as available
+			VideoEvents.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
+				this.videoDuration = meta.Length;
+				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
+				this.timeline.Length = meta.Length;
+			});
+			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first			
 		}
 		
 		public HideControls(): void {
@@ -108,10 +136,10 @@ module UI {
 						this.PlayPause();
 						break;			
 					case leftArrow:
-						this.timeline.SkipTo(this.timer.CurrentTime() - skipTime);
+						this.timeline.SkipTo(this.Timer.CurrentTime() - skipTime);
 						break;
 					case rightArrow:
-						this.timeline.SkipTo(this.timer.CurrentTime() + skipTime);
+						this.timeline.SkipTo(this.Timer.CurrentTime() + skipTime);
 						break;		
 				}
 			};
@@ -128,7 +156,8 @@ module UI {
 		 * Create the 
 		 */
 		private CreateBoard() : Board {
-			var board: Board = new Board(`${this.id}-board`);			
+			var board: Board = new Board(`${this.id}-board`);		
+			board.GetHTML().onclick = () => this.PlayPause();	
 			return board;
 		}
 		
@@ -139,10 +168,10 @@ module UI {
 		 * Create a panel containing the PLAY/PAUSE button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
-			this.playPauseButton = new IconOnlyButton("icon-play", this.localization.Play, (e) => this.PlayPause());
+			this.playPauseButton = new IconOnlyButton("icon-play", this.Localization.Play, (e) => this.PlayPause());
 			return <Panel> new Panel("div")
 						.AddChildren(
-							new H2(this.localization.ControlPlayback),
+							new H2(this.Localization.ControlPlayback),
 							this.playPauseButton
 						)
 						.AddClass("ui-controls-panel");
@@ -174,7 +203,7 @@ module UI {
 		private StartPlaying() : void {
 			this.isPlaying = true;
 			this.playPauseButton.ChangeIcon("icon-pause");
-			this.playPauseButton.ChangeContent(this.localization.Pause);
+			this.playPauseButton.ChangeContent(this.Localization.Pause);
 			this.AddClass("playing");
 						
 			// update time periodically
@@ -187,7 +216,7 @@ module UI {
 		private PausePlaying() : void {
 			this.isPlaying = false;			
 			this.playPauseButton.ChangeIcon("icon-play");
-			this.playPauseButton.ChangeContent(this.localization.Play);
+			this.playPauseButton.ChangeContent(this.Localization.Play);
 			this.RemoveClass("playing");
 			
 			// do not update the status and timeline while paused
@@ -206,12 +235,16 @@ module UI {
 			
 			return new Panel("div")
 				.AddChildren(
-					new H2(this.localization.TimeStatus),
-					this.currentTime,
-					new SimpleElement("span", " / "),
-					this.totalTime
+					new H2(this.Localization.TimeStatus),
+					new Panel("div")
+						.AddChildren(
+							this.currentTime,
+							new SimpleElement("span", " / "),
+							this.totalTime							
+						)
+						.AddClass("ui-time")
 				)
-				.AddClasses("ui-controls-panel", "ui-time");
+				.AddClass("ui-controls-panel");
 		}
 		
 		/** Ticking interval handler */
@@ -224,8 +257,8 @@ module UI {
 		 * @param	time	Current time in seconds
 		 */
 		public UpdateCurrentTime() : void {
-			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.timer.CurrentTime());
-			this.timeline.Sync(this.timer.CurrentTime());
+			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.Timer.CurrentTime());
+			this.timeline.Sync(this.Timer.CurrentTime());
 		}
 		
 		
@@ -234,7 +267,7 @@ module UI {
 		 */
 		public ReachedEnd(): void {
 			this.PausePlaying();
-			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.localization.Replay);
+			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
 			this.reachedEnd = true;
 		}
 		
@@ -257,12 +290,12 @@ module UI {
 		protected CreateAudioControls(): IElement {
 			return new Panel("div", `${this.id}-audio`)
 				.AddChildren(
-					new H2(this.localization.VolumeControl),
+					new H2(this.Localization.VolumeControl),
 					new Panel("div", `${this.id}-audio-controls`)
 						.AddChildren(
-							new IconOnlyButton("icon-volume-down", this.localization.VolumeDown, (e) => this.VolumeDown()),
-							new IconOnlyButton("icon-volume-up", this.localization.VolumeUp, (e) => this.VolumeUp()),
-							new IconOnlyButton("icon-mute", this.localization.Mute, (e) => this.Mute())
+							new IconOnlyButton("icon-volume-down", this.Localization.VolumeDown, (e) => this.VolumeDown()),
+							new IconOnlyButton("icon-volume-up", this.Localization.VolumeUp, (e) => this.VolumeUp()),
+							new IconOnlyButton("icon-mute", this.Localization.Mute, (e) => this.Mute())
 						)
 						.AddClass("btn-group")
 				)
@@ -280,6 +313,21 @@ module UI {
 		protected Mute(): void {
 			VideoEvents.trigger(VideoEventType.Mute);
 		}
+		
+		/**
+		 * Autohiding the toolbar
+		 */
+		
+		protected ToggleAutohiding(): void {
+			if(this.controls.HasClass("autohide")) {
+				this.controls.RemoveClass("autohide");
+				this.hidingButton.ChangeIcon("hide");
+			} else {
+				this.controls.AddClass("autohide");
+				this.hidingButton.ChangeIcon("show");
+			}
+		}
+		 
 	}
 	
 }

@@ -8,8 +8,6 @@ var Helpers;
         function Vector2(x, y) {
             this.x = x;
             this.y = y;
-            this.size = -1;
-            this.sizeSq = -1;
         }
         Object.defineProperty(Vector2.prototype, "X", {
             /**
@@ -37,26 +35,22 @@ var Helpers;
          * Calculates size of the vector.
          */
         Vector2.prototype.getSize = function () {
-            if (this.size < 0) {
-                this.size = Math.sqrt(this.getSizeSq());
-            }
-            return this.size;
+            return Math.sqrt(this.getSizeSq());
         };
         ;
         /**
          * Calculates squared size of the vector.
          */
         Vector2.prototype.getSizeSq = function () {
-            if (this.sizeSq < 0) {
-                this.sizeSq = this.x * this.x + this.y * this.y;
-            }
-            return this.sizeSq;
+            return this.x * this.x + this.y * this.y;
         };
         /**
          * Distance between this and the other point.
          */
         Vector2.prototype.distanceTo = function (b) {
-            return this.subtract(b).getSize();
+            var dx = this.x - b.X;
+            var dy = this.y - b.Y;
+            return Math.sqrt(dx * dx + dy * dy);
         };
         ;
         /**
@@ -68,37 +62,50 @@ var Helpers;
             if (size === 0) {
                 throw new Error("Can't normalize zero vector.");
             }
-            return this.scale(1 / size);
+            this.scale(1 / size);
+            return this;
         };
         ;
         /**
          * Creates a normal vector to this vector.
          */
         Vector2.prototype.getNormal = function () {
-            return new Vector2(-this.y, this.x).normalize();
+            return (new Vector2(-this.y, this.x)).normalize();
         };
         ;
         /**
          * Create a new two-dimensional vector as a combination of this vector with a specified vector.
          */
         Vector2.prototype.add = function (b) {
-            return new Vector2(this.x + b.X, this.y + b.Y);
+            this.x += b.X;
+            this.y += b.Y;
+            return this;
         };
         ;
         /**
          * Create a new two-dimensional vector by subtracting a specified vector from this vector.
          */
         Vector2.prototype.subtract = function (b) {
-            return new Vector2(this.x - b.X, this.y - b.Y);
+            this.x -= b.X;
+            this.y -= b.Y;
+            return this;
         };
         ;
         /**
          * Create a new vector that is scaled by the coeficient c.
          */
         Vector2.prototype.scale = function (c) {
-            return new Vector2(this.x * c, this.y * c);
+            this.x *= c;
+            this.y *= c;
+            return this;
         };
         ;
+        /**
+         * Calculates a point in between this and the other point.
+         */
+        Vector2.prototype.pointInBetween = function (b) {
+            return new Vector2((this.x + b.X) / 2, (this.y + b.Y) / 2);
+        };
         /**
          * Make a copy of the vector.
          */

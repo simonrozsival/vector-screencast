@@ -138,8 +138,9 @@ module AudioData {
 		
 		private InitAudio() : void {			
 			// important audio events
-			this.audio.onended = () => VideoEvents.trigger(VideoEventType.ReachEnd);	
-			this.audio.onpause = () => { if(this.playing) this.InitiatePause() };	
+			this.audio.onended = () => VideoEvents.trigger(VideoEventType.ReachEnd);
+			this.audio.onwaiting = () => this.Busy();
+			this.audio.oncanplay = () => this.Ready();	
 			this.audio.ontimeupdate = () => this.ReportCurrentTime();
 			
 			// user's volume settings			
@@ -149,6 +150,22 @@ module AudioData {
 	
 			this.MonitorBufferingAsync();
 		};
+		
+		private triggeredBusyState: boolean;
+		
+		private Busy(): void {
+			if(this.playing) {
+				this.triggeredBusyState = true;
+				VideoEvents.trigger(VideoEventType.Pause);				
+			}
+		}
+		
+		private Ready(): void {
+			if(this.triggeredBusyState) {
+				VideoEvents.trigger(VideoEventType.Ready);
+				this.triggeredBusyState = false; // do not fire more than once for each Busy() status				
+			}
+		}
 			
 		/**
 		 * Start playling
@@ -178,14 +195,7 @@ module AudioData {
 				this.audio.pause();
 			}
 		}
-		
-		/**
-		 * Be the one who tells others, when to pause!
-		 */
-		private InitiatePause() : void {			
-			VideoEvents.trigger(VideoEventType.Pause);
-		}
-		
+				
 		/**
 		 * Video playback has ended.
 		 */
@@ -270,7 +280,7 @@ module AudioData {
 		 */
 		
 		private Mute(): void {
-			this.audio.volume = 0;
+			this.audio.muted = !this.audio.muted;
 		}
 		
 		private VolumeUp(): void {

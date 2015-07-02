@@ -14,9 +14,12 @@ module Settings {
 		// non-obligatory
 		DrawingStrategy?: 	Drawing.DrawingStrategy;		
 		Audio?: 			IAudioRecorderSettings;
-		Localization?: 		Localization.IRecorderLocalization,
-		ColorPallete?: 		Array<UI.Color>,
-		BrushSizes?: 		Array<UI.BrushSize>
+		Localization?: 		Localization.IRecorderLocalization;
+		ColorPallete?: 		Array<UI.Color>;
+		BrushSizes?: 		Array<UI.BrushSize>;
+		
+		UI?:				UI.RecorderUI;			
+		Autohide?:			boolean;
 	}
 	
 	export interface IAudioRecorderSettings {

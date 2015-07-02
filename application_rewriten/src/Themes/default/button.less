@@ -7,11 +7,11 @@ button {
 	margin-right: @btn-size / 4;
 	color: @text-color;		
 	font-weight: @font-weight;
-	border: 1px solid fade(@background, 90%);
+	border: 1px solid @btn-border-color;
 	border-radius: 4px;
-	background: fade(@foreground, 50%);
+	background: @btn-bg-color;
 	font-size: @btn-font-size;
-	text-align: center;
+	padding: 0 10px;
 
 	&:not(:disabled) {
 		&:hover,
@@ -32,6 +32,7 @@ button {
 		
 		&.active {			
 			transform: scale(1.1);
+			z-index: 200;
 			border-width: 2px;	
 		}
 		
@@ -89,44 +90,22 @@ button {
 				height: 0;
 				border-style: solid;
 				border-color: transparent;
-				border-bottom: 0;
+				border-top: 0;
 			}
 			
-		  	.tri-down:before {
-				bottom: -16px;
-				left: 21px;
+		  	&:before {
+				left: 0px;
 				
-				border-top-color: @background;
-				border-width: 16px;
-			}
-		}
-		
-		&.icon-erase {
-			position: relative;
-			width: 20px;
-			height: 20px;
-			
-			&:before, &:after {
-				position: absolute;
-				content: ' ';
-				height: 22px;
-				width: 2px;
-				background-color: @background;
-			}
-
-			&:before {
-				transform: rotate(45deg);
-			}
-
-			&:after {
-				transform: rotate(-45deg);
+				border-width: @btn-icon-size / 2;				
+				border-bottom-color: @background;
+				border-bottom-width: @btn-icon-size;
 			}
 		}
 	}
 	
 	&.icon-only-button {
 		.icon {
-			margin: none;
+			margin: 0;
 		}
 	}
 	
@@ -147,21 +126,24 @@ button {
 				background: @foreground; 
 			}
 			
-			&.icon-upload {
-				border-color: transparent transparent @foreground transparent;
+			&.icon-upload:before {
+				border-bottom-color: @foreground;
 			}
 		}			
 	}
 
-	.btn-group &:not(::last-child) {
+	.btn-group &:not(:last-child) {
 		margin-right: 0;
 		border-top-right-radius: 0;
 		border-bottom-right-radius: 0;
-		border-right: 0;
+		
+		&:not(:hover):not(.active) {
+			border-right-color: @btn-bg-color;			
+		}
 	}	
 	
-	.btn-group &:not(::first-child) {
+	.btn-group &:not(:first-child) {
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;
-	}	
+	}
 }

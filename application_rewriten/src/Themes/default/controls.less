@@ -1,160 +1,187 @@
 @import (less) "./variables/variables.less";
 
-.vector-video-controls {
-	padding: @btn-size / 2;
-	box-sizing: border-box;
-	min-width: 100%;
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	background: fade(@foreground, 40%);
-	border-top: @btn-size transparent;
+.ui-controls-wrapper {
+	width: 100%;
 	
-	/// make the hiding animated
-	transition: all 0.3s;
-	
-	font-family: @font-family;
-	font-weight: @font-weight;
-	
-	.recording &.autohide,
-	.playing &.autohide {
-		bottom: auto;
-		margin-top: -20px;
-		transition-delay: 1s;
-		-webkit-transition-delay: 1s; /* Chrome, Safari, Opera */
-    		
-		&:hover {
-			bottom: 0;
-			transition-delay: 0.1s;
-			-webkit-transition-delay: 0.1s; /* Chrome, Safari, Opera */    
-		} 
-	}
-	
-	/** progressbar */
-	.ui-progressbar {
-		position: absolute;
-		top: 0;
+	@controls-height: 2*@btn-size + @font-size;
+	.ui-controls {
+		// unselectable!
+		-webkit-user-select: none;        
+		-moz-user-select: none;
+		-ms-user-select: none; /* IE10+ */
+		-o-user-select: none;
+		user-select: none;
+		
+		padding: @btn-size / 2;
+		box-sizing: border-box;
+		min-width: 100%;
+		
+		position: fixed;
+		bottom: 0;
 		left: 0;
-		width: 100%;
-		height: 10px;
-		background: transparent;	
-		cursor: pointer; // user can skip by clicking on the timeline
-			
-		.ui-progress,
-		.ui-buffer {
-			content: " "; // it must not be empty!
-			display: block;
-			height: 5px;		
-			transition: all 0.2s linear;
+		background: fade(@foreground, 40%);
+		border-top: @btn-size transparent;
+		
+		/// make the hiding animated
+		transition: all 0.3s;
+		
+		font-family: @font-family;
+		font-weight: @font-weight;
+		
+		.recording &.autohide,
+		.playing &.autohide {
+			bottom: -@controls-height + 15px;			
+			transition-delay: 1s;
+			-webkit-transition-delay: 1s; /* Chrome, Safari, Opera */
+	    		
+			&:hover {
+				bottom: 0;
+				transition-delay: 0.1s;
+				-webkit-transition-delay: 0.1s; /* Chrome, Safari, Opera */    
+			} 
+		}
+		
+		/** progressbar */
+		.ui-progressbar {
 			position: absolute;
 			top: 0;
 			left: 0;
-		}
-		
-		.ui-progress {
-			background: @contrastant;
-			z-index: 200;	
-		}		
-		
-		.ui-buffer {
-			background: fade(@contrastant, 50%);
-			z-index: 100;
-		}
-		
-		@arrowSize: @btn-size / 4;
-		.ui-arrow {
-			content: " ";
-			display: none;
-			
-			background: @contrastant;
-			color: @white;
-			text-align: center;
-			border-radius: 2px;
-			
-			position: absolute;
-			margin-left: -@btn-size;
-			top: -@btn-size - @arrowSize;
-			width: 2*@btn-size;
-			height: @btn-size;
-			line-height: @btn-size;
-			width: 2*@btn-size;			
-			opacity: 0;
-			
-			transition: opacity 0.5s linear;
-			transition-delay: 0.5s;
-			-webkit-transition-delay: 0.5s; /* Chrome, Safari, Opera */
-			
-			&:after {					
-				width: 0;
-				height: 0;
-				border-style: solid;
-				border-width: @arrowSize @arrowSize 0 @arrowSize;
-				border-color: @contrastant transparent transparent transparent;
-				content: " ";
+			width: 100%;
+			height: 10px;
+			background: transparent;	
+			cursor: pointer; // user can skip by clicking on the timeline
+				
+			.ui-progress,
+			.ui-buffer {
+				content: " "; // it must not be empty!
 				display: block;
+				height: 5px;		
+				transition: all 0.2s linear;
 				position: absolute;
-				left: 50%;
-				margin-left: -@arrowSize;
+				top: 0;
+				left: 0;
+			}
+			
+			.ui-progress {
+				background: @contrastant;
+				z-index: 200;	
+			}		
+			
+			.ui-buffer {
+				background: fade(@contrastant, 50%);
+				z-index: 100;
+			}
+			
+			@arrowSize: @btn-size / 4;
+			.ui-arrow {
+				content: " ";
+				display: none;
+				
+				background: @contrastant;
+				color: @white;
+				text-align: center;
+				border-radius: 2px;
+				
+				position: absolute;
+				margin-left: -@btn-size;
+				top: -@btn-size - @arrowSize;
+				width: 2*@btn-size;
+				height: @btn-size;
+				line-height: @btn-size;
+				width: 2*@btn-size;			
+				opacity: 0;
+				
+				transition: opacity 0.5s linear;
+				transition-delay: 0.5s;
+				-webkit-transition-delay: 0.5s; /* Chrome, Safari, Opera */
+				
+				&:after {					
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: @arrowSize @arrowSize 0 @arrowSize;
+					border-color: @contrastant transparent transparent transparent;
+					content: " ";
+					display: block;
+					position: absolute;
+					left: 50%;
+					margin-left: -@arrowSize;
+				}
+			}
+			
+			&:hover .ui-arrow {
+				display: block;
+				opacity: 1;
+				transition-delay: 0s;
+				-webkit-transition-delay: 0s; /* Chrome, Safari, Opera */
 			}
 		}
 		
-		&:hover .ui-arrow {
-			display: block;
-			opacity: 1;
-			transition-delay: 0s;
-			-webkit-transition-delay: 0s; /* Chrome, Safari, Opera */
+		button {
+			float: left;
+			font-family: @font-family;
 		}
-	}
+		
+		.video-time {
+			height: 34px;
+			line-height: 34px;
+		}
+		
+		.time {
+			line-height: 1em;
+		}
+		
+		.ui-controls-panel {
+			float: left;
+			margin-right: @btn-size;
+			margin-bottom: @btn-size / 4;
+			
+			h2 {
+				font-size: @font-size / 2;
+				font-weight: @font-weight;
+				font-family: @font-family;
+				color: white;
+				text-transform: uppercase;
+				margin-bottom: 3px;
+			}
+		}
+		
+		.ui-time {
+			color: white;
+			line-height: @btn-size;
+			
+			span {
+				display: inline-block;
+				margin: 0 3px;
+			}
+		}
+		
+		.vector-video-sizes {
+			button {
+				.dot {
+					background: transparent;
+					display: inline-block;			
+				}
+			}
+		}
+		
+	}	
 	
-	button {
-		float: left;
-		font-family: @font-family;
-	}
-	
-	// unselectable!
-	-webkit-user-select: none;        
-	-moz-user-select: none;
-	-ms-user-select: none; /* IE10+ */
-	-o-user-select: none;
-	user-select: none;
-}
-
-.video-time {
-	height: 34px;
-	line-height: 34px;
-}
-
-.time {
-	line-height: 1em;
-}
-
-.ui-controls-panel {
-	float: left;
-	margin-right: @btn-size;
-	
-	h2 {
-		font-size: @font-size / 2;
-		font-weight: @font-weight;
-		font-family: @font-family;
-		color: white;
-		text-transform: uppercase;
-	}
-}
-
-.ui-time {
-	color: white;
-	
-	span {
-		display: inline-block;
-		margin: 0 3px;
-	}
-}
-
-.vector-video-sizes {
-	button {
-		.dot {
-			background: transparent;
-			display: inline-block;			
+	.autohiding-toggle {
+		position: absolute;
+		bottom: @btn-size/2;
+		right: @btn-size/2;
+		width: @btn-size;
+		height: @btn-size;
+		background: @btn-bg-color;
+		border: 1px solid @btn-border-color;
+		
+		.icon.hide {
+			content: "Hide";
+		}	
+		
+		.icon.show {
+			content: "Show";
 		}
 	}
 }

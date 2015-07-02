@@ -303,7 +303,7 @@ module Drawing {
 			// B] - an "arc cap"
 			var center: Vector2 = segment.Right.pointInBetween(segment.Left);
 			var startDirection: Vector2 = segment.Right.clone().subtract(center);
-			var endDirection: Vector2 = segment.Left.clone().subtract(center);
+			//var endDirection: Vector2 = segment.Left.clone().subtract(center);
 			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
 		}		
 		
@@ -318,7 +318,7 @@ module Drawing {
 			// this.cap = SVG.LineToString(left);
 			
 			// B] - an "arc cap"
-			var center: Vector2 = segment.Right.clone().add(segment.Left).scale(0.5);
+			var center: Vector2 = segment.Right.pointInBetween(segment.Left);
 			var startDirection: Vector2 = segment.Right.clone().subtract(center);
 			//var endDirection: Vector2 = segment.Left.clone().subtract(center);
 			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
@@ -347,7 +347,8 @@ module Drawing {
 		/** Init empty path */
 		constructor(curved: boolean, color: string, private context: CanvasRenderingContext2D) {
 			super(curved, color);
-			this.context.fillStyle = this.color;			
+			//this.context.fillStyle = this.color;
+			this.context.strokeStyle = this.color;			
 		}
 		
 		public DrawStartDot(position: Vector2, radius: number): void {			
@@ -410,7 +411,8 @@ module Drawing {
 		 */
 		public Draw(): void {			
 			this.context.closePath();		
-			this.context.fill();	
+			//this.context.fill();
+			this.context.stroke();	
 			this.context.beginPath();			
 		}
 	}	

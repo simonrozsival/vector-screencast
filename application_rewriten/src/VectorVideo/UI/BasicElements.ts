@@ -9,6 +9,7 @@ module UI {
 	 */
 	export interface IElement {
 		GetHTML(): HTMLElement;
+		HasClass(className: string): boolean;
 		AddClass(className: string): IElement;
 		AddClasses(...classes: Array<string>): IElement;
 		RemoveClass(className: string): IElement;
@@ -40,6 +41,13 @@ module UI {
 		 * Getter of the element.
 		 */
 		public GetHTML() : HTMLElement { return this.element; }
+		
+		/**
+		 * Does the HTML element has a specific class in it's class list?
+		 */
+		public HasClass(className: string): boolean {
+			return this.GetHTML().classList.contains(className);
+		}
 		
 		/**
 		 * Add one class to the class attribute of the HTML element.
@@ -84,7 +92,7 @@ module UI {
 	/**
 	 * Basic UI button
 	 */
-	export class Button extends Panel {
+	export class Button extends SimpleElement {
 			
 		protected content: IElement;
 		
@@ -95,7 +103,9 @@ module UI {
 		 */
 		constructor(text: string, onClick?: (e: Event) => void) {
 			super("button");	
+			this.AddClass("ui-button");
 			this.content = new SimpleElement("span", text);
+			this.GetHTML().appendChild(this.content.GetHTML());
 					
 			if(!!onClick) {
 				this.GetHTML().onclick = onClick; // no event arguments are passed on purpose
@@ -129,9 +139,9 @@ module UI {
 			super(content, onClick);
 			
 			// the content isn't a simple text..
-			this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);			
-			this.AddChild(this.icon)
-				.AddClass("has-icon");
+			this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);
+			this.AddClass("has-icon");
+			this.GetHTML().appendChild(this.icon.GetHTML());						
 		}
 		
 		public ChangeIcon(iconClass: string): IconButton {	
@@ -145,8 +155,8 @@ module UI {
 	export class IconOnlyButton extends IconButton {
 		constructor(iconClass: string, title: string, onClick?: (e: Event) => void) {
 			super(iconClass, "", onClick); // empty content
-			this.ChangeContent(title);
-			this.AddClass("ui-button");
+			this.ChangeContent(title);			
+			this.AddClass("icon-only-button");
 		}
 		
 		public ChangeContent(content: string): IconButton {
@@ -233,6 +243,13 @@ module UI {
 		 * Getter of the element.
 		 */
 		public GetHTML() : HTMLElement { return this.element; }
+		
+		/**
+		 * Does the HTML element has a specific class in it's class list?
+		 */
+		public HasClass(className: string): boolean {
+			return this.GetHTML().classList.contains(className);
+		}
 		
 		/**
 		 * Add one class to the class attribute of the HTML element.

@@ -182,8 +182,13 @@ module VectorVideo {
 			this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
 			this.dynaDraw = new Drawing.DynaDraw(() => this.drawer.CreatePath(), true, min, max, this.timer);
 			
-			// create UI and connect it to the drawer			
-			this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization, this.timer);
+			// create UI			
+			this.ui = !!settings.UI ? settings.UI : new UI.RecorderUI(id);
+			this.ui.Timer = this.timer;
+			this.ui.Localization = settings.Localization;
+			this.ui.CreateHTML(!!settings.Autohide, settings.ColorPallete, settings.BrushSizes);
+			
+			// ...and connect it to the drawer
 			this.ui.AcceptCanvas(this.drawer.CreateCanvas());
 			container.appendChild(this.ui.GetHTML()); 
 			this.drawer.Stretch(); // adapt to the environment
@@ -213,7 +218,7 @@ module VectorVideo {
 			this.ClearCanvas(UI.Color.BackgroundColor); 
 			// init some values for the brush - user will change it immediately, but some are needed from the very start
 			VideoEvents.trigger(VideoEventType.ChangeColor, this.currColor);
-			VideoEvents.trigger(VideoEventType.ChangeColor, this.currSize);
+			VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.currSize);
 		}
 		
 		/**
@@ -305,7 +310,7 @@ module VectorVideo {
 		 * User moved the mouse or a digital pen.
 		 */
 		private ProcessCursorState(state: CursorState) {
-			this.lastCurState = state;
+			this.lastCurState = state;			
 			!this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.MoveCursor(state.X, state.Y, state.Pressure, this.timer.CurrentTime()));
 			this.dynaDraw.ObserveCursorMovement(state);
 		}

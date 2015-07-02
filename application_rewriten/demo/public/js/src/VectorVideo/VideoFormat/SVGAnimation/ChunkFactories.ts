@@ -367,7 +367,7 @@ module VideoFormat.SVGAnimation {
 					left = `${SVG.CurveToString(seg.LeftBezier.EndCP, seg.LeftBezier.StartCP, seg.LeftBezier.Start) } ${left}`; // SPACE divider
 				} else if (seg instanceof Drawing.QuadrilateralSegment) {
 					right += `${SVG.LineToString(seg.Right) } `; // SPACE divider
-					left = `${SVG.LineToString(seg.Left) } ${left}`; // SPACE divider
+					left = `${SVG.LineToString(seg.Left)} ${left}`; // SPACE divider
 				} else {
 					throw new Error(`Unsupported segment type ${typeof (seg) }`);
 				}
@@ -375,10 +375,9 @@ module VideoFormat.SVGAnimation {
 
 
 			// arc cap at the end
-			seg = segments[segments.length - 1];
+			seg = segments.pop();
 			center = seg.Right.pointInBetween(seg.Left);
 			startDirection = seg.Right.clone().subtract(center);
-			endDirection = seg.Left.clone().subtract(center);
 			var cap = `${SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection))} `;
 							
 			return SVG.CreateElement("path", {

@@ -944,6 +944,12 @@ var UI;
          */
         SimpleElement.prototype.GetHTML = function () { return this.element; };
         /**
+         * Does the HTML element has a specific class in it's class list?
+         */
+        SimpleElement.prototype.HasClass = function (className) {
+            return this.GetHTML().classList.contains(className);
+        };
+        /**
          * Add one class to the class attribute of the HTML element.
          */
         SimpleElement.prototype.AddClass = function (className) {
@@ -999,7 +1005,9 @@ var UI;
          */
         function Button(text, onClick) {
             _super.call(this, "button");
+            this.AddClass("ui-button");
             this.content = new SimpleElement("span", text);
+            this.GetHTML().appendChild(this.content.GetHTML());
             if (!!onClick) {
                 this.GetHTML().onclick = onClick; // no event arguments are passed on purpose
             }
@@ -1013,7 +1021,7 @@ var UI;
             return this;
         };
         return Button;
-    })(Panel);
+    })(SimpleElement);
     UI.Button = Button;
     /**
      * Extended UI button
@@ -1031,8 +1039,8 @@ var UI;
             this.iconClass = iconClass;
             // the content isn't a simple text..
             this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);
-            this.AddChild(this.icon)
-                .AddClass("has-icon");
+            this.AddClass("has-icon");
+            this.GetHTML().appendChild(this.icon.GetHTML());
         }
         IconButton.prototype.ChangeIcon = function (iconClass) {
             this.icon.RemoveClass(this.iconClass).AddClass(iconClass);
@@ -1047,7 +1055,7 @@ var UI;
         function IconOnlyButton(iconClass, title, onClick) {
             _super.call(this, iconClass, "", onClick); // empty content
             this.ChangeContent(title);
-            this.AddClass("ui-button");
+            this.AddClass("icon-only-button");
         }
         IconOnlyButton.prototype.ChangeContent = function (content) {
             HTML.SetAttributes(this.GetHTML(), { title: content });
@@ -1136,6 +1144,12 @@ var UI;
          * Getter of the element.
          */
         Panel.prototype.GetHTML = function () { return this.element; };
+        /**
+         * Does the HTML element has a specific class in it's class list?
+         */
+        Panel.prototype.HasClass = function (className) {
+            return this.GetHTML().classList.contains(className);
+        };
         /**
          * Add one class to the class attribute of the HTML element.
          */
@@ -1514,7 +1528,7 @@ var Drawing;
             // B] - an "arc cap"
             var center = segment.Right.pointInBetween(segment.Left);
             var startDirection = segment.Right.clone().subtract(center);
-            var endDirection = segment.Left.clone().subtract(center);
+            //var endDirection: Vector2 = segment.Left.clone().subtract(center);
             this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
         };
         /**
@@ -1526,7 +1540,7 @@ var Drawing;
             // A] - a simple line at the end of the line 
             // this.cap = SVG.LineToString(left);
             // B] - an "arc cap"
-            var center = segment.Right.clone().add(segment.Left).scale(0.5);
+            var center = segment.Right.pointInBetween(segment.Left);
             var startDirection = segment.Right.clone().subtract(center);
             //var endDirection: Vector2 = segment.Left.clone().subtract(center);
             this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
@@ -1554,7 +1568,8 @@ var Drawing;
         function CanvasPath(curved, color, context) {
             _super.call(this, curved, color);
             this.context = context;
-            this.context.fillStyle = this.color;
+            //this.context.fillStyle = this.color;
+            this.context.strokeStyle = this.color;
         }
         CanvasPath.prototype.DrawStartDot = function (position, radius) {
             // now draw the start dot
@@ -1606,7 +1621,8 @@ var Drawing;
          */
         CanvasPath.prototype.Draw = function () {
             this.context.closePath();
-            this.context.fill();
+            //this.context.fill();
+            this.context.stroke();
             this.context.beginPath();
         };
         return CanvasPath;
@@ -1712,6 +1728,98 @@ var Drawing;
         return SVGDrawer;
     })();
     Drawing.SVGDrawer = SVGDrawer;
+})(Drawing || (Drawing = {}));
+/// <reference path="./DrawingStrategy.ts" />
+/// <reference path="../Helpers/Vector.ts" />
+/// <reference path="../Helpers/State.ts" />
+/// <reference path="../Helpers/HTML.ts" />
+/// <reference path="../Helpers/SVG.ts" />
+/// <reference path="../Helpers/Spline.ts" />
+/// <reference path="../Helpers/VideoEvents.ts" />
+/// <reference path="../settings/BrushSettings.ts" />
+/// <reference path="../UI/BasicElements" />
+/// <reference path="Path" />
+var Drawing;
+(function (Drawing) {
+    var HTML = Helpers.HTML;
+    /**
+     * This is the main drawing class - processes cursor states
+     * and renders the lines on the blackboard.
+     * This class uses HTML5 Canvas 2D Context for visualising the lines.
+     */
+    var CanvasDrawer = (function () {
+        /**
+         * Init a new drawer.
+         * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
+         */
+        function CanvasDrawer(curved) {
+            if (curved === void 0) { curved = true; }
+            this.curved = curved;
+        }
+        /**
+         * Create a new renderer that will produce output into the CANVAS elemement usning HTML5.
+         */
+        CanvasDrawer.prototype.CreateCanvas = function () {
+            this.canvas = HTML.CreateElement("canvas");
+            this.context = this.canvas.getContext("2d");
+            return this.canvas;
+        };
+        /**
+         * Make ths canvas as large as possible (fill the parent element)
+         */
+        CanvasDrawer.prototype.Stretch = function () {
+            // this is event handler - "this" isn't SVGDrawer here!
+            var parent = this.canvas.parentElement;
+            var width = parent.clientWidth;
+            var height = parent.clientHeight;
+            this.originalHeight = height;
+            this.originalWidth = width;
+            Helpers.HTML.SetAttributes(this.canvas, {
+                width: width,
+                height: height
+            });
+            Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+        };
+        CanvasDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
+            var wr = this.canvas.width / sourceWidth;
+            var hr = this.canvas.height / sourceHeight;
+            var min = Math.min(wr, hr);
+            // prepare scale uniformly 
+            this.canvas.width = min * sourceWidth;
+            this.canvas.height = min * sourceHeight;
+            this.context.scale(min, min);
+            // translate the (0,0) point
+            if (wr < hr) {
+            }
+            else if (hr < wr) {
+            }
+            // else - the ratios match      
+            this.originalHeight = sourceHeight;
+            this.originalWidth = sourceWidth;
+            return min;
+        };
+        /**
+         * Make the canvas blank.
+         */
+        CanvasDrawer.prototype.ClearCanvas = function (color) {
+            this.context.fillStyle = color.CssValue;
+            this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
+        };
+        /**
+         * Set color of a path, that will be drawn in the future.
+         */
+        CanvasDrawer.prototype.SetCurrentColor = function (color) {
+            this.currentColor = color;
+        };
+        /**
+         * Start drawing a line.
+         */
+        CanvasDrawer.prototype.CreatePath = function () {
+            return new Drawing.CanvasPath(this.curved, this.currentColor.CssValue, this.context);
+        };
+        return CanvasDrawer;
+    })();
+    Drawing.CanvasDrawer = CanvasDrawer;
 })(Drawing || (Drawing = {}));
 /// <reference path="../Drawing/DrawingStrategy" />
 /// <reference path="../Localization/IPlayerLocalization" />
@@ -2123,31 +2231,13 @@ var UI;
          * @param	id				Unique ID of this recorder instance
          * @param	localization	List of translated strings
          */
-        function PlayerUI(id, localization, timer) {
+        function PlayerUI(id) {
             var _this = this;
             _super.call(this, "div", id + "-player");
             this.id = id;
-            this.localization = localization;
-            this.timer = timer;
             /** Ticking interval - not too often, but precise enough */
             this.tickingInterval = 200;
             this.AddClass("vector-video-wrapper");
-            Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.localization.Busy });
-            // prepare the board
-            this.board = this.CreateBoard();
-            // prepare the panels
-            this.timeline = this.CreateTimeLine();
-            this.controls = new UI.Panel("div", id + "-controls")
-                .AddChildren(this.CreateButtonsPanel(), this.timeline, this.CreateTimeStatus(), this.CreateAudioControls())
-                .AddClasses("vector-video-controls", "autohide", "ui-control");
-            this.AddChildren(this.board, this.controls);
-            // Set the duration of the video as soon as available
-            VideoEvents.on(VideoEventType.VideoInfoLoaded, function (meta) {
-                _this.videoDuration = meta.Length;
-                _this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
-                _this.timeline.Length = meta.Length;
-            });
-            VideoEvents.on(VideoEventType.BufferStatus, function (seconds) { return _this.timeline.SetBuffer(seconds * 1000); }); // convert to milliseconds first
             // React to events triggered from outside
             VideoEvents.on(VideoEventType.Start, function () { return _this.StartPlaying(); });
             VideoEvents.on(VideoEventType.Pause, function () { return _this.PausePlaying(); });
@@ -2159,6 +2249,31 @@ var UI;
             this.isPlaying = false;
             this.reachedEnd = false;
         }
+        PlayerUI.prototype.CreateHTML = function (autohide) {
+            var _this = this;
+            Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.Localization.Busy });
+            // prepare the board
+            this.board = this.CreateBoard();
+            // prepare the timeline and other controls
+            this.timeline = this.CreateTimeLine();
+            this.hidingButton = new UI.IconOnlyButton("icon-hidding-toggle", "", function (e) { return _this.ToggleAutohiding(); })
+                .AddClasses("autohiding-toggle", autohide ? "show" : "hide");
+            this.controls = new UI.Panel("div", this.id + "-controls")
+                .AddClasses("ui-controls", "ui-control")
+                .AddChildren(this.CreateButtonsPanel(), this.timeline, this.CreateTimeStatus(), this.CreateAudioControls());
+            // if autohiding is requested, add 'autohide' class
+            !!autohide && this.controls.AddClass("autohide");
+            this.AddChildren(this.board, new UI.Panel("div")
+                .AddClass("ui-controls-wrapper")
+                .AddChildren(this.controls, this.hidingButton));
+            // Set the duration of the video as soon as available
+            VideoEvents.on(VideoEventType.VideoInfoLoaded, function (meta) {
+                _this.videoDuration = meta.Length;
+                _this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
+                _this.timeline.Length = meta.Length;
+            });
+            VideoEvents.on(VideoEventType.BufferStatus, function (seconds) { return _this.timeline.SetBuffer(seconds * 1000); }); // convert to milliseconds first			
+        };
         PlayerUI.prototype.HideControls = function () {
             this.controls.GetHTML().style.display = "none";
         };
@@ -2180,10 +2295,10 @@ var UI;
                         _this.PlayPause();
                         break;
                     case leftArrow:
-                        _this.timeline.SkipTo(_this.timer.CurrentTime() - skipTime);
+                        _this.timeline.SkipTo(_this.Timer.CurrentTime() - skipTime);
                         break;
                     case rightArrow:
-                        _this.timeline.SkipTo(_this.timer.CurrentTime() + skipTime);
+                        _this.timeline.SkipTo(_this.Timer.CurrentTime() + skipTime);
                         break;
                 }
             };
@@ -2198,7 +2313,9 @@ var UI;
          * Create the
          */
         PlayerUI.prototype.CreateBoard = function () {
+            var _this = this;
             var board = new UI.Board(this.id + "-board");
+            board.GetHTML().onclick = function () { return _this.PlayPause(); };
             return board;
         };
         /**
@@ -2206,9 +2323,9 @@ var UI;
          */
         PlayerUI.prototype.CreateButtonsPanel = function () {
             var _this = this;
-            this.playPauseButton = new UI.IconOnlyButton("icon-play", this.localization.Play, function (e) { return _this.PlayPause(); });
+            this.playPauseButton = new UI.IconOnlyButton("icon-play", this.Localization.Play, function (e) { return _this.PlayPause(); });
             return new UI.Panel("div")
-                .AddChildren(new UI.H2(this.localization.ControlPlayback), this.playPauseButton)
+                .AddChildren(new UI.H2(this.Localization.ControlPlayback), this.playPauseButton)
                 .AddClass("ui-controls-panel");
         };
         /**
@@ -2237,7 +2354,7 @@ var UI;
             var _this = this;
             this.isPlaying = true;
             this.playPauseButton.ChangeIcon("icon-pause");
-            this.playPauseButton.ChangeContent(this.localization.Pause);
+            this.playPauseButton.ChangeContent(this.Localization.Pause);
             this.AddClass("playing");
             // update time periodically
             this.ticking = setInterval(function () { return _this.UpdateCurrentTime(); }, this.tickingInterval);
@@ -2248,7 +2365,7 @@ var UI;
         PlayerUI.prototype.PausePlaying = function () {
             this.isPlaying = false;
             this.playPauseButton.ChangeIcon("icon-play");
-            this.playPauseButton.ChangeContent(this.localization.Play);
+            this.playPauseButton.ChangeContent(this.Localization.Play);
             this.RemoveClass("playing");
             // do not update the status and timeline while paused
             clearInterval(this.ticking);
@@ -2260,22 +2377,24 @@ var UI;
             this.currentTime = new UI.SimpleElement("span", "0:00");
             this.totalTime = new UI.SimpleElement("span", "0:00");
             return new UI.Panel("div")
-                .AddChildren(new UI.H2(this.localization.TimeStatus), this.currentTime, new UI.SimpleElement("span", " / "), this.totalTime)
-                .AddClasses("ui-controls-panel", "ui-time");
+                .AddChildren(new UI.H2(this.Localization.TimeStatus), new UI.Panel("div")
+                .AddChildren(this.currentTime, new UI.SimpleElement("span", " / "), this.totalTime)
+                .AddClass("ui-time"))
+                .AddClass("ui-controls-panel");
         };
         /**
          * @param	time	Current time in seconds
          */
         PlayerUI.prototype.UpdateCurrentTime = function () {
-            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.timer.CurrentTime());
-            this.timeline.Sync(this.timer.CurrentTime());
+            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.Timer.CurrentTime());
+            this.timeline.Sync(this.Timer.CurrentTime());
         };
         /**
          * React to end of playing - show the replay button
          */
         PlayerUI.prototype.ReachedEnd = function () {
             this.PausePlaying();
-            this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.localization.Replay);
+            this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
             this.reachedEnd = true;
         };
         /**
@@ -2293,8 +2412,8 @@ var UI;
         PlayerUI.prototype.CreateAudioControls = function () {
             var _this = this;
             return new UI.Panel("div", this.id + "-audio")
-                .AddChildren(new UI.H2(this.localization.VolumeControl), new UI.Panel("div", this.id + "-audio-controls")
-                .AddChildren(new UI.IconOnlyButton("icon-volume-down", this.localization.VolumeDown, function (e) { return _this.VolumeDown(); }), new UI.IconOnlyButton("icon-volume-up", this.localization.VolumeUp, function (e) { return _this.VolumeUp(); }), new UI.IconOnlyButton("icon-mute", this.localization.Mute, function (e) { return _this.Mute(); }))
+                .AddChildren(new UI.H2(this.Localization.VolumeControl), new UI.Panel("div", this.id + "-audio-controls")
+                .AddChildren(new UI.IconOnlyButton("icon-volume-down", this.Localization.VolumeDown, function (e) { return _this.VolumeDown(); }), new UI.IconOnlyButton("icon-volume-up", this.Localization.VolumeUp, function (e) { return _this.VolumeUp(); }), new UI.IconOnlyButton("icon-mute", this.Localization.Mute, function (e) { return _this.Mute(); }))
                 .AddClass("btn-group"))
                 .AddClasses("ui-controls-panel", "vector-video-audio-controls");
         };
@@ -2306,6 +2425,19 @@ var UI;
         };
         PlayerUI.prototype.Mute = function () {
             VideoEvents.trigger(VideoEventType.Mute);
+        };
+        /**
+         * Autohiding the toolbar
+         */
+        PlayerUI.prototype.ToggleAutohiding = function () {
+            if (this.controls.HasClass("autohide")) {
+                this.controls.RemoveClass("autohide");
+                this.hidingButton.ChangeIcon("hide");
+            }
+            else {
+                this.controls.AddClass("autohide");
+                this.hidingButton.ChangeIcon("show");
+            }
         };
         return PlayerUI;
     })(UI.Panel);
@@ -2454,8 +2586,8 @@ var AudioData;
             var _this = this;
             // important audio events
             this.audio.onended = function () { return VideoEvents.trigger(VideoEventType.ReachEnd); };
-            this.audio.onpause = function () { if (_this.playing)
-                _this.InitiatePause(); };
+            this.audio.onwaiting = function () { return _this.Busy(); };
+            this.audio.oncanplay = function () { return _this.Ready(); };
             this.audio.ontimeupdate = function () { return _this.ReportCurrentTime(); };
             // user's volume settings			
             VideoEvents.on(VideoEventType.Mute, function () { return _this.Mute(); });
@@ -2464,6 +2596,18 @@ var AudioData;
             this.MonitorBufferingAsync();
         };
         ;
+        AudioPlayer.prototype.Busy = function () {
+            if (this.playing) {
+                this.triggeredBusyState = true;
+                VideoEvents.trigger(VideoEventType.Pause);
+            }
+        };
+        AudioPlayer.prototype.Ready = function () {
+            if (this.triggeredBusyState) {
+                VideoEvents.trigger(VideoEventType.Ready);
+                this.triggeredBusyState = false; // do not fire more than once for each Busy() status				
+            }
+        };
         /**
          * Start playling
          */
@@ -2488,12 +2632,6 @@ var AudioData;
             if (this.isReady) {
                 this.audio.pause();
             }
-        };
-        /**
-         * Be the one who tells others, when to pause!
-         */
-        AudioPlayer.prototype.InitiatePause = function () {
-            VideoEvents.trigger(VideoEventType.Pause);
         };
         /**
          * Video playback has ended.
@@ -2566,7 +2704,7 @@ var AudioData;
          * Volume MUTE/UP/DOWN
          */
         AudioPlayer.prototype.Mute = function () {
-            this.audio.volume = 0;
+            this.audio.muted = !this.audio.muted;
         };
         AudioPlayer.prototype.VolumeUp = function () {
             this.audio.volume = Math.min(1, this.audio.volume + 0.1);
@@ -3652,10 +3790,9 @@ var VideoFormat;
                     }
                 }
                 // arc cap at the end
-                seg = segments[segments.length - 1];
+                seg = segments.pop();
                 center = seg.Right.pointInBetween(seg.Left);
                 startDirection = seg.Right.clone().subtract(center);
-                endDirection = seg.Left.clone().subtract(center);
                 var cap = SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection)) + " ";
                 return SVG.CreateElement("path", {
                     "fill": path.Color,
@@ -3906,6 +4043,7 @@ var VideoFormat;
 /// <reference path="../Helpers/Errors" />
 /// <reference path="../Drawing/DrawingStrategy" />
 /// <reference path="../Drawing/SVGDrawer" />
+/// <reference path="../Drawing/CanvasDrawer" />
 /// <reference path="../Settings/PlayerSettings" />
 /// <reference path="../UI/PlayerUI" />
 /// <reference path="../AudioData/AudioPlayer" />
@@ -3951,9 +4089,13 @@ var VectorVideo;
             // new paused timer
             this.timer = new Helpers.VideoTimer(false);
             // init the UI and bind it to an instance of a rendering strategy
-            this.ui = new UI.PlayerUI(id, settings.Localization, this.timer);
-            //this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.SVGDrawer(true);
+            this.ui = !!settings.UI ? settings.UI : new UI.PlayerUI(id);
+            this.ui.Timer = this.timer;
+            this.ui.Localization = settings.Localization;
+            this.ui.CreateHTML(!!settings.Autohide);
+            // init drawing strategy
             this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.CanvasDrawer(true);
+            // bind drawing strategy with the UI
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch();
@@ -4852,98 +4994,6 @@ var VideoData;
     })(VideoData.Mouse);
     VideoData.WacomTablet = WacomTablet;
 })(VideoData || (VideoData = {}));
-/// <reference path="./DrawingStrategy.ts" />
-/// <reference path="../Helpers/Vector.ts" />
-/// <reference path="../Helpers/State.ts" />
-/// <reference path="../Helpers/HTML.ts" />
-/// <reference path="../Helpers/SVG.ts" />
-/// <reference path="../Helpers/Spline.ts" />
-/// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../settings/BrushSettings.ts" />
-/// <reference path="../UI/BasicElements" />
-/// <reference path="Path" />
-var Drawing;
-(function (Drawing) {
-    var HTML = Helpers.HTML;
-    /**
-     * This is the main drawing class - processes cursor states
-     * and renders the lines on the blackboard.
-     * This class uses HTML5 Canvas 2D Context for visualising the lines.
-     */
-    var CanvasDrawer = (function () {
-        /**
-         * Init a new drawer.
-         * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
-         */
-        function CanvasDrawer(curved) {
-            if (curved === void 0) { curved = true; }
-            this.curved = curved;
-        }
-        /**
-         * Create a new renderer that will produce output into the CANVAS elemement usning HTML5.
-         */
-        CanvasDrawer.prototype.CreateCanvas = function () {
-            this.canvas = HTML.CreateElement("canvas");
-            this.context = this.canvas.getContext("2d");
-            return this.canvas;
-        };
-        /**
-         * Make ths canvas as large as possible (fill the parent element)
-         */
-        CanvasDrawer.prototype.Stretch = function () {
-            // this is event handler - "this" isn't SVGDrawer here!
-            var parent = this.canvas.parentElement;
-            var width = parent.clientWidth;
-            var height = parent.clientHeight;
-            this.originalHeight = height;
-            this.originalWidth = width;
-            Helpers.HTML.SetAttributes(this.canvas, {
-                width: width,
-                height: height
-            });
-            Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
-        };
-        CanvasDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
-            var wr = this.canvas.width / sourceWidth;
-            var hr = this.canvas.height / sourceHeight;
-            var min = Math.min(wr, hr);
-            // prepare scale uniformly 
-            this.canvas.width = min * sourceWidth;
-            this.canvas.height = min * sourceHeight;
-            this.context.scale(min, min);
-            // translate the (0,0) point
-            if (wr < hr) {
-            }
-            else if (hr < wr) {
-            }
-            // else - the ratios match      
-            this.originalHeight = sourceHeight;
-            this.originalWidth = sourceWidth;
-            return min;
-        };
-        /**
-         * Make the canvas blank.
-         */
-        CanvasDrawer.prototype.ClearCanvas = function (color) {
-            this.context.fillStyle = color.CssValue;
-            this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
-        };
-        /**
-         * Set color of a path, that will be drawn in the future.
-         */
-        CanvasDrawer.prototype.SetCurrentColor = function (color) {
-            this.currentColor = color;
-        };
-        /**
-         * Start drawing a line.
-         */
-        CanvasDrawer.prototype.CreatePath = function () {
-            return new Drawing.CanvasPath(this.curved, this.currentColor.CssValue, this.context);
-        };
-        return CanvasDrawer;
-    })();
-    Drawing.CanvasDrawer = CanvasDrawer;
-})(Drawing || (Drawing = {}));
 /// <reference path="Path" />
 /// <reference path="../Helpers/VideoTimer" />
 var Drawing;
@@ -5268,21 +5318,12 @@ var UI;
          * @param	brushSizes		List of possible brush sizes
          * @param	localization	List of translated strings
          */
-        function RecorderUI(id, colorPallete, brushSizes, localization, timer) {
+        function RecorderUI(id) {
             _super.call(this, "div", id + "-recorder");
             this.id = id;
-            this.localization = localization;
-            this.timer = timer;
             /** Ticking interval */
             this.tickingInterval = 100;
             this.AddClass("vector-video-wrapper");
-            // prepare the board
-            this.board = this.CreateBoard();
-            // prepare the panels
-            this.controls = new UI.Panel("div", id + "-controls")
-                .AddChildren(this.CreateButtonsPanel().AddClass("vector-video-buttons"), this.CreateColorsPanel(colorPallete).AddClass("vector-video-colors"), this.CreateBrushSizesPanel(brushSizes).AddClass("vector-video-sizes"), this.CreateEraserPanel().AddClass("vector-video-erase"), this.CreateEraseAllPanel().AddClasses("vector-video-erase"))
-                .AddClasses("vector-video-controls", "autohide", "ui-control");
-            this.AddChildren(this.board, this.controls);
         }
         Object.defineProperty(RecorderUI.prototype, "Width", {
             /** Get the width of the board in pixels. */
@@ -5308,6 +5349,18 @@ var UI;
             enumerable: true,
             configurable: true
         });
+        RecorderUI.prototype.CreateHTML = function (autohide, colorPallete, brushSizes) {
+            // prepare the board
+            this.board = this.CreateBoard();
+            // prepare the panels
+            this.controls = new UI.Panel("div", this.id + "-controls")
+                .AddChildren(this.CreateButtonsPanel().AddClass("ui-controls-panel"), this.CreateColorsPanel(colorPallete).AddClass("ui-controls-panel"), this.CreateBrushSizesPanel(brushSizes).AddClass("ui-controls-panel"), this.CreateEraserPanel().AddClass("ui-controls-panel"), this.CreateEraseAllPanel().AddClass("ui-controls-panel"))
+                .AddClasses("ui-controls", "ui-control");
+            // if autohiding is requested, add 'autohide' class
+            !!autohide && this.controls.AddClass("autohide");
+            this.AddChildren(this.board, new UI.Panel("div").AddClass("ui-controls-wrapper")
+                .AddChild(this.controls));
+        };
         /**
          * Integrate the canvas into the UI elements tree
          */
@@ -5328,11 +5381,12 @@ var UI;
             var _this = this;
             var buttonsPanel = new UI.Panel("div", this.id + "-panels");
             // the rec/pause button:
-            this.recPauseButton = new UI.IconButton("icon-rec", this.localization.Record, function (e) { return _this.RecordPause(); });
+            this.recPauseButton = new UI.IconButton("icon-rec", this.Localization.Record, function (e) { return _this.RecordPause(); });
             // the upload button:
-            this.uploadButton = new UI.IconButton("icon-upload", this.localization.Upload, function (e) { return _this.InitializeUpload(); });
+            this.uploadButton = new UI.IconButton("icon-upload", this.Localization.Upload, function (e) { return _this.InitializeUpload(); });
             Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
-            buttonsPanel.AddChildren(new UI.H2(this.localization.RecPause), this.recPauseButton, this.uploadButton);
+            buttonsPanel.AddChildren(new UI.H2(this.Localization.RecPause), new UI.Panel("div").AddClass("btn-group")
+                .AddChildren(this.recPauseButton, this.uploadButton));
             return buttonsPanel;
         };
         /**
@@ -5375,7 +5429,7 @@ var UI;
          * Update the displayed time
          */
         RecorderUI.prototype.Tick = function () {
-            this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.timer.CurrentTime()));
+            this.recPauseButton.ChangeContent(Helpers.millisecondsToString(this.Timer.CurrentTime()));
         };
         RecorderUI.prototype.InitializeUpload = function () {
             // disable the record and upload buttons
@@ -5389,28 +5443,27 @@ var UI;
          * @param	brushSizes	List of possible brush colors
          */
         RecorderUI.prototype.CreateColorsPanel = function (colorPallete) {
-            var panel = new UI.Panel("div", "color-pallete");
-            var title = new UI.H2(this.localization.ChangeColor);
-            panel.AddChild(title);
+            var colorsGroup = new UI.Panel("div").AddClass("btn-group");
             for (var i = 0; i < colorPallete.length; i++) {
                 var btn = new UI.ChangeColorButton(colorPallete[i]);
-                panel.AddChild(btn);
+                colorsGroup.AddChild(btn);
             }
-            return panel;
+            return new UI.Panel("div")
+                .AddClass("color-pallete")
+                .AddChildren(new UI.H2(this.Localization.ChangeColor), colorsGroup);
         };
         /**
          * Create a panel for changing brush size
          * @param	brushSizes	List of possible brush sizes
          */
         RecorderUI.prototype.CreateBrushSizesPanel = function (brushSizes) {
-            var panel = new UI.Panel("div", "brush-sizes");
-            var title = new UI.H2(this.localization.ChangeSize);
-            panel.AddChild(title);
+            var sizesGroup = new UI.Panel("div").AddClass("btn-group");
             for (var i = 0; i < brushSizes.length; i++) {
-                var btn = new UI.ChangeBrushSizeButton(brushSizes[i]);
-                panel.AddChild(btn);
+                sizesGroup.AddChild(new UI.ChangeBrushSizeButton(brushSizes[i]));
             }
-            return panel;
+            return new UI.Panel("div")
+                .AddClass("brush-sizes")
+                .AddChildren(new UI.H2(this.Localization.ChangeSize), sizesGroup);
         };
         /**
          * Create a panel containing the eraser brush and the "erase all button"
@@ -5418,7 +5471,7 @@ var UI;
         RecorderUI.prototype.CreateEraserPanel = function () {
             this.switchToEraserButton = new UI.ChangeColorButton(UI.Color.BackgroundColor);
             return new UI.Panel("div", this.id + "-erase")
-                .AddChildren(new UI.H2(this.localization.Erase), this.switchToEraserButton);
+                .AddChildren(new UI.H2(this.Localization.Erase), this.switchToEraserButton);
         };
         /**
          * Create a panel containing the eraser brush and the "erase all button"
@@ -5426,7 +5479,7 @@ var UI;
         RecorderUI.prototype.CreateEraseAllPanel = function () {
             var _this = this;
             var panel = new UI.Panel("div", this.id + "-erase");
-            var title = new UI.H2(this.localization.EraseAll);
+            var title = new UI.H2(this.Localization.EraseAll);
             panel.AddChild(title);
             // the "erase all" button:
             this.eraseAllButton = new UI.ChangeColorButton(UI.Color.BackgroundColor, function () { return _this.EraseAll(); });
@@ -5579,8 +5632,12 @@ var VectorVideo;
             // - default drawing strategy is using SVG
             this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
             this.dynaDraw = new Drawing.DynaDraw(function () { return _this.drawer.CreatePath(); }, true, min, max, this.timer);
-            // create UI and connect it to the drawer			
-            this.ui = new UI.RecorderUI(id, settings.ColorPallete, settings.BrushSizes, settings.Localization, this.timer);
+            // create UI			
+            this.ui = !!settings.UI ? settings.UI : new UI.RecorderUI(id);
+            this.ui.Timer = this.timer;
+            this.ui.Localization = settings.Localization;
+            this.ui.CreateHTML(!!settings.Autohide, settings.ColorPallete, settings.BrushSizes);
+            // ...and connect it to the drawer
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch(); // adapt to the environment
@@ -5609,7 +5666,7 @@ var VectorVideo;
             this.ClearCanvas(UI.Color.BackgroundColor);
             // init some values for the brush - user will change it immediately, but some are needed from the very start
             VideoEvents.trigger(VideoEventType.ChangeColor, this.currColor);
-            VideoEvents.trigger(VideoEventType.ChangeColor, this.currSize);
+            VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.currSize);
         }
         /**
          * Start recording. Everything must be initialised
