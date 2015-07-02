@@ -262,11 +262,11 @@ module Drawing {
 		 */			
 		public Reset(position: Vector2, brush: BrushInstance): void {
 			this.brush = brush;
-			this.position = position;
-			this.startPosition = position;
-			this.previousPosition = position;
+			this.position = position.clone();
+			this.startPosition = position.clone();
+			this.previousPosition = position.clone();
 			this.previousPressure = -1; // negative means, there is no pressure information yet
-			this.mousePosition = position;
+			this.mousePosition = position.clone();
 			this.acceleration = new Vector2(0, 0);
 			this.velocity = new Vector2(0, 0);
 			this.firstSegment = true;
@@ -280,20 +280,20 @@ module Drawing {
 		 */
 		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {			
 			// calculate the force
-			var force: Vector2 = mouse.subtract(this.position);
+			var force: Vector2 = mouse.clone().subtract(this.position);
 			if(force.getSizeSq() < Threshold.Force) {
 				return 0; // too subtle movement
 			}
 			
 			// calculate acceleration and velocity
-			this.acceleration = force.scale(1/this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
-			this.velocity = this.velocity.add(this.acceleration);
+			this.acceleration = force.clone().scale(1/this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
+			this.velocity.add(this.acceleration);
 			if(this.velocity.getSizeSq() < Threshold.Velocity) {
 				return 0; // nearly no movement (a "heavy" brush)
 			}
 			
 		 	// destroy unnecessary references
-		 	this.mousePosition = mouse;
+		 	this.mousePosition = mouse.clone();
 			mouse = null;
 			force = null;	
 			this.acceleration = null;
@@ -302,10 +302,10 @@ module Drawing {
 			this.angle = this.velocity.getNormal();
 			
 			// apply the drag of the digital drawing tool
-			this.velocity = this.velocity.scale((1 - this.brush.Friction) * elapsedFrames); // more friction means less movement
+			this.velocity.scale((1 - this.brush.Friction) * elapsedFrames); // more friction means less movement
 			
 			// update position
-			this.position = this.position.add(this.velocity);	
+			this.position.add(this.velocity);	
 						
 			return this.velocity.getSizeSq(); // there is something to render
 		}
@@ -317,13 +317,13 @@ module Drawing {
 			// the quicker the brush moves, the smaller print it leaves 
 			var relativeSpeed: number = this.calculateSpeed === true ? this.velocity.getSize() / (this.brush.Size * this.brush.Size) : 0; // set to 0 if no speed correction is used
 			var width: number = this.getRadius(pressure, relativeSpeed);
-			var delta: Vector2 = this.angle.scale(width);
+			this.angle.scale(width);
 			if(this.firstSegment) {
-				path.InitPath(this.startPosition.add(delta), this.startPosition.subtract(delta));
+				path.InitPath(this.startPosition.clone().add(this.angle), this.startPosition.clone().subtract(this.angle));
 				this.firstSegment = false;
 			}
 			
-			path.ExtendPath(this.position.add(delta), this.position.subtract(delta));
+			path.ExtendPath(this.position.clone().add(this.angle), this.position.clone().subtract(this.angle));
 			path.Draw();
 		}
 		

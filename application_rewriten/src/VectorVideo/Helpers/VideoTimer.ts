@@ -36,8 +36,11 @@ module Helpers {
 		 * Set the timer to a specific point (in milliseconds)
 		 */
 		public SetTime(milliseconds: number) : void {
-			this.Reset();
-			this.startTime += milliseconds;
+			if(this.paused) {
+				this.pauseTime = milliseconds;				
+			} else {
+				this.startTime = this.clock.now() - milliseconds;				
+			}
 		}
 				
 		/** Current time of the moment when the timer was paused. */
@@ -56,7 +59,8 @@ module Helpers {
 		 */
 		public Resume() : void {
 			this.paused = false;
-			this.SetTime(-this.pauseTime);
+			this.Reset();
+			this.SetTime(this.pauseTime);
 		}
 		
 		/**

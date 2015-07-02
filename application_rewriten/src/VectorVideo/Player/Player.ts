@@ -47,7 +47,7 @@ module VectorVideo {
         /** Currently drawn path */
         protected drawnPath: Drawing.Path;
         protected drawnSegment: number;
-                        
+                                
         constructor(id: string, private settings: Settings.IPlayerSettings) {
             var container: HTMLElement = document.getElementById(id);
             if(!container) {
@@ -58,9 +58,20 @@ module VectorVideo {
 				// default localization
 				var loc: Localization.IPlayerLocalization = {
 					NoJS:					"Your browser does not support JavaScript or it is turned off. Video can't be recorded without enabled JavaScript in your browser.",
-                    DataLoadingFailed:      "Unfortunatelly, downloading data failed.",							
+                    DataLoadingFailed:      "Unfortunatelly, downloading data failed.",
+                    
+                    ControlPlayback:        "Play/Pause video",					
 				    Play:                   "Play",
-                    Pause:                  "Pause"
+                    Pause:                  "Pause",
+                    Replay:                 "Replay",
+                    
+                    TimeStatus:             "Video progress",
+                    
+                    VolumeControl:          "Volume controls",      
+                    VolumeUp:               "Volume up",
+                    VolumeDown:             "Volume down",
+                    Mute:                   "Mute",
+                    Busy:                   "Loading..."            
 				};				
 				settings.Localization = loc;
 			}
@@ -75,7 +86,34 @@ module VectorVideo {
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch();
+            
+            if(!!settings.ShowControls) {
+                this.ui.HideControls();
+            }
                         
+			// Start and stop the video
+			VideoEvents.on(VideoEventType.Start,		    ()	                  => this.Play());
+            VideoEvents.on(VideoEventType.Pause,            ()                    => this.Pause());
+            VideoEvents.on(VideoEventType.ReachEnd,         ()                    => this.Pause());
+            VideoEvents.on(VideoEventType.ClearCanvas,		(color: UI.Color)	  => this.ClearCavnas(color));
+	        VideoEvents.on(VideoEventType.ChangeColor,      (color: UI.Color)     => this.drawer.SetCurrentColor(color));
+            VideoEvents.on(VideoEventType.JumpTo,           (progress: number)    => this.JumpTo(progress));
+                        
+			// Draw path segment by segment
+			VideoEvents.on(VideoEventType.DrawSegment,		()	                  => this.DrawSegment());
+            VideoEvents.on(VideoEventType.DrawPath,         (path: Drawing.Path)  => {
+                this.drawnPath.DrawWholePath();
+                this.drawnPath = null; // it is already drawn!
+            });
+            
+            // React for busy/ready state changes
+            this.busyLevel = 0;
+            VideoEvents.on(VideoEventType.Busy,     () => this.Busy());
+            VideoEvents.on(VideoEventType.Ready,    () => this.Ready());
+            
+            // wait until the file is loaded
+            VideoEvents.trigger(VideoEventType.Busy);
+                                    
             // read the file
             Helpers.File.ReadXmlAsync(settings.Source,
                 
@@ -85,20 +123,6 @@ module VectorVideo {
                 }
                      
             );
-                        
-			// Start and stop the video
-			VideoEvents.on(VideoEventType.Start,		    ()	                  => this.Play());
-            VideoEvents.on(VideoEventType.Pause,            ()                    => this.Pause());
-            VideoEvents.on(VideoEventType.ReachEnd,         ()                    => this.Pause());
-            VideoEvents.on(VideoEventType.ClearCanvas,		(color: UI.Color)	  => this.ClearCavnas(color));
-	        VideoEvents.on(VideoEventType.ChangeColor,      (color: UI.Color)     => this.drawer.SetCurrentColor(color));
-                        
-			// Draw path segment by segment
-			VideoEvents.on(VideoEventType.DrawSegment,		()	                  => this.DrawSegment());
-            VideoEvents.on(VideoEventType.DrawPath,         (path: Drawing.Path)  => {
-                this.drawnPath.DrawWholePath();
-                this.drawnPath = null; // it is already drawn!
-            });
         }
         
         private AcceptXMLData(xml: XMLDocument): void {
@@ -113,6 +137,13 @@ module VectorVideo {
             // do zero-time actions:
             this.video.RewindMinusOne(); // churrent chunk = -1
             this.MoveToNextChunk();
+            
+            VideoEvents.trigger(VideoEventType.Ready);
+            
+            // if autostart is set, then this is the right time to start the video 
+            if(!!this.settings.Autoplay) {
+                VideoEvents.trigger(VideoEventType.Start);
+            }
         }        
         
         /**
@@ -121,7 +152,7 @@ module VectorVideo {
         public Play(): void {
             this.isPlaying = true;
             this.timer.Resume();
-            this.audio.Play();
+            !!this.audio && this.audio.Play();
             this.ticking = requestAnimationFrame(() => this.Tick()); // start async ticking
         }
         
@@ -131,7 +162,7 @@ module VectorVideo {
         public Pause(): void {
             this.timer.Pause();
             this.isPlaying = false;
-            this.audio.Pause();
+            !!this.audio && this.audio.Pause();
             cancelAnimationFrame(this.ticking);
         }
         
@@ -174,9 +205,12 @@ module VectorVideo {
                 // Prepare a path, if it is a PathChunk, of course                
                 if(this.video.CurrentChunk instanceof VideoData.PathChunk) {
                     this.drawnPath = this.drawer.CreatePath();
-                     // copy the information
-                    this.drawnPath.Segments = (<VideoData.PathChunk>this.video.CurrentChunk).Path.Segments;                    
+                    // copy the information
+                    var path: Drawing.Path = (<VideoData.PathChunk>this.video.CurrentChunk).Path;
+                    this.drawnPath.Segments = path.Segments;               
+                    this.drawnPath.Color = path.Color;
                     this.drawnSegment = 0; // rewind to the start
+                    path = this.drawnPath; // replace the old one with this drawer-specific
                 } else {
                     this.drawnPath = null;
                 }
@@ -199,22 +233,38 @@ module VectorVideo {
          */
 		public JumpTo(progress: number) : void {
 			var wasPlaying: boolean = this.isPlaying;	
-			this.Pause();		
-			var time = progress * this.video.Metadata.Length * 1000; // convert to milliseconds
-			
-            if (time >= this.timer.CurrentTime()) {                  
-                this.video.FastforwardErasedChunksUntil(time);    
-			} else {                  
-                this.video.RewindToLastEraseBefore(time);
-			}                 
-            
+			var time = progress * this.video.Metadata.Length; // convert to milliseconds
+            var videoTime = this.timer.CurrentTime();
 			this.timer.SetTime(time);
-			this.Sync(); // make as many steps as needed to sync canvas status
+            this.audio.JumpTo(progress);
+            
+            if(this.isPlaying) {
+                // pause after setting the time            
+    			VideoEvents.trigger(VideoEventType.Pause);                
+            }
+                        
+            // sync the video:		
+            var startChunk = 0;	
+            if (time >= videoTime) {          
+                startChunk = this.video.FastforwardErasedChunksUntil(time);    
+			} else {                  
+                startChunk = this.video.RewindToLastEraseBefore(time);
+			}
+            
+            if(startChunk !== this.video.CurrentChunkNumber) {
+                this.video.SetCurrentChunkNumber = startChunk - 1;
+			    this.MoveToNextChunk(); // go throught the next chunk - including executing it's init commands                
+            }
+            
+            this.Sync();  // make as many steps as needed to sync canvas status
+            this.ui.UpdateCurrentTime(); // refresh the UI
+            
 			// video is paused, so ticking won't continue after it is synchronised
 			// rendering request will also be made
 			
 			if(wasPlaying === true) {
-				this.Play(); // continue from the new point in time
+                // pause after setting the time            
+    			VideoEvents.trigger(VideoEventType.Start);
 			} 
 		}
         
@@ -225,10 +275,16 @@ module VectorVideo {
 			VideoEvents.trigger(VideoEventType.ReachEnd);			
 		}
         
+        /**
+         * Make the canvas clean.
+         */
         protected ClearCavnas(color: UI.Color): void {
             this.drawer.ClearCanvas(color);
         }
                 
+        /**
+         * Draw next segment of currently drawn path.
+         */
         protected DrawSegment(): void {
             if(this.drawnSegment === 0) {
                 this.drawnPath.StartDrawingPath(<Drawing.ZeroLengthSegment> this.drawnPath.Segments[0]);
@@ -240,7 +296,37 @@ module VectorVideo {
             // flush the changes
             this.drawnPath.Draw();
         }
-                
+         
+         
+        /** Remembers the  */
+        private wasPlayingWhenBusy: boolean;
+        
+        /** How many "busy notifications" have there been, that are not yet ready */
+        private busyLevel: number;
+         
+        /**
+         * Somethimg is taking long time -- probably downloading xml or audio files
+         */
+         protected Busy(): void {
+             this.busyLevel++;
+             this.wasPlayingWhenBusy = this.wasPlayingWhenBusy || this.isPlaying;
+             VideoEvents.trigger(VideoEventType.Pause);
+             this.ui.Busy();
+         }
+         
+         
+         /**
+          * The thing that instructed 
+          */       
+         protected Ready(): void {
+             if(--this.busyLevel === 0) {
+                 if(this.wasPlayingWhenBusy === true) {
+                     VideoEvents.trigger(VideoEventType.Start);
+                     this.wasPlayingWhenBusy = false;
+                 }
+                 this.ui.Ready();                 
+             }
+         }
     }
 }
 

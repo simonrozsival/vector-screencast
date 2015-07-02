@@ -10,14 +10,11 @@ module UI {
 	/**
 	 * Cursor implementation.
 	 */
-	export class Cursor implements IElement {
+	export class Cursor extends SimpleElement {
 		
 		/** The distance of the  */
 		protected radius:  number;
-				
-		/** This is the very cursor */
-		protected element: HTMLElement;
-		
+						
 		/** This is the very cursor */
 		protected svg: Element;
 		
@@ -38,6 +35,7 @@ module UI {
 		 * Initialise a cursor. It's size and color must be explicitely changed before using it though!
 		 */
 		constructor() {
+			super("div");			
 			this.radius = 20;
 			this.stroke = 3;
 			this.position = new Vector2(0, 0);
@@ -56,13 +54,11 @@ module UI {
 		 * Prepares the cursor shape - a dot, but with zero size and no specific color (default white)
 		 */
 		private CreateHTML() : void {
-			this.element = Helpers.HTML.CreateElement("div", { class: "ui-cursor" });
-			
 			this.svg = Helpers.SVG.CreateElement("svg", {
 				width: 2*this.radius,
 				height: 2*this.radius
 			});
-			this.element.appendChild(this.svg);
+			this.GetHTML().appendChild(this.svg);
 	
 			// draw the dot at the center of the SVG element
 			this.bgColor = UI.Color.BackgroundColor;
@@ -75,30 +71,26 @@ module UI {
 			});
 			this.svg.appendChild(this.dot);
 	
-			// I want to move the cursor to any point
-			this.element.style.position = "absolute";
-			this.element.style.background = "transparent";
-			this.element.style.lineHeight = "0";
+			// I want to move the cursor to any point - access directly the HTML style attribute
+			this.GetHTML().style.position = "absolute";
+			this.GetHTML().style.background = "transparent";
+			this.GetHTML().style.lineHeight = "0";
 			
 			Helpers.VideoEvents.on(Helpers.VideoEventType.ClearCanvas, (color: Color) => {
 				this.bgColor = color;
 				Helpers.SVG.SetAttributes(this.dot, { fill: this.bgColor.CssValue });
 				this.ChangeColor(this.color); // make sure the border color is contrastant
-			});
+			});			
 		}
 		
-		public GetHTML() : HTMLElement {
-			return this.element;
-		}
-	
 		/**
 		 * Move the cursor to a specified position.
 		 * @param	x	X coordinate of cursor center
 		 * @param	y	Y coordinate of cursor center
 		 */
 		public MoveTo(x: number, y: number) : void {
-			this.element.style.left = `${x - this.radius - this.stroke}px`;
-			this.element.style.top = `${y - this.radius - this.stroke}px`;
+			this.GetHTML().style.left = `${x*this.scalingFactor - this.radius - this.stroke}px`;
+			this.GetHTML().style.top = `${y*this.scalingFactor - this.radius - this.stroke}px`;
 			this.position = new Helpers.Vector2(x, y);
 		}
 		

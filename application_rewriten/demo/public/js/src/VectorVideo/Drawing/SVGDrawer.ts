@@ -114,14 +114,14 @@ module Drawing {
         
                 
         public SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number {
-            var wr = sourceWidth / this.svg.clientWidth;
-            var hr = sourceHeight / this.svg.clientHeight;
+            var wr = this.svg.clientWidth / sourceWidth;
+            var hr = this.svg.clientHeight / sourceHeight;
             var min = Math.min(wr, hr);
                         
             // prepare scaling and translating
             SVG.SetAttributes(this.svg, {
                 //"viewBox": `${this.svg.clientWidth - (min * sourceWidth / 2)} ${this.svg.clientHeight - (min * sourceHeight / 2)}  ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
-                "viewBox": `0 0 ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
+                "viewBox": `0 0 ${sourceWidth * min} ${sourceHeight * min}`
             });
             
             return min;

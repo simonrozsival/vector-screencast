@@ -41,6 +41,16 @@ module VideoData {
 		public get CurrentChunk(): Chunk {
 			return this.chunks[this.currentChunk]; // if the index exceeds the bound of the array, undefined is returned
 		}		
+				
+		/** Reference to current chunk */
+		public get CurrentChunkNumber(): number {
+			return this.currentChunk; // if the index exceeds the bound of the array, undefined is returned
+		}		
+				
+		/** Reference to current chunk */
+		public set SetCurrentChunkNumber(n: number) {
+			this.currentChunk = n; // if the index exceeds the bound of the array, undefined is returned
+		}		
 		
 		/** Look for the next chunk, but do not move the iterator. */
 		public PeekNextChunk(): Chunk {
@@ -81,18 +91,18 @@ module VideoData {
 		 * remains untouched.
 		 * @param	{number}	time			Searched time point in milliseconds
 		 */
-		public FastforwardErasedChunksUntil(time: number): void {			
+		public FastforwardErasedChunksUntil(time: number): number {			
 			var c: number = this.FindChunk(time, +1); // seek among the future chunks
-			this.currentChunk = Math.max(this.currentChunk, this.chunks[c].LastErase);
+			return Math.max(this.currentChunk, this.chunks[c].LastErase);
 		}   
 		
 		/**
 		 * Go back in time until you find the given timeframe and skip to the very preceding "erase" chunk.
 		 * @param	{number}	time			Searched time point in milliseconds
 		 */	
-		public RewindToLastEraseBefore(time: number): void {
+		public RewindToLastEraseBefore(time: number): number {
 			var c: number = this.FindChunk(time, -1); // seek among the past chunks
-			this.currentChunk = this.chunks[c].LastErase;
+			return this.chunks[c].LastErase;
 		}
 		
 		/**
@@ -103,17 +113,13 @@ module VideoData {
 		private FindChunk(time: number, directionHint: number): number {			
 			var foundChunk: number = this.currentChunk;			
 			while((!!this.chunks[foundChunk] && !!this.chunks[foundChunk + 1])
-					&& (this.chunks[foundChunk].StartTime > time || this.chunks[foundChunk].StartTime <= time)) {
+					&& (this.chunks[foundChunk].StartTime <= time && this.chunks[foundChunk + 1].StartTime >= time) === false) {
 						
 				foundChunk += directionHint;
 			}
 			
 			if(!this.CurrentChunk) { // I have gone too far to the past
 				return 0; // I haven't found, what I was looking for, return the first chunk ever
-			}
-			
-			if(this.CurrentChunk.StartTime < time) { // the time is too far in the future (after the end of the video)
-				return this.chunks.length - 1; // return the very last chunk
 			}
 			
 			return foundChunk;

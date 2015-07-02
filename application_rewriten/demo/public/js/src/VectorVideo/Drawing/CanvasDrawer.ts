@@ -26,11 +26,14 @@ module Drawing {
          */
         constructor(protected curved: boolean = true) { }
         
+        private originalWidth: number;
+        private originalHeight: number;
+        
         /** The canvas element */
         private canvas: HTMLCanvasElement;
 		
 		/** The rendering context of the canvas */
-		private context: CanvasRenderingContext2D;      
+		private context: CanvasRenderingContext2D;
 
         /**
          * Create a new renderer that will produce output into the CANVAS elemement usning HTML5.
@@ -48,7 +51,9 @@ module Drawing {
             // this is event handler - "this" isn't SVGDrawer here!
 			var parent = this.canvas.parentElement;
             var width: number = parent.clientWidth;
-            var height: number = parent.clientHeight;            
+            var height: number = parent.clientHeight;        
+            this.originalHeight = height;
+            this.originalWidth = width;    
 
             Helpers.HTML.SetAttributes(this.canvas, {
                 width: width,
@@ -59,11 +64,13 @@ module Drawing {
 		}
         
         public SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number {
-            var wr = sourceWidth / this.canvas.width;
-            var hr = sourceHeight / this.canvas.height;
+            var wr = this.canvas.width / sourceWidth;
+            var hr = this.canvas.height / sourceHeight;
             var min = Math.min(wr, hr);
                         
             // prepare scale uniformly 
+            this.canvas.width = min*sourceWidth;
+            this.canvas.height = min*sourceHeight;
             this.context.scale(min, min);
             // translate the (0,0) point
             if(wr < hr) {
@@ -79,6 +86,9 @@ module Drawing {
             }
             // else - the ratios match      
             
+            this.originalHeight = sourceHeight;
+            this.originalWidth = sourceWidth;
+            
             return min;      
         }
         
@@ -87,7 +97,7 @@ module Drawing {
          */
         public ClearCanvas(color: UI.Color): void {   
 			this.context.fillStyle = color.CssValue;
-			this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
         }
         
         /** Currenb brush color */

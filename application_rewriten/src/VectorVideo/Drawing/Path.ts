@@ -93,7 +93,7 @@ module Drawing {
 		}
 		
 		public StartPath(pt: Vector2, radius: number): void {
-			this.segments = [ new ZeroLengthSegment(pt.add(new Vector2(0, radius)), pt.add(new Vector2(0, -radius))) ];		
+			this.segments = [ new ZeroLengthSegment(pt.clone().add(new Vector2(0, radius)), pt.clone().add(new Vector2(0, -radius))) ];		
 			this.startPosition = pt;
 			this.startRadius = radius;			
 			this.iterator = -1;
@@ -117,7 +117,7 @@ module Drawing {
 		}
 		
 		public StartDrawingPath(seg: ZeroLengthSegment): void {
-			this.DrawStartDot(seg.Left.add(seg.Right).scale(0.5), seg.Left.distanceTo(seg.Right) / 2);
+			this.DrawStartDot(seg.Left.pointInBetween(seg.Right), seg.Left.distanceTo(seg.Right) / 2);
 			this.lastDrawnSegment = seg;
 		}
 		
@@ -211,7 +211,7 @@ module Drawing {
 			// if there's nothing to draw, run away!
 			if(this.segments.length === 0) return;
 			
-			var start = this.segments[0].Left.add(this.segments[0].Right).scale(0.5);
+			var start = this.segments[0].Left.clone().add(this.segments[0].Right).scale(0.5);
 			var radius = start.distanceTo(this.segments[0].Left);
 			this.DrawStartDot(start, radius);
 			this.lastDrawnSegment = this.segments[0];
@@ -243,28 +243,15 @@ module Drawing {
 			
 		
 		public DrawStartDot(position: Vector2, radius: number): void {			
-			var options: any;
-			if(this.wireframe) {
-				// "wireframe" is better for debuging:
-				options = {
-					"stroke": this.color,
-					"stroke-width": 1					 	
-				};
-			} else {
-				// filled shape is necessary for production:
-				options = {
-					"fill": this.color
-				};			
-			}				
-			this.path = SVG.CreateElement("path", options);
+			this.path = this.CreatePathElement();
 			
 			// arc cap at the start
-			var left = position.add(new Vector2(-radius, 0));
-			var right = position.add(new Vector2(radius, 0));
+			var left = new Vector2(position.X - radius, position.Y);
+			var right = new Vector2(position.X + radius, position.Y);
 			
-			var center = right.add(left).scale(0.5);
-			var startDirection = left.subtract(center);
-			var endDirection = right.subtract(center);
+			var center = right.pointInBetween(left);
+			var startDirection = left.clone().subtract(center);
+			var endDirection = right.clone().subtract(center);
 			var arc = SVG.ArcString(right, center.distanceTo(right), Path.angle(startDirection));
 				
 			// prepare paths
@@ -286,15 +273,21 @@ module Drawing {
 			this.StartDrawingPath(<ZeroLengthSegment> this.segments[0]);
 		}
 		
-		public StartDrawingPath(segment: ZeroLengthSegment): void {
-			var center = segment.Right.add(segment.Left).scale(0.5);
-			var startDirection = segment.Left.subtract(center);
-			var endDirection = segment.Right.subtract(center);
-			var arc = SVG.ArcString(segment.Right, center.distanceTo(segment.Right), Path.angle(startDirection));
-				
-			// prepare paths
-			this.right = SVG.MoveToString(segment.Right);
-			this.left = `${SVG.LineToString(segment.Left)} ${arc}`;
+		private CreatePathElement(): Element {
+			var options: any;
+			if(this.wireframe) {
+				// "wireframe" is better for debuging:
+				options = {
+					"stroke": this.color,
+					"stroke-width": 1					 	
+				};
+			} else {
+				// filled shape is necessary for production:
+				options = {
+					"fill": this.color
+				};			
+			}				
+			return SVG.CreateElement("path", options);			
 		}
 						
 		/**
@@ -308,10 +301,10 @@ module Drawing {
 			// this.cap = SVG.LineToString(left);
 			
 			// B] - an "arc cap"
-			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
-			var startDirection: Vector2 = segment.Right.subtract(center);
-			var endDirection: Vector2 = segment.Left.subtract(center);
-			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));				
+			var center: Vector2 = segment.Right.pointInBetween(segment.Left);
+			var startDirection: Vector2 = segment.Right.clone().subtract(center);
+			var endDirection: Vector2 = segment.Left.clone().subtract(center);
+			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
 		}		
 		
 		/**
@@ -325,9 +318,9 @@ module Drawing {
 			// this.cap = SVG.LineToString(left);
 			
 			// B] - an "arc cap"
-			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
-			var startDirection: Vector2 = segment.Right.subtract(center);
-			var endDirection: Vector2 = segment.Left.subtract(center);
+			var center: Vector2 = segment.Right.clone().add(segment.Left).scale(0.5);
+			var startDirection: Vector2 = segment.Right.clone().subtract(center);
+			//var endDirection: Vector2 = segment.Left.clone().subtract(center);
 			this.cap = SVG.ArcString(segment.Left, center.distanceTo(segment.Left), Path.angle(startDirection));
 		}
 				
@@ -381,9 +374,9 @@ module Drawing {
 			this.context.lineTo(segment.Left.X, segment.Left.Y);
 			
 			// an "arc cap"
-			var center: Vector2 = segment.Right.add(segment.Left).scale(0.5);
-			var startDirection: Vector2 = segment.Right.subtract(center);
-			var endDirection: Vector2 = segment.Left.subtract(center);
+			var center: Vector2 = segment.Left.pointInBetween(segment.Right);
+			var startDirection: Vector2 = segment.Right.clone().subtract(center);
+			var endDirection: Vector2 = segment.Left.clone().subtract(center);
 			this.context.arc(center.X, center.Y, center.distanceTo(segment.Left), Path.angle(startDirection), Path.angle(endDirection), false);		
 			//		
 		}
@@ -399,11 +392,11 @@ module Drawing {
 			this.context.bezierCurveTo(segment.LeftBezier.StartCP.X, segment.LeftBezier.StartCP.Y, segment.LeftBezier.EndCP.X, segment.LeftBezier.EndCP.Y, segment.LeftBezier.End.X, segment.LeftBezier.End.Y);			
 			
 			// A] - an "arc cap"
-			var center: Vector2 = segment.RightBezier.End.add(segment.LeftBezier.End).scale(0.5);
-			var startDirection: Vector2 = segment.RightBezier.End.subtract(center);
-			var endDirection: Vector2 = segment.LeftBezier.End.subtract(center);
+			var center: Vector2 = segment.RightBezier.End.pointInBetween(segment.LeftBezier.End);
+			var startDirection: Vector2 = segment.RightBezier.End.clone().subtract(center);
+			var endDirection: Vector2 = segment.LeftBezier.End.clone().subtract(center);
 			this.context.arc(center.X, center.Y, center.distanceTo(segment.LeftBezier.End), Path.angle(startDirection), Path.angle(endDirection), false);
-			
+						
 			// B] - line cap	
 			// this.context.lineTo(segment.RightBezier.End.X, segment.RightBezier.End.Y);
 			

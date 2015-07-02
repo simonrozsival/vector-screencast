@@ -67,6 +67,13 @@ module UI {
 			var time: string = Helpers.millisecondsToString(progress * this.length);
 			this.arrow.GetHTML().textContent = time;
 			this.arrow.GetHTML().style.left = `${progress * 100}%`;  
+			
+			var rect = this.arrow.GetHTML().getBoundingClientRect();			
+			if(rect.left < 0) {
+				this.arrow.GetHTML().style.left = `${rect.width / 2}px`;
+			} else if (rect.right > this.GetHTML().getBoundingClientRect().right) {
+				this.arrow.GetHTML().style.left = `${this.GetHTML().getBoundingClientRect().right - (rect.width / 2)}px`;
+			}
 		}
 		
 		/**

@@ -42,8 +42,12 @@ module Helpers {
         StartUpload,
         DownloadData,
         
+        VolumeUp,
+        VolumeDown,
+        Mute,
         
-        
+        Busy,
+        Ready,
         
         // DO NOT ADD NEW EVENTS UNDERNEATH:    
         // hack:

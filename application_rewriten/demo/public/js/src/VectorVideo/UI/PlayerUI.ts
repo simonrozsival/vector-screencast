@@ -24,9 +24,14 @@ module UI {
 			
 		/** Is recording running? */
 		private isPlaying: boolean;
+		
+		private reachedEnd: boolean;
 				
 		/**  */
 		private currentTime: IElement;
+		
+		/**  */
+		private controls: Panel;
 		
 		/**  */
 		private timeline: TimeLine;
@@ -44,22 +49,19 @@ module UI {
 					private timer: Helpers.VideoTimer) {
 						
 			super("div", `${id}-player`);
-			this.GetHTML().classList.add("vector-video-wrapper");
+			this.AddClass("vector-video-wrapper");
+			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.localization.Busy });
 								
 			// prepare the board
 			this.board = this.CreateBoard();
-			this.AddChild(<IElement> this.board);
 			
 			// prepare the panels
-			var controls: Panel = new Panel("div", `${id}-controls`);
-			controls.GetHTML().classList.add("vector-video-controls", "autohide", "ui-control");
+			this.timeline = this.CreateTimeLine();			
+			this.controls = <Panel> new Panel("div", `${id}-controls`)
+								.AddChildren(this.CreateButtonsPanel(), this.timeline, this.CreateTimeStatus(), this.CreateAudioControls())
+								.AddClasses("vector-video-controls", "autohide", "ui-control");
 			
-			var buttons: IElement = this.CreateButtonsPanel();
-			this.timeline = this.CreateTimeLine();
-			var timeStatus = this.CreateTimeStatus();
-			
-			controls.AddChildren([ buttons, this.timeline, timeStatus ]);
-			this.AddChild(controls);
+			this.AddChildren(this.board, this.controls);
 			
 			// Set the duration of the video as soon as available
 			VideoEvents.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
@@ -67,10 +69,28 @@ module UI {
 				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
 				this.timeline.Length = meta.Length;
 			});
-			VideoEvents.on(VideoEventType.BufferStatus, (status: number) => this.timeline.SetBuffer(status));
+			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
+			
+			// React to events triggered from outside
+			VideoEvents.on(VideoEventType.Start, () => this.StartPlaying());
+			VideoEvents.on(VideoEventType.Pause, () => this.PausePlaying());		
+			VideoEvents.on(VideoEventType.ReachEnd, () => this.ReachedEnd());
+			VideoEvents.on(VideoEventType.ClearCanvas, (c: Color) => this.GetHTML().style.backgroundColor = c.CssValue); // make the bg of the player match the canvas 
 			
 			// allow keyboard
 			this.BindKeyboardShortcuts();
+			
+			// set current state
+			this.isPlaying = false;
+			this.reachedEnd = false;
+		}
+		
+		public HideControls(): void {
+			this.controls.GetHTML().style.display = "none";
+		}
+				
+		public ShowControls(): void {
+			this.controls.GetHTML().style.display = "block";
 		}
 		
 		/**
@@ -114,27 +134,37 @@ module UI {
 		
 		/** PLAY/PAUSE button */
 		private playPauseButton: IconButton;
-		
+				
 		/**
 		 * Create a panel containing the PLAY/PAUSE button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
-			var buttonsPanel: Panel = new Panel("div", `${this.id}-pannels`);
-			this.playPauseButton = new IconButton("icon-play", this.localization.Play, (e) => this.PlayPause());
-			buttonsPanel.AddChildren([ this.playPauseButton ]);
-			return buttonsPanel;
+			this.playPauseButton = new IconOnlyButton("icon-play", this.localization.Play, (e) => this.PlayPause());
+			return <Panel> new Panel("div")
+						.AddChildren(
+							new H2(this.localization.ControlPlayback),
+							this.playPauseButton
+						)
+						.AddClass("ui-controls-panel");
 		}
 		
 		/**
 		 * This function is called when the PLAY/PAUSE button is clicked.
 		 */
 		private PlayPause() : void {
+			if(this.reachedEnd) {
+				this.reachedEnd = false;
+				this.timeline.SkipTo(0); // jump to the start				
+				VideoEvents.trigger(VideoEventType.Start);
+				return;
+			}
+			
 			if(this.isPlaying === true) {
 				this.PausePlaying();
-				this.GetHTML().classList.remove("playing");
+				VideoEvents.trigger(VideoEventType.Pause);
 			} else {
 				this.StartPlaying();
-				this.GetHTML().classList.add("playing");
+				VideoEvents.trigger(VideoEventType.Start);
 			}
 		}
 				
@@ -145,7 +175,7 @@ module UI {
 			this.isPlaying = true;
 			this.playPauseButton.ChangeIcon("icon-pause");
 			this.playPauseButton.ChangeContent(this.localization.Pause);
-			VideoEvents.trigger(VideoEventType.Start);
+			this.AddClass("playing");
 						
 			// update time periodically
 			this.ticking = setInterval(() => this.UpdateCurrentTime(), this.tickingInterval);
@@ -158,29 +188,30 @@ module UI {
 			this.isPlaying = false;			
 			this.playPauseButton.ChangeIcon("icon-play");
 			this.playPauseButton.ChangeContent(this.localization.Play);
-			VideoEvents.trigger(VideoEventType.Pause);
+			this.RemoveClass("playing");
 			
 			// do not update the status and timeline while paused
 			clearInterval(this.ticking);
 		}
 						
 		private CreateTimeLine() : TimeLine {
-			var timeline: TimeLine = new TimeLine(`${this.id}-timeline`);			
-			return timeline;
+			return new TimeLine(`${this.id}-timeline`);
 		}
 		
 		private totalTime: IElement;
 		
 		private CreateTimeStatus() : IElement {			
-			var status: Panel = new Panel("div", `${this.id}-current-time`);
-			status.GetHTML().classList.add("ui-time");
-			
 			this.currentTime = new SimpleElement("span", "0:00");
-			var slash: IElement = new SimpleElement("span", " / ");
 			this.totalTime = new SimpleElement("span", "0:00");
 			
-			status.AddChildren([ this.currentTime, slash, this.totalTime ]); 
-			return status;
+			return new Panel("div")
+				.AddChildren(
+					new H2(this.localization.TimeStatus),
+					this.currentTime,
+					new SimpleElement("span", " / "),
+					this.totalTime
+				)
+				.AddClasses("ui-controls-panel", "ui-time");
 		}
 		
 		/** Ticking interval handler */
@@ -192,9 +223,62 @@ module UI {
 		/**
 		 * @param	time	Current time in seconds
 		 */
-		private UpdateCurrentTime() : void {
+		public UpdateCurrentTime() : void {
 			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.timer.CurrentTime());
 			this.timeline.Sync(this.timer.CurrentTime());
+		}
+		
+		
+		/**
+		 * React to end of playing - show the replay button
+		 */
+		public ReachedEnd(): void {
+			this.PausePlaying();
+			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.localization.Replay);
+			this.reachedEnd = true;
+		}
+		
+		/**
+		 * Busy/Ready states
+		 */
+		 
+		public Busy(): void {
+			this.AddClass("busy");
+		}
+		
+		public Ready(): void {
+			this.RemoveClass("busy");
+		}
+		
+		/**
+		 * Volume controls
+		 */
+		 
+		protected CreateAudioControls(): IElement {
+			return new Panel("div", `${this.id}-audio`)
+				.AddChildren(
+					new H2(this.localization.VolumeControl),
+					new Panel("div", `${this.id}-audio-controls`)
+						.AddChildren(
+							new IconOnlyButton("icon-volume-down", this.localization.VolumeDown, (e) => this.VolumeDown()),
+							new IconOnlyButton("icon-volume-up", this.localization.VolumeUp, (e) => this.VolumeUp()),
+							new IconOnlyButton("icon-mute", this.localization.Mute, (e) => this.Mute())
+						)
+						.AddClass("btn-group")
+				)
+				.AddClasses("ui-controls-panel", "vector-video-audio-controls");
+		}
+		
+		protected VolumeUp(): void {
+			VideoEvents.trigger(VideoEventType.VolumeUp);
+		}
+		
+		protected VolumeDown(): void {
+			VideoEvents.trigger(VideoEventType.VolumeDown);
+		}		 
+		 
+		protected Mute(): void {
+			VideoEvents.trigger(VideoEventType.Mute);
 		}
 	}
 	

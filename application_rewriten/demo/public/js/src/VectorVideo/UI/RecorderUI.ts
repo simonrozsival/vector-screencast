@@ -56,37 +56,23 @@ module UI {
 					protected timer: Helpers.VideoTimer) {
 						
 			super("div", `${id}-recorder`);
-			this.GetHTML().classList.add("vector-video-wrapper");
+			this.AddClass("vector-video-wrapper");
 											
 			// prepare the board
 			this.board = this.CreateBoard();
-			this.AddChild(<IElement> this.board);
 			
 			// prepare the panels
-			var controls: Panel = new Panel("div", `${id}-controls`);
-			controls.GetHTML().classList.add("vector-video-controls");
-			controls.GetHTML().classList.add("autohide");
-			controls.GetHTML().classList.add("ui-control");
+			this.controls = new Panel("div", `${id}-controls`)
+									.AddChildren(
+										this.CreateButtonsPanel().AddClass("vector-video-buttons"),			
+										this.CreateColorsPanel(colorPallete).AddClass("vector-video-colors"),			
+									this.CreateBrushSizesPanel(brushSizes).AddClass("vector-video-sizes"),			
+										this.CreateEraserPanel().AddClass("vector-video-erase"),			
+										this.CreateEraseAllPanel().AddClasses("vector-video-erase")		
+									)
+									.AddClasses("vector-video-controls", "autohide", "ui-control");
 			
-			var buttons: IElement = this.CreateButtonsPanel();
-			buttons.GetHTML().classList.add("vector-video-buttons");
-			
-			var colorsPanel: IElement = this.CreateColorsPanel(colorPallete);
-			colorsPanel.GetHTML().classList.add("vector-video-colors");
-			
-			var sizesPanel: IElement = this.CreateBrushSizesPanel(brushSizes);
-			sizesPanel.GetHTML().classList.add("vector-video-sizes");
-			
-			var eraserPanel: IElement = this.CreateEraserPanel();
-			eraserPanel.GetHTML().classList.add("vector-video-erase");
-			
-			var eraseAllPanel: IElement = this.CreateEraseAllPanel();
-			eraseAllPanel.GetHTML().classList.add("vector-video-erase");
-			
-			controls.AddChildren([ buttons, colorsPanel, sizesPanel, eraserPanel, eraseAllPanel ]);
-			
-			this.controls = controls;
-			this.AddChild(this.controls);			
+			this.AddChildren(<IElement> this.board, this.controls);
 		}
 		
 		/**
@@ -114,10 +100,8 @@ module UI {
 		 * Create a panel containing the REC/Pause button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
-			var title: SimpleElement = new SimpleElement("h2", this.localization.RecPause);
 			
 			var buttonsPanel: Panel = new Panel("div", `${this.id}-panels`);
-			
 			// the rec/pause button:
 			this.recPauseButton = new IconButton("icon-rec", this.localization.Record, (e) => this.RecordPause());
 			
@@ -125,7 +109,11 @@ module UI {
 			this.uploadButton = new IconButton("icon-upload", this.localization.Upload, (e) => this.InitializeUpload());
 			Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });	
 			
-			buttonsPanel.AddChildren([ title, this.recPauseButton, this.uploadButton ]);
+			buttonsPanel.AddChildren(
+				new H2(this.localization.RecPause),
+				this.recPauseButton,
+				this.uploadButton
+			);
 			return buttonsPanel;
 		}
 				
@@ -136,11 +124,11 @@ module UI {
 			if(this.isRecording === true) {
 				this.PauseRecording();
 				this.uploadButton.GetHTML().removeAttribute("disabled");
-				this.GetHTML().classList.remove("recording");
+				this.RemoveClass("recording");
 			} else {
 				this.StartRecording();
 				Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
-				this.GetHTML().classList.add("recording");
+				this.AddClass("recording");
 			}
 		}
 		
@@ -197,7 +185,7 @@ module UI {
 		 */
 		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
 			var panel = new Panel("div", "color-pallete");
-			var title: SimpleElement = new SimpleElement("h2", this.localization.ChangeColor);
+			var title: SimpleElement = new H2(this.localization.ChangeColor);
 			panel.AddChild(title);
 					
 			for(var i = 0; i < colorPallete.length; i++) {
@@ -214,7 +202,7 @@ module UI {
 		 */
 		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {					
 			var panel = new Panel("div", "brush-sizes");
-			var title: SimpleElement = new SimpleElement("h2", this.localization.ChangeSize);
+			var title: SimpleElement = new H2(this.localization.ChangeSize);
 			panel.AddChild(title);
 			
 			for(var i = 0; i < brushSizes.length; i++) {
@@ -236,15 +224,12 @@ module UI {
 		 * Create a panel containing the eraser brush and the "erase all button"
 		 */
 		private CreateEraserPanel() : Panel {			
-			var panel: Panel = new Panel("div", `${this.id}-erase`);
-			var title: SimpleElement = new SimpleElement("h2", this.localization.Erase);
-			panel.AddChild(title);
-			
 			this.switchToEraserButton = new ChangeColorButton(UI.Color.BackgroundColor);
-			// the eraser button
-			panel.AddChild(this.switchToEraserButton);
-			
-			return panel;
+			return new Panel("div", `${this.id}-erase`)
+						.AddChildren(
+							new H2(this.localization.Erase),
+							this.switchToEraserButton
+						);
 		}
 		
 		/**
@@ -252,7 +237,7 @@ module UI {
 		 */
 		private CreateEraseAllPanel() : Panel {			
 			var panel: Panel = new Panel("div", `${this.id}-erase`);
-			var title: SimpleElement = new SimpleElement("h2", this.localization.EraseAll);
+			var title: SimpleElement = new H2(this.localization.EraseAll);
 			panel.AddChild(title);
 			
 			// the "erase all" button:

@@ -139,16 +139,13 @@ module AudioData {
 		private InitAudio() : void {			
 			// important audio events
 			this.audio.onended = () => VideoEvents.trigger(VideoEventType.ReachEnd);	
-			this.audio.onpause = () => this.InitiatePause();	
+			this.audio.onpause = () => { if(this.playing) this.InitiatePause() };	
 			this.audio.ontimeupdate = () => this.ReportCurrentTime();
 			
-			// synchronize audio playback with video
-			VideoEvents.on(VideoEventType.Start, 	() => this.Play());
-			VideoEvents.on(VideoEventType.Pause, 	() => this.Pause());
-			VideoEvents.on(VideoEventType.Stop, 	() => this.Pause());
-			VideoEvents.on(VideoEventType.ReachEnd, () => this.ReachedEnd());
-			VideoEvents.on(VideoEventType.Replay, 	() => this.Replay());	
-			VideoEvents.on(VideoEventType.JumpTo, 	(progress: number) => this.JumpTo(progress));
+			// user's volume settings			
+			VideoEvents.on(VideoEventType.Mute, 		() => this.Mute());
+			VideoEvents.on(VideoEventType.VolumeUp, 	() => this.VolumeUp());
+			VideoEvents.on(VideoEventType.VolumeDown,	() => this.VolumeDown());
 	
 			this.MonitorBufferingAsync();
 		};
@@ -185,7 +182,7 @@ module AudioData {
 		/**
 		 * Be the one who tells others, when to pause!
 		 */
-		private InitiatePause() : void {
+		private InitiatePause() : void {			
 			VideoEvents.trigger(VideoEventType.Pause);
 		}
 		
@@ -236,22 +233,17 @@ module AudioData {
 				if(end === this.audio.duration) {
 					clearInterval(this.checkPreloaded);
 				}
-			}, 1000); // every second check, how much is preloaded
+			}, 300); // every second check, how much is preloaded
 		}
 		
 		/**
 		 * Jump to a given position.
 		 * It might take some time before the audio is ready - pause the playback and start as soon as ready.
 		 */
-		private JumpTo(progress: number) : void {
+		public JumpTo(progress: number) : void {
 			this.reachedEnd = false; // if I was at the end and I changed the position, I am not at the end any more!			
 			var time: number = this.audio.duration * progress; // duration is in seconds
-			if(this.playing === true) {
-				this.InitiatePause(); // pause before changing position
-				this.ChangePosition(time, this.InitiatePlay); // start playing when ready		
-			} else {
-				this.ChangePosition(time); // do not start playling
-			}
+			this.ChangePosition(time);
 			
 			// monitor preloading buffer
 			clearInterval(this.checkPreloaded);
@@ -261,9 +253,7 @@ module AudioData {
 		/**
 		 * Change current audio position to specified time
 		 */
-		private ChangePosition(seconds: number, callback?: (e: Event) => any) : void {
-			console.log("audio - change position to " + seconds + "s");
-			this.audio.oncanplay = callback;
+		private ChangePosition(seconds: number) : void {
 			this.audio.currentTime = seconds;
 		}
 	
@@ -273,5 +263,22 @@ module AudioData {
 		private ReportCurrentTime() : void {
 			VideoEvents.trigger(VideoEventType.CurrentTime, this.audio.currentTime);
 		}
+		
+		
+		/**
+		 * Volume MUTE/UP/DOWN
+		 */
+		
+		private Mute(): void {
+			this.audio.volume = 0;
+		}
+		
+		private VolumeUp(): void {
+			this.audio.volume = Math.min(1, this.audio.volume + 0.1);			
+		} 
+		
+		private VolumeDown(): void {
+			this.audio.volume = Math.max(0, this.audio.volume - 0.1);
+		} 
 	}
 }

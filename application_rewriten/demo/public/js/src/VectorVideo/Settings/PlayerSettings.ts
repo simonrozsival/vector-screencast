@@ -10,6 +10,8 @@ module Settings {
 		Source:				string,
 		DrawingStrategy?: 	Drawing.DrawingStrategy;
 		Localization?: 		Localization.IPlayerLocalization;
+		Autoplay?: 			boolean;
+		ShowControls?:		boolean;
 	}	
 	
 		

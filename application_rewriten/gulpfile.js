@@ -41,10 +41,7 @@ gulp.task("clean-demo", function() {
 		"./demo/public/js/workers/**/*",
 		// audio-server
 		"./demo/" + audioServerProject.compilerOptions.out,
-		"./demo/" + audioServerProject.compilerOptions.out + ".map",
-		// demo-server
-		"./demo/" + serverProject.compilerOptions.out,
-		"./demo/" + serverProject.compilerOptions.out + ".map",
+		"./demo/" + audioServerProject.compilerOptions.out + ".map",		
 	]);	
 });
 
@@ -188,19 +185,8 @@ gulp.task("audio-server-demo", function(cb) {
 					.pipe(gulp.dest("./demo/"));
 });
 
-/**
- * Compile the DEMO server
- * The DEMO server is written in TypeScript and must be transpiled to pure JavaScript.
- */
-var serverProject = require("./src/DemoServer/tsconfig.json");
-gulp.task("demo-server", function(cb) {	
-	return gulp.src("./src/DemoServer/**/*.ts")
-					.pipe(tsc(serverProject.compilerOptions))
-					.pipe(gulp.dest("./demo/"));
-});
 
-
-gulp.task("demo", ["clean-demo", "demo-server", "audio-server-demo", "lib-demo", "themes-demo", "workers-demo"]);
+gulp.task("demo", ["clean-demo", "audio-server-demo", "lib-demo", "themes-demo", "workers-demo"]);
 gulp.task("release", ["clean-release", "audio-server", "lib-release", "themes"]);
 
 // default: compile both the JS library and the server

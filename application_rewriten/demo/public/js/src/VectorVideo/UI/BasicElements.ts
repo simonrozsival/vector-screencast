@@ -9,6 +9,10 @@ module UI {
 	 */
 	export interface IElement {
 		GetHTML(): HTMLElement;
+		AddClass(className: string): IElement;
+		AddClasses(...classes: Array<string>): IElement;
+		RemoveClass(className: string): IElement;
+		RemoveClasses(...classes: Array<string>): IElement;
 	}
 	
 	export class SimpleElement implements IElement {		
@@ -21,11 +25,12 @@ module UI {
 		 * @param	content	Optional textual content of the tag 
 		 */
 		constructor(tag: string|HTMLElement, content?: string) {
-			if(typeof tag === "string") {
-				this.element = HTML.CreateElement(<string> tag);				
-			} else {
+			if(tag instanceof HTMLElement) {
 				this.element = tag;
+			} else {
+				this.element = HTML.CreateElement(<string> tag);				
 			}
+			
 			if(!!content) { // if content argument is passed
 				this.element.textContent = content;				
 			}
@@ -34,7 +39,41 @@ module UI {
 		/**
 		 * Getter of the element.
 		 */
-		public GetHTML() : HTMLElement { return this.element; }		
+		public GetHTML() : HTMLElement { return this.element; }
+		
+		/**
+		 * Add one class to the class attribute of the HTML element.
+		 */
+		public AddClass(className: string): IElement {
+			return this.AddClasses(className);
+		}
+		
+		/**
+		 * Add any number of classes to the class attribute of the HTML element.
+		 */
+		public AddClasses(...classes: Array<string>): IElement {
+			for (var i = 0; i < classes.length; i++) {
+				this.GetHTML().classList.add(classes[i]);				
+			}
+			return this;
+		}		
+		
+		/**
+		 * Remove one class from the class attribute of the HTML element.
+		 */
+		public RemoveClass(className: string): IElement {
+			return this.RemoveClasses(className);
+		}
+		
+		/**
+		 * Remove any number of classes from the class attribute of the HTML element.
+		 */
+		public RemoveClasses(...classes: Array<string>): IElement {
+			for (var i = 0; i < classes.length; i++) {
+				this.GetHTML().classList.remove(classes[i]);				
+			}
+			return this;
+		}		
 	}	
 	
 	
@@ -45,18 +84,31 @@ module UI {
 	/**
 	 * Basic UI button
 	 */
-	export class Button extends SimpleElement {
+	export class Button extends Panel {
 			
+		protected content: IElement;
+		
 		/**
 		 * Create a basic button with a text in it
 		 * @param	text	Button caption
 		 * @param	onClick	Optional click event handler
 		 */
 		constructor(text: string, onClick?: (e: Event) => void) {
-			super("button", text);			
+			super("button");	
+			this.content = new SimpleElement("span", text);
+					
 			if(!!onClick) {
 				this.GetHTML().onclick = onClick; // no event arguments are passed on purpose
 			}
+		}		
+		
+		/**
+		 * Change the content of the button.
+		 * @param	content	The content - might be HTML 
+		 */
+		public ChangeContent(content: string): Button {
+			this.content.GetHTML().innerHTML = content;
+			return this;
 		}
 	}
 	
@@ -65,8 +117,7 @@ module UI {
 	 */
 	export class IconButton extends Button {
 			
-		private icon: SimpleElement;
-		private content: SimpleElement;
+		protected icon: IElement;
 			
 		/**
 		 * Create a basic button with a text in it
@@ -74,44 +125,60 @@ module UI {
 		 * @param	content		The textual content of the button	
 		 * @param	onClick	Optional click event handler
 		 */
-		constructor(iconClass: string, content: string, onClick?: (e: Event) => void) {
-			super("", onClick);
+		constructor(protected iconClass: string, content: string, onClick?: (e: Event) => void) {
+			super(content, onClick);
 			
 			// the content isn't a simple text..
-			this.icon = new SimpleElement("span", "");
-			this.ChangeIcon(iconClass);
-			this.content = new SimpleElement("span", content);			
-			
-			this.GetHTML().appendChild(this.icon.GetHTML());
-			this.GetHTML().appendChild(this.content.GetHTML());
+			this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);			
+			this.AddChild(this.icon)
+				.AddClass("has-icon");
 		}
 		
-		public ChangeIcon(iconClass: string): void {
-			HTML.SetAttributes(this.icon.GetHTML(), {
-				class: `icon ${iconClass}` 
-			});
-		}
-		
-		/**
-		 * Change the content of the button.
-		 * @param	content	The content - might be HTML 
-		 */
-		public ChangeContent(content: string): void {
-			this.content.GetHTML().innerHTML = content;
+		public ChangeIcon(iconClass: string): IconButton {	
+			this.icon.RemoveClass(this.iconClass).AddClass(iconClass);
+			this.iconClass = iconClass;
+			return this;
 		}
 	}
 	
 	
+	export class IconOnlyButton extends IconButton {
+		constructor(iconClass: string, title: string, onClick?: (e: Event) => void) {
+			super(iconClass, "", onClick); // empty content
+			this.ChangeContent(title);
+			this.AddClass("ui-button");
+		}
+		
+		public ChangeContent(content: string): IconButton {
+			HTML.SetAttributes(this.GetHTML(), { title: content });
+			return this;
+		}
+	}
+	
 	/**
-	 * Basic UI button
+	 * Basic HTML paragraph
 	 */
 	export class Paragraph extends SimpleElement {
-		
-		/**
-		 * Create a basic button with a text in it
-		 */
 		constructor(text: string) {
 			super("p", text);
+		}
+	}
+		
+	/**
+	 * Basic HTML heading
+	 */
+	export class Heading extends SimpleElement {
+		constructor(level: number, text: string) {
+			super(`h${level}`, text);
+		}
+	}
+	
+	/**
+	 * Basic HTML heading of level two
+	 */
+	export class H2 extends Heading {
+		constructor(text: string) {
+			super(2, text);
 		}
 	}
 	
@@ -120,11 +187,11 @@ module UI {
 	 * A composite UI element
 	 */
 	export class Panel implements IElement {
-		
-		/** The root element of the panel */
-		private root: HTMLElement;
-		
-		/** Child buttons - in the order they were added */
+				
+		/** The root HTML element */
+		private element: HTMLElement;
+				
+		/** Children - in the order they were added */
 		private elements: Array<IElement>;
 		public get Children() : Array<IElement> { return this.elements; }
 		
@@ -133,39 +200,73 @@ module UI {
 		 * @param	tag		The tag name of the panel
 		 * @param	id		The HTML ID of the panel
 		 */
-		constructor(tag: string, id: string) {			
-			this.root = Helpers.HTML.CreateElement(tag, {
-				id: id,
-				class: "ui-panel"
-			});
-			this.elements = [];
+		constructor(tag: string, id?: string) {
+			this.element = HTML.CreateElement(tag);
+			if(!!id) {
+				HTML.SetAttributes(this.element, { id: id });
+			}			
+			this.elements = [];			
 		}
 		
 		/**
-		 * Add another button to the collection.
-		 * @param	btn		Button instance.
+		 * Add another element to the collection.
+		 * @param	btn		Element instance.
 		 */
-		public AddChild(el: IElement) : void {
-			this.elements.push(el);
-			this.root.appendChild(el.GetHTML());
+		public AddChild(el: IElement): Panel {
+			return this.AddChildren(el);
 		}
 		
 		/**
-		 * Add muiltiple children.
+		 * Add muiltiple children to the panel.
 		 * @param	elements	Array of elements
 		 */
-		public AddChildren(elements: Array<IElement>) : void {
+		public AddChildren(...elements: Array<IElement>): Panel {
 			for (var i = 0; i < elements.length; i++) {
-				var element = elements[i];
-				this.AddChild(element);
+				this.elements.push(elements[i]);
+				this.GetHTML().appendChild(elements[i].GetHTML());
 			}
+			
+			return this;
+		}		
+		
+		/**
+		 * Getter of the element.
+		 */
+		public GetHTML() : HTMLElement { return this.element; }
+		
+		/**
+		 * Add one class to the class attribute of the HTML element.
+		 */
+		public AddClass(className: string): Panel {
+			return this.AddClasses(className);
 		}
 		
 		/**
-		 * Returns the panel element with it's children
+		 * Add any number of classes to the class attribute of the HTML element.
 		 */
-		public GetHTML() : HTMLElement { return this.root; }
+		public AddClasses(...classes: Array<string>): Panel {
+			for (var i = 0; i < classes.length; i++) {
+				this.GetHTML().classList.add(classes[i]);				
+			}
+			return this;
+		}		
 		
+		/**
+		 * Remove one class from the class attribute of the HTML element.
+		 */
+		public RemoveClass(className: string): Panel {
+			return this.RemoveClasses(className);
+		}
+		
+		/**
+		 * Remove any number of classes from the class attribute of the HTML element.
+		 */
+		public RemoveClasses(...classes: Array<string>): Panel {
+			for (var i = 0; i < classes.length; i++) {
+				this.GetHTML().classList.remove(classes[i]);				
+			}
+			return this;
+		}		
 	}
 
 	

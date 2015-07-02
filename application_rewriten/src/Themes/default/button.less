@@ -11,6 +11,7 @@ button {
 	border-radius: 4px;
 	background: fade(@foreground, 50%);
 	font-size: @btn-font-size;
+	text-align: center;
 
 	&:not(:disabled) {
 		&:hover,
@@ -26,6 +27,7 @@ button {
 
 	&.option {
 		width: @btn-size;
+		padding: 0;
 		overflow: hidden;
 		
 		&.active {			
@@ -39,13 +41,23 @@ button {
 		}
 	}
 	
+	&.has-icon {
+		
+		&.has-icon-right {
+			.icon {
+				float: right;
+			}
+		}
+	}
+	
 	.icon {
 		width: @btn-icon-size;
 		height: @btn-icon-size;
 		margin-right: @btn-icon-size / 2;
 		float: left;
 		transition: all 0.3s;
-		
+		float: left;
+				
 		&.icon-rec {
 			border-radius: @btn-icon-size - 4px;
 			border: 2px solid @red;
@@ -57,7 +69,7 @@ button {
 			height: 0;
 			border-style: solid;
 			border-width: @btn-icon-size/2 0 @btn-icon-size/2 @btn-icon-size;
-			border-color: transparent transparent transparent @contrastant;
+			border-color: transparent transparent transparent @green;
 		}
 		
 		&.icon-pause {
@@ -112,6 +124,12 @@ button {
 		}
 	}
 	
+	&.icon-only-button {
+		.icon {
+			margin: none;
+		}
+	}
+	
 	&:disabled {
 		cursor: default;
 		background: @background;
@@ -134,5 +152,16 @@ button {
 			}
 		}			
 	}
+
+	.btn-group &:not(::last-child) {
+		margin-right: 0;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+		border-right: 0;
+	}	
 	
+	.btn-group &:not(::first-child) {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}	
 }

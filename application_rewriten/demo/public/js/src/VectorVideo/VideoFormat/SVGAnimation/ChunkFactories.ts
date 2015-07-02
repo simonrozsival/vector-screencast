@@ -314,7 +314,7 @@ module VideoFormat.SVGAnimation {
 					path.Segments.push(qseg);
 					
 					if(prevSegment instanceof Drawing.CurvedSegment) {
-						(<Drawing.CurvedSegment> prevSegment).Left = instructions[l-i].coords[0];
+						(<Drawing.CurvedSegment> prevSegment).Left = instructions[l-i].coords[0].clone();
 					}
 					prevSegment = qseg;
 				} else if (instructions[i].type === InstructionType.Curve) {
@@ -323,10 +323,10 @@ module VideoFormat.SVGAnimation {
 					var seg = new Drawing.CurvedSegment(left, right);
 					
 					if(!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
-						prevSegment.Left = seg.LeftBezier.Start;
-						seg.RightBezier.Start = prevSegment.RightBezier.End;
+						prevSegment.Left = seg.LeftBezier.Start.clone();
+						seg.RightBezier.Start = prevSegment.RightBezier.End.clone();
 					} else if (!!prevSegment && prevSegment instanceof Drawing.QuadrilateralSegment) {
-						seg.RightBezier.Start = prevSegment.Right;
+						seg.RightBezier.Start = prevSegment.Right.clone();
 					}
 					
 					path.Segments.push(seg);
@@ -338,7 +338,7 @@ module VideoFormat.SVGAnimation {
 			
 			// I need to fix last segment's left bezier End
 			if(!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
-				prevSegment.Left = instructions[Math.floor(instructions.length / 2)].coords[2]; // this is the ARC cap of the path
+				prevSegment.Left = instructions[Math.floor(instructions.length / 2)].coords[2].clone(); // this is the ARC cap of the path
 			}
 
 			return path;
@@ -352,9 +352,9 @@ module VideoFormat.SVGAnimation {
 					
 			// arc cap at the start
 			var seg = segments[0];
-			var center = seg.Right.add(seg.Left).scale(0.5);
-			var startDirection = seg.Left.subtract(center);
-			var endDirection = seg.Right.subtract(center);
+			var center = seg.Right.pointInBetween(seg.Left);
+			var startDirection = seg.Left.clone().subtract(center);
+			var endDirection = seg.Right.clone().subtract(center);
 			var arc = SVG.ArcString(seg.Right, center.distanceTo(seg.Right), Drawing.Path.angle(startDirection));
 			
 			var right: string = `${SVG.MoveToString(segments[0].Right)} `; // SPACE divider
@@ -376,9 +376,9 @@ module VideoFormat.SVGAnimation {
 
 			// arc cap at the end
 			seg = segments[segments.length - 1];
-			center = seg.Right.add(seg.Left).scale(0.5);
-			startDirection = seg.Right.subtract(center);
-			endDirection = seg.Left.subtract(center);
+			center = seg.Right.pointInBetween(seg.Left);
+			startDirection = seg.Right.clone().subtract(center);
+			endDirection = seg.Left.clone().subtract(center);
 			var cap = `${SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection))} `;
 							
 			return SVG.CreateElement("path", {

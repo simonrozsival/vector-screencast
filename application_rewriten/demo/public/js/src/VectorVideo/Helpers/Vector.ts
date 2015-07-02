@@ -16,10 +16,7 @@ module Helpers {
          */
         get Y() : number { return this.y; }
     
-        constructor(private x: number, private y: number) {
-            this.size = -1;
-            this.sizeSq = -1;
-        }
+        constructor(private x: number, private y: number) { }
     
         /**
          * Compare two vectors 
@@ -34,30 +31,23 @@ module Helpers {
          * Calculates size of the vector.
          */
         getSize() : number {
-            if(this.size < 0) {
-                this.size = Math.sqrt(this.getSizeSq());
-            }
-            return this.size;
+            return Math.sqrt(this.getSizeSq());
         };
-                
-        private sizeSq: number;
                 
         /**
          * Calculates squared size of the vector.
          */
         getSizeSq() : number {
-            if(this.sizeSq < 0) {
-                this.sizeSq = this.x*this.x + this.y*this.y;
-            }
-            
-            return this.sizeSq;
+            return this.x*this.x + this.y*this.y;
         }
     
         /**
          * Distance between this and the other point.
          */
         distanceTo(b: Vector2) : number {
-            return this.subtract(b).getSize();
+            var dx = this.x - b.X;
+            var dy = this.y - b.Y;
+            return Math.sqrt(dx*dx+dy*dy);
         };
     
         /**
@@ -70,36 +60,47 @@ module Helpers {
                 throw new Error("Can't normalize zero vector.");
             }
     
-            return this.scale(1/size);
+            this.scale(1/size);
+            return this;
         };
     
         /**
          * Creates a normal vector to this vector.
          */
-        getNormal() : Vector2 {
-            return new Vector2(-this.y, this.x).normalize();
+        getNormal(): Vector2 {
+            return (new Vector2(-this.y, this.x)).normalize();
         };
     
         /**
          * Create a new two-dimensional vector as a combination of this vector with a specified vector.
          */
-        add(b: Vector2) : Vector2 {
-            return new Vector2(this.x + b.X, this.y + b.Y);
+        add(b: Vector2): Vector2 {
+            this.x += b.X; this.y += b.Y;
+            return this;
         };
     
         /**
          * Create a new two-dimensional vector by subtracting a specified vector from this vector.
          */
-        subtract(b: Vector2) : Vector2 {
-            return new Vector2(this.x - b.X, this.y - b.Y);
+        subtract(b: Vector2): Vector2 {
+            this.x -= b.X; this.y -= b.Y;
+            return this;
         };
     
         /**
          * Create a new vector that is scaled by the coeficient c.
          */
-        scale(c: number) : Vector2 {
-            return new Vector2(this.x * c, this.y * c);
+        scale(c: number): Vector2 {
+            this.x *= c; this.y *= c;
+            return this;
         };
+        
+        /**
+         * Calculates a point in between this and the other point.
+         */
+        pointInBetween(b: Vector2): Vector2 {
+            return new Vector2((this.x + b.X) / 2, (this.y + b.Y) / 2);
+        }
     
         /**
          * Make a copy of the vector.
