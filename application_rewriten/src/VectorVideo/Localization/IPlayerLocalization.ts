@@ -8,6 +8,7 @@ module Localization {
 		// erros		
 		NoJS: string,
 		DataLoadingFailed: string,
+		DataIsCorrupted: string,
 		
 		// buttons
 		ControlPlayback: string,

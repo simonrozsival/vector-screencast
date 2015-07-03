@@ -47,6 +47,27 @@ module Helpers {
 		}
 		
 		/**
+		 * Asynchronousely open a file.
+		 * @param 	url		File URL
+		 * @param	success	Success callback
+		 * @param 	error	Error callback		
+		 */
+		public static ReadFileAsync(url: string, success: (data: any) => any, error: (errStatus: number) => any) : void {
+			var req = new XMLHttpRequest();
+			req.open("GET", url, true);
+			req.onerror = (e) => error(req.status);
+			req.ontimeout = (e) => error(req.status);
+			req.onload = (e) => {
+				if(req.status === 200) {
+					success(!!req.responseXML ? req.responseXML : req.response);
+				} else {
+					error(req.status);
+				}
+			};
+			req.send();
+		}
+				
+		/**
 		 * Asynchronousely open and parse an XML file.
 		 * @param 	url		File URL
 		 * @param	success	Success callback

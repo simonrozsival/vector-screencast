@@ -41,10 +41,11 @@
             var player = new VectorVideo.Player("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 Source: sourceFile,
+                VideoFormat: !!urlQuery["format"] && urlQuery["format"] === "json" ? new VideoFormat.JSONAnimation.IO() : new VideoFormat.SVGAnimation.IO(),
                 Autohide: true,
-                
-                DrawingStrategy: new Drawing.CanvasDrawer()
-                //DrawingStrategy: new Drawing.SVGDrawer()
+                Autoplay: !!urlQuery["autoplay"],
+                ShowControls: !urlQuery["hide-controls"],                
+                DrawingStrategy: !!urlQuery["method"] && urlQuery["method"] === "svg" ? new Drawing.SVGDrawer() : new Drawing.SVGDrawer()
             });
         };
         

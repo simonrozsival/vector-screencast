@@ -140,8 +140,7 @@ module AudioData {
 			// important audio events
 			this.audio.onended = () => VideoEvents.trigger(VideoEventType.ReachEnd);
 			this.audio.onwaiting = () => this.Busy();
-			this.audio.oncanplay = () => this.Ready();	
-			this.audio.ontimeupdate = () => this.ReportCurrentTime();
+			this.audio.oncanplay = () => this.Ready();
 			
 			// user's volume settings			
 			VideoEvents.on(VideoEventType.Mute, 		() => this.Mute());
@@ -251,6 +250,8 @@ module AudioData {
 		 * It might take some time before the audio is ready - pause the playback and start as soon as ready.
 		 */
 		public JumpTo(progress: number) : void {
+			if(!this.isReady) return; // no audio is available
+			
 			this.reachedEnd = false; // if I was at the end and I changed the position, I am not at the end any more!			
 			var time: number = this.audio.duration * progress; // duration is in seconds
 			this.ChangePosition(time);
@@ -265,15 +266,7 @@ module AudioData {
 		 */
 		private ChangePosition(seconds: number) : void {
 			this.audio.currentTime = seconds;
-		}
-	
-		/**
-		 * Report current time so everyone can synchronize
-		 */
-		private ReportCurrentTime() : void {
-			VideoEvents.trigger(VideoEventType.CurrentTime, this.audio.currentTime);
-		}
-		
+		}		
 		
 		/**
 		 * Volume MUTE/UP/DOWN

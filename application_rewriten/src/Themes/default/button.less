@@ -43,67 +43,25 @@ button {
 	}
 	
 	&.has-icon {
-		
-		&.has-icon-right {
-			.icon {
-				float: right;
-			}
-		}
+		min-width: @btn-size;
 	}
 	
-	.icon {
+	[class^="icon-"] {
 		width: @btn-icon-size;
 		height: @btn-icon-size;
 		margin-right: @btn-icon-size / 2;
-		float: left;
 		transition: all 0.3s;
-		float: left;
-				
-		&.icon-rec {
-			border-radius: @btn-icon-size - 4px;
-			border: 2px solid @red;
-			background-color: transparent;
-		}
+		padding: 0;
+		margin: 0;	
 		
-		&.icon-play {
-			width: 0;
-			height: 0;
-			border-style: solid;
-			border-width: @btn-icon-size/2 0 @btn-icon-size/2 @btn-icon-size;
-			border-color: transparent transparent transparent @green;
-		}
-		
-		&.icon-pause {
-			border: 2px solid @background;
-			background: transparent; 
-		}
-		
-		&.icon-upload {				
-			position: relative;
-			width: @btn-icon-size;
-			height: @btn-icon-size;
-			
-			&:before, &:after {
-				content: "";
-				position: absolute;
-				width: 0;
-				height: 0;
-				border-style: solid;
-				border-color: transparent;
-				border-top: 0;
-			}
-			
-		  	&:before {
-				left: 0px;
-				
-				border-width: @btn-icon-size / 2;				
-				border-bottom-color: @background;
-				border-bottom-width: @btn-icon-size;
-			}
+		&:before {
+			margin: 0;
 		}
 	}
 	
 	&.icon-only-button {
+		text-align: center;
+		
 		.icon {
 			margin: 0;
 		}

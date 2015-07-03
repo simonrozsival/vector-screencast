@@ -57,8 +57,13 @@ module VideoData {
 			return this.chunks[this.currentChunk + 1];
 		}		
 		
-		/** Jump to the next chunk */
-		public MoveNextChunk(): void { this.currentChunk++; }
+		/** Jump to the begining next chunk */
+		public MoveNextChunk(): void {
+			this.currentChunk++;
+			if(!!this.CurrentChunk) {
+				this.CurrentChunk.Rewind();				
+			}
+		}
 		
 		
 		/**
@@ -111,14 +116,14 @@ module VideoData {
 		 * @param	{number}	directionHint	1 for searching in the future, -1 to search in the past
 		 */
 		private FindChunk(time: number, directionHint: number): number {			
-			var foundChunk: number = this.currentChunk;			
+			var foundChunk: number = Math.min(this.currentChunk, this.chunks.length - 2);			
 			while((!!this.chunks[foundChunk] && !!this.chunks[foundChunk + 1])
 					&& (this.chunks[foundChunk].StartTime <= time && this.chunks[foundChunk + 1].StartTime >= time) === false) {
 						
 				foundChunk += directionHint;
 			}
 			
-			if(!this.CurrentChunk) { // I have gone too far to the past
+			if(foundChunk < 0) { // I have gone too far to the past
 				return 0; // I haven't found, what I was looking for, return the first chunk ever
 			}
 			

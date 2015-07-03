@@ -37,6 +37,7 @@ module VideoData {
 			return this.commands[this.cmdIterator + 1]; // if the index exceeds the bound of the array, undefined is returned
 		}
 		public MoveNextCommand(): void { this.cmdIterator++; }
+		public Rewind(): void { this.cmdIterator = 0; }
 		
 		
 		private pathIterator: number;

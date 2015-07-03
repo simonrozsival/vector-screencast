@@ -6,8 +6,15 @@
     /**
      * Prints a number rounded and with trimmed trailing zeros.
      */
+    export function maxDecPlaces(n: number, precision: number = COORDS_PRECISION): number {
+        return Number(n.toFixed(precision));
+    }
+    
+    /**
+     * Prints a number rounded and with trimmed trailing zeros converted to string.
+     */
     export function precise(n: number, precision: number = COORDS_PRECISION): string {
-        return Number(n.toFixed(precision)).toString(); // isn't there a better way?
+        return maxDecPlaces(n, precision).toString(); // isn't there a better way?
     }   
     
     /**

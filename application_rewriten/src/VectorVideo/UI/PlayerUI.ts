@@ -46,40 +46,40 @@ module UI {
 		
 		public Timer: Helpers.VideoTimer;
 		
+		private isBusy: boolean = false;
+		
 		/**
 		 * Create a new instance of Player UI
 		 * @param	id				Unique ID of this recorder instance
 		 * @param	localization	List of translated strings 
 		 */
-		constructor(private id: string) {
-						
+		constructor(private id: string) {						
 			super("div", `${id}-player`);
 			this.AddClass("vector-video-wrapper");
 			
+			// prepare the board
+			this.board = this.CreateBoard();
+			this.AddChild(this.board);
+						
 			// React to events triggered from outside
 			VideoEvents.on(VideoEventType.Start, () => this.StartPlaying());
 			VideoEvents.on(VideoEventType.Pause, () => this.PausePlaying());		
 			VideoEvents.on(VideoEventType.ReachEnd, () => this.ReachedEnd());
+			VideoEvents.on(VideoEventType.JumpTo, () => this.JumpTo());
 			VideoEvents.on(VideoEventType.ClearCanvas, (c: Color) => this.GetHTML().style.backgroundColor = c.CssValue); // make the bg of the player match the canvas 
-			
-			// allow keyboard
-			this.BindKeyboardShortcuts();
-			
+						
 			// set current state
 			this.isPlaying = false;
 			this.reachedEnd = false;
 		}
 		
-		public CreateHTML(autohide: boolean): void {			
+		public CreateControls(autohide: boolean): void {			
 			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": this.Localization.Busy });
-								
-			// prepare the board
-			this.board = this.CreateBoard();
-			
+											
 			// prepare the timeline and other controls
 			this.timeline = this.CreateTimeLine();	
-			this.hidingButton = <IconOnlyButton> new IconOnlyButton("icon-hidding-toggle", "", (e: Event) => this.ToggleAutohiding())
-												.AddClasses("autohiding-toggle", autohide ? "show" : "hide");
+			this.hidingButton = <IconOnlyButton> new IconOnlyButton(autohide ? "icon-show" : "icon-hide", "", (e: Event) => this.ToggleAutohiding())
+												.AddClasses("autohiding-toggle");
 															
 			this.controls = new Panel("div", `${this.id}-controls`)
 									.AddClasses("ui-controls", "ui-control")
@@ -95,7 +95,6 @@ module UI {
 			
 			
 			this.AddChildren(
-				this.board,
 				new Panel("div")
 					.AddClass("ui-controls-wrapper")
 					.AddChildren(
@@ -110,15 +109,14 @@ module UI {
 				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
 				this.timeline.Length = meta.Length;
 			});
-			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first			
+			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
+			
+			// allow keyboard
+			this.BindKeyboardShortcuts();			
 		}
 		
-		public HideControls(): void {
-			this.controls.GetHTML().style.display = "none";
-		}
-				
-		public ShowControls(): void {
-			this.controls.GetHTML().style.display = "block";
+		public SetBusyText(text: string) {
+			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": text });
 		}
 		
 		/**
@@ -181,6 +179,9 @@ module UI {
 		 * This function is called when the PLAY/PAUSE button is clicked.
 		 */
 		private PlayPause() : void {
+			// do not allow to start playing while busy
+			if(this.isBusy || !this.controls) return;
+			
 			if(this.reachedEnd) {
 				this.reachedEnd = false;
 				this.timeline.SkipTo(0); // jump to the start				
@@ -196,24 +197,37 @@ module UI {
 				VideoEvents.trigger(VideoEventType.Start);
 			}
 		}
+		
+		private JumpTo(): void {
+			if(!this.controls) return;
+			if(this.reachedEnd === true) {
+				this.reachedEnd = false; // user has skipped somewhere - but definitely not directly to the end (100%)				
+				this.playPauseButton.ChangeIcon("icon-play");
+			}
+		}
 				
 		/**
 		 * Start (or continue) recording
 		 */
 		private StartPlaying() : void {
-			this.isPlaying = true;
-			this.playPauseButton.ChangeIcon("icon-pause");
-			this.playPauseButton.ChangeContent(this.Localization.Pause);
-			this.AddClass("playing");
-						
-			// update time periodically
-			this.ticking = setInterval(() => this.UpdateCurrentTime(), this.tickingInterval);
+			if(!this.controls) return;
+			if(this.isPlaying === false) {
+				this.isPlaying = true;
+				this.playPauseButton.ChangeIcon("icon-pause");
+				this.playPauseButton.ChangeContent(this.Localization.Pause);
+				this.AddClass("playing");
+							
+				// update time periodically
+				this.ticking = setInterval(() => this.UpdateCurrentTime(), this.tickingInterval);				
+			}
 		}
 		
 		/**
 		 * Pause playback
 		 */
 		private PausePlaying() : void {
+			if(!this.controls) return;
+			
 			this.isPlaying = false;			
 			this.playPauseButton.ChangeIcon("icon-play");
 			this.playPauseButton.ChangeContent(this.Localization.Play);
@@ -266,6 +280,7 @@ module UI {
 		 * React to end of playing - show the replay button
 		 */
 		public ReachedEnd(): void {
+			if(!this.controls) return;
 			this.PausePlaying();
 			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
 			this.reachedEnd = true;
@@ -277,15 +292,21 @@ module UI {
 		 
 		public Busy(): void {
 			this.AddClass("busy");
+			this.isBusy = true;
 		}
 		
 		public Ready(): void {
 			this.RemoveClass("busy");
+			this.isBusy = false;
 		}
 		
 		/**
 		 * Volume controls
 		 */
+		
+		private volumeDownBtn: IconOnlyButton;
+		private volumeUpBtn: IconOnlyButton;
+		private volumeOffBtn: IconOnlyButton;
 		 
 		protected CreateAudioControls(): IElement {
 			return new Panel("div", `${this.id}-audio`)
@@ -293,9 +314,9 @@ module UI {
 					new H2(this.Localization.VolumeControl),
 					new Panel("div", `${this.id}-audio-controls`)
 						.AddChildren(
-							new IconOnlyButton("icon-volume-down", this.Localization.VolumeDown, (e) => this.VolumeDown()),
-							new IconOnlyButton("icon-volume-up", this.Localization.VolumeUp, (e) => this.VolumeUp()),
-							new IconOnlyButton("icon-mute", this.Localization.Mute, (e) => this.Mute())
+							(this.volumeDownBtn = new IconOnlyButton("icon-volume-down", this.Localization.VolumeDown, (e) => this.VolumeDown())),
+							(this.volumeUpBtn = new IconOnlyButton("icon-volume-up", this.Localization.VolumeUp, (e) => this.VolumeUp())),
+							(this.volumeOffBtn = new IconOnlyButton("icon-volume-off", this.Localization.Mute, (e) => this.Mute()))
 						)
 						.AddClass("btn-group")
 				)
@@ -310,7 +331,19 @@ module UI {
 			VideoEvents.trigger(VideoEventType.VolumeDown);
 		}		 
 		 
+		private isMuted: boolean = false;
 		protected Mute(): void {
+			if(!this.isMuted) {
+				Helpers.HTML.SetAttributes(this.volumeDownBtn.GetHTML(), { disabled: "disabled" });
+				Helpers.HTML.SetAttributes(this.volumeUpBtn.GetHTML(), { disabled: "disabled" });
+				this.volumeOffBtn.AddClass("active");
+			} else {				
+				this.volumeDownBtn.GetHTML().removeAttribute("disabled");
+				this.volumeUpBtn.GetHTML().removeAttribute("disabled");
+				this.volumeOffBtn.RemoveClass("active");
+			}
+			
+			this.isMuted = !this.isMuted;
 			VideoEvents.trigger(VideoEventType.Mute);
 		}
 		
@@ -321,10 +354,10 @@ module UI {
 		protected ToggleAutohiding(): void {
 			if(this.controls.HasClass("autohide")) {
 				this.controls.RemoveClass("autohide");
-				this.hidingButton.ChangeIcon("hide");
+				this.hidingButton.ChangeIcon("icon-hide");
 			} else {
 				this.controls.AddClass("autohide");
-				this.hidingButton.ChangeIcon("show");
+				this.hidingButton.ChangeIcon("icon-show");
 			}
 		}
 		 

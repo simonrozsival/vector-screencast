@@ -17,6 +17,7 @@ module AudioRecording {
     
     export interface IConvertorConfig {
         input: string;
+        publicRoot: string;
         outputDir: string;
         formats: Array<string>;
         channels: number;
@@ -164,7 +165,8 @@ module AudioRecording {
                 input: input,
                 formats: this.cfg.formats,
                 quality: 64,
-                outputDir: "",
+                publicRoot: "./public",
+                outputDir: "/recordings",
                 channels: 1, // always 1 channel
                 debug: false,
                 success: function(files: Array<IAudio>) {

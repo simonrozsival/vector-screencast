@@ -20,6 +20,10 @@ module Settings {
 		
 		UI?:				UI.RecorderUI;			
 		Autohide?:			boolean;
+		
+		// Some data are irrelevant for plaback, should it be recorded anyway?
+		RecordAllRawData?:	boolean;
+		VideoFormat?:		VideoFormat.Writer;	
 	}
 	
 	export interface IAudioRecorderSettings {

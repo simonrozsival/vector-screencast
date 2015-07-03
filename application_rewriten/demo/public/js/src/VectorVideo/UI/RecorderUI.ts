@@ -55,10 +55,10 @@ module UI {
 		 * @param	brushSizes		List of possible brush sizes
 		 * @param	localization	List of translated strings 
 		 */
-		constructor(private id: string) {
-						
+		constructor(private id: string) {						
 			super("div", `${id}-recorder`);
-			this.AddClass("vector-video-wrapper");											
+			this.AddClass("vector-video-wrapper");
+			this.isRecording = false;											
 		}
 		
 		public CreateHTML(autohide: boolean, colorPallete: Array<Color>, brushSizes: Array<BrushSize>): void {			
@@ -156,26 +156,30 @@ module UI {
 		 * Start (or continue) recording
 		 */
 		private StartRecording() : void {
-			this.isRecording = true;
-			
-			this.recPauseButton.ChangeIcon("icon-pause");
-			this.board.IsRecording = true;
-			
-			this.ticking = setInterval(() => this.Tick(), this.tickingInterval);
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.Start);
+			if(this.isRecording === false) {
+				this.isRecording = true;
+				
+				this.recPauseButton.ChangeIcon("icon-pause");
+				this.board.IsRecording = true;
+				
+				this.ticking = setInterval(() => this.Tick(), this.tickingInterval);
+				Helpers.VideoEvents.trigger(Helpers.VideoEventType.Start);				
+			}
 		}
 		
 		/**
 		 * Pause recording
 		 */
 		private PauseRecording() : void {
-			this.isRecording = false;			
-			
-			this.recPauseButton.ChangeIcon("icon-rec");
-			this.board.IsRecording = false;
-			
-			clearInterval(this.ticking);
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.Pause);
+			if(this.isRecording === true) {
+				this.isRecording = false;			
+				
+				this.recPauseButton.ChangeIcon("icon-rec");
+				this.board.IsRecording = false;
+				
+				clearInterval(this.ticking);
+				Helpers.VideoEvents.trigger(Helpers.VideoEventType.Pause);				
+			}
 		}
 		
 		/**

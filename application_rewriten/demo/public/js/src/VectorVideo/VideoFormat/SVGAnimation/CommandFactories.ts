@@ -1,6 +1,7 @@
 /// <reference path="../../Helpers/SVG" />
 /// <reference path="../../VideoData/Command" />
 /// <reference path="../../Helpers/HelperFunctions" />
+/// <reference path="../../Helpers/SVG" />
 
 module VideoFormat.SVGAnimation {
 	

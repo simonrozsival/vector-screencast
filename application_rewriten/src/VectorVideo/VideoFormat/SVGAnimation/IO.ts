@@ -1,8 +1,8 @@
 /// <reference path="../IO" />
 /// <reference path="../../VideoData/Chunk" />
-/// <reference path="ChunkFactories" />
-/// <reference path="CommandFactories" />
-/// <reference path="MetadataFactory" />
+/// <reference path="./ChunkFactories" />
+/// <reference path="./CommandFactories" />
+/// <reference path="./MetadataFactory" />
 
 module VideoFormat.SVGAnimation {
 	
@@ -78,8 +78,7 @@ module VideoFormat.SVGAnimation {
 			
 			// serialize the document to string and then create a blob out of it
 			var serializer = new XMLSerializer();
-			var blob = new Blob([ serializer.serializeToString(doc) ], { type: "application/svg+xml" });			
-			return blob;
+			return new Blob([ serializer.serializeToString(doc) ], { type: "application/svg+xml" });
 		}
 		
 		/**
@@ -119,7 +118,14 @@ module VideoFormat.SVGAnimation {
 			video.Rewind(); // currentChunk = 0
 			return video;
 		}
+				
+		GetExtension(): string {
+			return "svg";
+		}
 		
+		GetMimeType(): string {
+			return "application/svg+xml";
+		}
 		
 	}
 	

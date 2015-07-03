@@ -8,6 +8,7 @@ var fs = require("fs"); // file system Node.js library
 var express = require("express"),
     app = express(),
     bodyParser = require('body-parser'),
+	formidable = require('formidable'),
     errorHandler = require('errorhandler'),
     methodOverride = require('method-override'),
     hostname = process.env.HOSTNAME || 'localhost',
@@ -15,10 +16,11 @@ var express = require("express"),
     publicDir = __dirname + '/public',
 	dataRoot = "/recordings"; // the directory, where the recordings are stored
 
-//app.post("/upload/result", UploadResult);
+app.post("/upload/result", UploadResult);
 
 app.use(methodOverride());
 app.use(bodyParser.json());
+app.use(bodyParser.raw());
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
@@ -62,36 +64,33 @@ function getPort() {
  * @param res	HTTP response object
  */
 function UploadResult(req, res) {
-    var name = GenerateRandomFileName();
-    var fileName = publicRoot + dataRoot + "/" + name; // real path of the file on the disk
+    var name = GenerateRandomFileName("json");
+    var fileName = publicDir + dataRoot + "/" + name; // real path of the file on the disk
 	
-	console.log("UploadResult(req, res) req dump:");
-	console.log(req);
-	
-	// req.on("end", function() {
-	// 	// due to the protocol, request body will be the recording XML file
-	// 	// audio files are already uploaded and references to them are inside the XML
-	//     fs.writeFile(fileName, data, function(err) {
-	//         if (!!err) { // !! - convert value to boolean
-	//             console.log("can't write file");
-	// 			res.status(500).send("Error 500: Internal Server Error", "utf-8");
-	// 			return;
-	//         }
-	//     
-	//         // upload was successful - send a JSON response with a redirect 
-	//         console.log("upload finished " + name);
-	//         res.json({
-	// 			success: true,
-	// 			redirect: '/play.html?source=" + dataRoot + "/" + name + "'
-	// 		});
-	//     });		
-	// });
+	var form = new formidable.IncomingForm();
+	form.uploadDir = publicDir + dataRoot;
+	form.parse(req, function(err, fields, files) {
+		if(!!err) {
+			res.status(500).json({ success: false });
+			return;
+		}
+		
+		var ext = fields.extension;
+		var tmpName = files.file.path;
+		var newName = dataRoot + "/" + GenerateRandomFileName(ext);
+		fs.renameSync(tmpName, publicDir + newName);
+		res.status(200).json({
+			success: true,
+			redirect: "/play.html?source=" + newName			
+		})
+	});
 }
 
 /**
  * Generates a random file name to prevent collisions
  * @return 	{string}	File name
  */
-function GenerateRandomFileName() {
-	return "rec-" + Date.now() + "-" + Math.floor(Math.random() * 10000) + ".svg";
+function GenerateRandomFileName(ext) {
+	ext = ext || "svg";
+	return "rec-" + Date.now() + "-" + Math.floor(Math.random() * 10000) + "." + ext;
 }

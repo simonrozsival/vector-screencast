@@ -11,6 +11,7 @@
 /// <reference path="../Helpers/VideoEvents" />
 /// <reference path="../UI/Cursor" />
 /// <reference path="../Helpers/State" />
+/// <reference path="../VideoFormat/JSONAnimation/IO" />
 
 module VectorVideo {
     
@@ -59,6 +60,7 @@ module VectorVideo {
 				var loc: Localization.IPlayerLocalization = {
 					NoJS:					"Your browser does not support JavaScript or it is turned off. Video can't be recorded without enabled JavaScript in your browser.",
                     DataLoadingFailed:      "Unfortunatelly, downloading data failed.",
+                    DataIsCorrupted:           "This video can't be played, the data is corrupted.",
                     
                     ControlPlayback:        "Play/Pause video",					
 				    Play:                   "Play",
@@ -83,7 +85,10 @@ module VectorVideo {
             this.ui = !!settings.UI ? settings.UI : new UI.PlayerUI(id);
             this.ui.Timer = this.timer;
             this.ui.Localization = settings.Localization;
-            this.ui.CreateHTML(!!settings.Autohide);
+            
+            if(!!settings.ShowControls) {
+                this.ui.CreateControls(!!settings.Autohide);
+            }
             
             // init drawing strategy
             this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.CanvasDrawer(true);
@@ -92,11 +97,7 @@ module VectorVideo {
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
             this.drawer.Stretch();
-                        
-            if(!!settings.ShowControls) {
-                this.ui.HideControls();
-            }
-                        
+                                                
 			// Start and stop the video
 			VideoEvents.on(VideoEventType.Start,		    ()	                  => this.Play());
             VideoEvents.on(VideoEventType.Pause,            ()                    => this.Pause());
@@ -120,28 +121,36 @@ module VectorVideo {
             // wait until the file is loaded
             VideoEvents.trigger(VideoEventType.Busy);
                                     
-            // read the file
-            Helpers.File.ReadXmlAsync(settings.Source,
-                
-                (xml: XMLDocument) => this.AcceptXMLData(xml),                
+            Helpers.File.ReadFileAsync(settings.Source,
+                (file: any) => this.ProcessVideoData(file),
                 (errStatusCode: number) => {
                     Errors.Report(ErrorType.Warning, this.settings.Localization.DataLoadingFailed);
-                }
-                     
+                    this.ui.SetBusyText(settings.Localization.DataLoadingFailed);                  
+                }  
             );
         }
         
-        private AcceptXMLData(xml: XMLDocument): void {
-            var reader: VideoFormat.Reader = new VideoFormat.SVGAnimation.IO();
-            this.video = reader.LoadVideo(xml);
-            this.audio = new AudioPlayer(this.video.Metadata.AudioTracks);
+        private ProcessVideoData(data: any): void {
+            try {
+                var reader: VideoFormat.Reader = !!this.settings.VideoFormat ? this.settings.VideoFormat : new VideoFormat.SVGAnimation.IO();
+                this.video = reader.LoadVideo(data);
+                reader = null;
+                this.audio = new AudioPlayer(this.video.Metadata.AudioTracks);                
+            } catch (e) {
+                // parsing data failed                
+                reader = null;
+                this.video = null;
+                this.audio = null;
+                this.ui.SetBusyText(this.settings.Localization.DataIsCorrupted);
+                return;
+            }
             
             VideoEvents.trigger(VideoEventType.VideoInfoLoaded, this.video.Metadata);
             var scalingFactor = this.drawer.SetupOutputCorrection(this.video.Metadata.Width, this.video.Metadata.Height);
             VideoEvents.trigger(VideoEventType.CanvasScalingFactor, scalingFactor);
             
             // do zero-time actions:
-            this.video.RewindMinusOne(); // churrent chunk = -1
+            this.video.RewindMinusOne(); // churrent chunk <- -1
             this.MoveToNextChunk();
             
             VideoEvents.trigger(VideoEventType.Ready);
@@ -180,19 +189,44 @@ module VectorVideo {
             this.ticking = requestAnimationFrame(() => this.Tick());
         }
         
-        private Sync(): void {            
+        
+        private lastMouseMoveState: VideoData.Command = null;
+        private Sync(): void {                 
             // loop through the
-            while(!!this.video.CurrentChunk
-                    && !!this.video.CurrentChunk.CurrentCommand
-                    && this.video.CurrentChunk.CurrentCommand.Time <= this.timer.CurrentTime()) {
-                        
-                this.video.CurrentChunk.CurrentCommand.Execute();
-                this.video.CurrentChunk.MoveNextCommand();
-                
+            while(!!this.video.CurrentChunk) {                        
                 // move to next chunk, if the last one just ended
-                if(this.video.CurrentChunk.CurrentCommand === undefined) { 
+                if(this.video.CurrentChunk.CurrentCommand === undefined) {
                     this.MoveToNextChunk();
+                    
+                    // I might have reached the end here
+                    if(!this.video.CurrentChunk) {
+                        this.ReachedEnd();
+                        return;
+                    }
                 }
+                
+                if(this.video.CurrentChunk.CurrentCommand.Time > this.timer.CurrentTime()) {
+                    break;
+                }
+                
+                if(this.video.CurrentChunk.CurrentCommand instanceof VideoData.MoveCursor) {
+                    this.lastMouseMoveState = this.video.CurrentChunk.CurrentCommand;
+                } else {
+                    this.video.CurrentChunk.CurrentCommand.Execute();                    
+                }
+                
+                this.video.CurrentChunk.MoveNextCommand();                
+            }
+            
+            // only one cursor movement per Sync is enough
+            if(this.lastMouseMoveState !== null) {
+                this.lastMouseMoveState.Execute();
+                this.lastMouseMoveState = null;
+            }
+                        
+            if(this.drawnPath !== null) {
+                // flush the changes
+                this.drawnPath.Draw();
             }
         }
         
@@ -298,9 +332,6 @@ module VectorVideo {
             } else {
                 this.drawnPath.DrawSegment(this.drawnPath.Segments[this.drawnSegment++]);                
             }
-            
-            // flush the changes
-            this.drawnPath.Draw();
         }
          
          

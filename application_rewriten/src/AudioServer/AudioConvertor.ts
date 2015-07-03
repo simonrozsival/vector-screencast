@@ -24,8 +24,11 @@ module AudioRecording {
         }
 
         // prepare the process
-        var name = cfg.input.substr(0, cfg.input.lastIndexOf(".")); // trim the extension
-        cfg.outputDir = cfg.outputDir || "./";
+        var name = cfg.input.substr(cfg.input.lastIndexOf("/") + 1); // trim the path
+        name = name.substr(0, name.lastIndexOf(".")); // trim the extension
+        
+        
+        var outputDir = cfg.publicRoot + cfg.outputDir || "./";
         var formats = cfg.formats || [ "mp3" ];
         var done = 0;
         var successful: Array<IAudio> = [];
@@ -37,12 +40,12 @@ module AudioRecording {
         // Convert the WAV to specified file types and return all the successfuly created ones.
         for (var i in formats) {
             var ext = formats[i];
-            convertTo(cfg, name, ext, overrideArg, debug,
+            convertTo(cfg, outputDir + "/" + name, ext, overrideArg, debug,
                 
                 // success
                 (ext) => {
                     successful.push({
-                        url:    `${name}.${ext}`,
+                        url:    `${cfg.outputDir}/${name}.${ext}`,
                         type:   `audio/${ext}`  
                     });
                     
@@ -71,7 +74,7 @@ module AudioRecording {
     function convertTo(cfg: IConvertorConfig, name: string, ext: string, overrideArg: string, debug: boolean,
                             success: (ext: string) => any, error: (ext: string) => any) {
                                 
-        var output = cfg.outputDir + name + "." + ext;
+        var output = name + "." + ext;
         console.log(colors.gray(`Trying to convert ${cfg.input} to ${output}.`));            
             
         var ffmpeg = spawn("ffmpeg", [

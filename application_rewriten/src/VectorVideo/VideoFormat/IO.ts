@@ -6,10 +6,14 @@ module VideoFormat {
 		
 	export interface Reader {
 		LoadVideo(file: any): Video;
+		GetExtension(): string;
+		GetMimeType(): string;
 	} 
 	
 	export interface Writer {
 		SaveVideo(data: Video): Blob;
+		GetExtension(): string;
+		GetMimeType(): string;
 	}
 	
 }

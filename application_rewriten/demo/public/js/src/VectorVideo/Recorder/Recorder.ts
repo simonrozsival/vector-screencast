@@ -15,7 +15,9 @@
 /// <reference path="../UI/RecorderUI" />
 /// <reference path="../UI/BasicElements" />
 /// <reference path="../Localization/IRecorderLocalization" />
+
 /// <reference path="../VideoFormat/SVGAnimation/IO" />
+/// <reference path="../VideoFormat/JSONAnimation/IO" />
 
 module VectorVideo {
 	
@@ -71,6 +73,9 @@ module VectorVideo {
 		private currSize: UI.BrushSize;
 		private lastCurState: CursorState;
 		
+		// Cursor movement and pressure is irrelevant for playback, should it be recorded anyway?
+		private recordAllRawData: boolean;
+		
 		/**
 		 * Create a new instance of recorder.
 		 * @param	id			Unique ID of this Recorder instance
@@ -91,6 +96,8 @@ module VectorVideo {
 			this.data = new Video();
 			this.lastEraseData = 0;
 			
+			// by default record all the data that goes through the recorder
+			this.recordAllRawData = settings.RecordAllRawData !== undefined ? !!settings.RecordAllRawData : true;
 			
 			
 			//
@@ -310,8 +317,14 @@ module VectorVideo {
 		 * User moved the mouse or a digital pen.
 		 */
 		private ProcessCursorState(state: CursorState) {
-			this.lastCurState = state;
-			!this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.MoveCursor(state.X, state.Y, state.Pressure, this.timer.CurrentTime()));
+			this.lastCurState = state;			
+			
+			// record cursor movement only if the video recording isn't over (already uploading)
+			// or the recording is currently running or all raw data should be captured
+			!this.recordingBlocked
+				&& (this.recordAllRawData || this.isRecording)                                   // zero pressure will be omitted in the output
+				&& this.data.CurrentChunk.PushCommand(new VideoData.MoveCursor(state.X, state.Y, this.recordAllRawData ? state.Pressure : 0, this.timer.CurrentTime()));
+				
 			this.dynaDraw.ObserveCursorMovement(state);
 		}
 				
@@ -345,22 +358,25 @@ module VectorVideo {
 		 */
 		private UploadData() : void {			
 			// get the recorded XML
-			var writer: VideoFormat.Writer = new VideoFormat.SVGAnimation.IO();
-			var xml: Blob = writer.SaveVideo(this.data);
-			console.log(xml);
-			Helpers.File.Download(xml, "recorded.svg");
+			var writer: VideoFormat.Writer = !!this.settings.VideoFormat ? this.settings.VideoFormat : new VideoFormat.SVGAnimation.IO();
+			var videoBlob: Blob = writer.SaveVideo(this.data);
+			console.log(videoBlob);
 				
 			// if I need saving the data to local computer in the future
 			VideoEvents.on(VideoEventType.DownloadData, function() {
-				Helpers.File.Download(xml, "recorded-animation.svg");
+				Helpers.File.Download(videoBlob, `recorded-animation.${writer.GetExtension()}`);
 			});
-		
+								
 			// Upload the data via POST Ajax request
+			var formData: FormData = new FormData();
+			formData.append("extension", writer.GetExtension());
+			formData.append("file", videoBlob);
+			
 			var req: XMLHttpRequest = new XMLHttpRequest();
 			req.open("POST", this.settings.UploadURL, true); // async post request			
 			req.onerror = (e: Event) => this.FinishRecording(false); // upload failed
 			req.onload = (e: Event) => {
-				var response: any = JSON.parse(req.responseBody);
+				var response: any = JSON.parse(req.response);
 				if(req.status === 200 // HTTP code 200 === success
 					&& response.hasOwnProperty("success")
 					&& response.success === true) {
@@ -371,7 +387,7 @@ module VectorVideo {
 					this.FinishRecording(false); // upload failed
 				}
 			};
-			//req.send(xml);
+			req.send(formData);
 		}
 		
 	

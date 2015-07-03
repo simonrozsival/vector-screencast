@@ -347,8 +347,7 @@ module Drawing {
 		/** Init empty path */
 		constructor(curved: boolean, color: string, private context: CanvasRenderingContext2D) {
 			super(curved, color);
-			//this.context.fillStyle = this.color;
-			this.context.strokeStyle = this.color;			
+			this.context.fillStyle = this.color;			
 		}
 		
 		public DrawStartDot(position: Vector2, radius: number): void {			
@@ -411,8 +410,7 @@ module Drawing {
 		 */
 		public Draw(): void {			
 			this.context.closePath();		
-			//this.context.fill();
-			this.context.stroke();	
+			this.context.fill();
 			this.context.beginPath();			
 		}
 	}	

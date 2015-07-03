@@ -7,8 +7,11 @@ module Settings {
 	 * The inteface of obligatory and possible settings for the Vector Video Recorder
 	 */
 	export interface IPlayerSettings {
-		Source:				string,
+		Source:				string;
+		VideoFormat?:		VideoFormat.Reader;
+		
 		DrawingStrategy?: 	Drawing.DrawingStrategy;
+		
 		Localization?: 		Localization.IPlayerLocalization;
 		UI?:				UI.PlayerUI;
 		Autoplay?: 			boolean;

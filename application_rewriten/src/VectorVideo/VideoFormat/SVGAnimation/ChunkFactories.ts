@@ -40,7 +40,7 @@ module VideoFormat.SVGAnimation {
 			throw new Error(`Chunk export failed: Unsupported command ${typeof (chunk) }.`);
 		}
 
-		protected get InitCommandsNodeName(): string {  return "init";  }
+		protected get InitCommandsNodeName(): string {  return "init";  }
 
 		protected InitCommandsFromSVG(node: Element, cmdFactory: CommandFactory): Array<Command> {
 			if (node.localName === this.InitCommandsNodeName) {
@@ -274,11 +274,11 @@ module VideoFormat.SVGAnimation {
 			var instructions: Array<Instruction> = [];			
 			
 			// create list of instructions
-			while (c.length > 0) {
+			while (c.length > 0) {
 				instructions.push(this.instructionFactory.Create(c));
 			}
 					
-			c = null; // drop references
+			c = null; // drop references
 			d = null;			
 						
 			// first segment - zero length segment
@@ -367,7 +367,7 @@ module VideoFormat.SVGAnimation {
 					left = `${SVG.CurveToString(seg.LeftBezier.EndCP, seg.LeftBezier.StartCP, seg.LeftBezier.Start) } ${left}`; // SPACE divider
 				} else if (seg instanceof Drawing.QuadrilateralSegment) {
 					right += `${SVG.LineToString(seg.Right) } `; // SPACE divider
-					left = `${SVG.LineToString(seg.Left)} ${left}`; // SPACE divider
+					left = `${SVG.LineToString(seg.Left) } ${left}`; // SPACE divider
 				} else {
 					throw new Error(`Unsupported segment type ${typeof (seg) }`);
 				}
@@ -375,9 +375,10 @@ module VideoFormat.SVGAnimation {
 
 
 			// arc cap at the end
-			seg = segments.pop();
+			seg = segments[segments.length - 1];
 			center = seg.Right.pointInBetween(seg.Left);
 			startDirection = seg.Right.clone().subtract(center);
+			endDirection = seg.Left.clone().subtract(center);
 			var cap = `${SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection))} `;
 							
 			return SVG.CreateElement("path", {
