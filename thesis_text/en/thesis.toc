@@ -1,54 +1,58 @@
-\contentsline {chapter}{Introduction}{3}{chapter*.2}
-\contentsline {section}{\numberline {0.1}Khan Academy}{3}{section.0.1}
-\contentsline {section}{\numberline {0.2}Vector Screencast project}{3}{section.0.2}
-\contentsline {section}{\numberline {0.3}Thesis structure}{3}{section.0.3}
-\contentsline {chapter}{\numberline {1}Distance education}{4}{chapter.1}
-\contentsline {section}{\numberline {1.1}Current systems}{4}{section.1.1}
-\contentsline {subsection}{\numberline {1.1.1}Moodle}{4}{subsection.1.1.1}
-\contentsline {subsection}{\numberline {1.1.2}Coursera}{4}{subsection.1.1.2}
-\contentsline {subsection}{\numberline {1.1.3}Youtube.com}{5}{subsection.1.1.3}
-\contentsline {subsection}{\numberline {1.1.4}Khan Academy}{5}{subsection.1.1.4}
-\contentsline {chapter}{\numberline {2}Possible technological enhancments}{7}{chapter.2}
-\contentsline {subsection}{\numberline {2.0.5}Video codecs}{7}{subsection.2.0.5}
-\contentsline {subsubsection}{VP9}{7}{section*.3}
-\contentsline {chapter}{\numberline {3}The Vector Video project}{8}{chapter.3}
-\contentsline {section}{\numberline {3.1}Video player requirements}{8}{section.3.1}
-\contentsline {section}{\numberline {3.2}Video recording tool requirements}{8}{section.3.2}
-\contentsline {section}{\numberline {3.3}Goals of this thesis}{8}{section.3.3}
-\contentsline {chapter}{\numberline {4}Analysis}{9}{chapter.4}
-\contentsline {subsection}{\numberline {4.0.1}Technical requirements}{9}{subsection.4.0.1}
-\contentsline {subsection}{\numberline {4.0.2}Available techonologies}{9}{subsection.4.0.2}
-\contentsline {subsubsection}{Java applets}{9}{section*.4}
-\contentsline {subsubsection}{Adobe Flash}{9}{section*.5}
-\contentsline {subsubsection}{Microsoft Silverlight}{10}{section*.6}
-\contentsline {subsubsection}{HTML5}{10}{section*.7}
-\contentsline {subsection}{\numberline {4.0.3}Conclusion}{11}{subsection.4.0.3}
-\contentsline {subsection}{\numberline {4.0.4}Possible issues and known limitations}{11}{subsection.4.0.4}
-\contentsline {chapter}{\numberline {5}Vector Screencast file format}{12}{chapter.5}
-\contentsline {section}{\numberline {5.1}Audio}{12}{section.5.1}
-\contentsline {section}{\numberline {5.2}Video}{12}{section.5.2}
-\contentsline {subsection}{\numberline {5.2.1}Binary format}{12}{subsection.5.2.1}
-\contentsline {subsection}{\numberline {5.2.2}Text format}{12}{subsection.5.2.2}
-\contentsline {subsubsection}{SVG}{12}{section*.8}
-\contentsline {subsubsection}{Custom XML-based format}{12}{section*.9}
-\contentsline {section}{\numberline {5.3}Conclusion}{12}{section.5.3}
-\contentsline {chapter}{\numberline {6}Implementation}{13}{chapter.6}
-\contentsline {section}{\numberline {6.1}HTML5}{13}{section.6.1}
-\contentsline {subsection}{\numberline {6.1.1}Event driven programming}{13}{subsection.6.1.1}
-\contentsline {subsection}{\numberline {6.1.2}Working with XML data}{13}{subsection.6.1.2}
-\contentsline {subsection}{\numberline {6.1.3}Drawing lines}{13}{subsection.6.1.3}
-\contentsline {subsection}{\numberline {6.1.4}Audio capturing}{13}{subsection.6.1.4}
-\contentsline {subsection}{\numberline {6.1.5}Audio processing}{13}{subsection.6.1.5}
-\contentsline {subsection}{\numberline {6.1.6}Input handling}{13}{subsection.6.1.6}
-\contentsline {chapter}{\numberline {7}Integration into other applications}{14}{chapter.7}
-\contentsline {section}{\numberline {7.1}Video player}{14}{section.7.1}
-\contentsline {section}{\numberline {7.2}Video recording}{14}{section.7.2}
-\contentsline {chapter}{\numberline {8}Testing}{15}{chapter.8}
-\contentsline {section}{\numberline {8.1}Comparint the tool to youtube}{15}{section.8.1}
-\contentsline {chapter}{\numberline {9}Users' documentation}{16}{chapter.9}
-\contentsline {chapter}{\numberline {10}Programmers' documentation}{17}{chapter.10}
-\contentsline {chapter}{Conclusion}{18}{chapter*.10}
-\contentsline {chapter}{Bibliography}{19}{chapter*.11}
-\contentsline {chapter}{List of Tables}{21}{chapter*.12}
-\contentsline {chapter}{List of Abbreviations}{22}{chapter*.13}
-\contentsline {chapter}{Attachments}{23}{chapter*.14}
+\contentsline {chapter}{Introduction}{3}
+\contentsline {chapter}{\numberline {1}Distance education}{4}
+\contentsline {section}{\numberline {1.1}Current systems}{4}
+\contentsline {subsection}{\numberline {1.1.1}Coursera}{4}
+\contentsline {subsection}{\numberline {1.1.2}Youtube.com}{5}
+\contentsline {subsection}{\numberline {1.1.3}Moodle}{5}
+\contentsline {subsection}{\numberline {1.1.4}Educreations and ShowMe}{5}
+\contentsline {subsection}{\numberline {1.1.5}Khan Academy}{6}
+\contentsline {chapter}{\numberline {2}The Vector Video project}{7}
+\contentsline {section}{\numberline {2.1}Video recording tool requirements}{7}
+\contentsline {section}{\numberline {2.2}Video player requirements}{7}
+\contentsline {section}{\numberline {2.3}Goal of this thesis}{8}
+\contentsline {chapter}{\numberline {3}Analysis}{9}
+\contentsline {section}{\numberline {3.1}Technical requirements}{9}
+\contentsline {section}{\numberline {3.2}Available techonologies}{9}
+\contentsline {subsection}{\numberline {3.2.1}Java applets}{9}
+\contentsline {subsection}{\numberline {3.2.2}Adobe Flash}{10}
+\contentsline {subsection}{\numberline {3.2.3}Microsoft Silverlight}{10}
+\contentsline {subsection}{\numberline {3.2.4}HTML5}{10}
+\contentsline {section}{\numberline {3.3}Conclusion}{11}
+\contentsline {section}{\numberline {3.4}Possible issues and known limitations}{11}
+\contentsline {chapter}{\numberline {4}Vector Screencast file format}{12}
+\contentsline {section}{\numberline {4.1}Audio}{12}
+\contentsline {section}{\numberline {4.2}Video}{12}
+\contentsline {subsection}{\numberline {4.2.1}Binary format}{12}
+\contentsline {subsection}{\numberline {4.2.2}Text format}{12}
+\contentsline {subsubsection}{SVG}{12}
+\contentsline {subsubsection}{Custom XML-based format}{12}
+\contentsline {section}{\numberline {4.3}Conclusion}{12}
+\contentsline {chapter}{\numberline {5}Implementation}{13}
+\contentsline {section}{\numberline {5.1}ECMAScript}{13}
+\contentsline {subsection}{\numberline {5.1.1}TypeScript}{13}
+\contentsline {section}{\numberline {5.2}Event driven programming}{14}
+\contentsline {section}{\numberline {5.3}HTML5}{14}
+\contentsline {subsection}{\numberline {5.3.1}Rendering graphics using HTML5}{15}
+\contentsline {paragraph}{Canvas 2D Context}{15}
+\contentsline {paragraph}{Scalable Vector Graphics (SVG)}{15}
+\contentsline {subsection}{\numberline {5.3.2}Audio capturing, processing and upload}{16}
+\contentsline {subsection}{\numberline {5.3.3}AJAX}{16}
+\contentsline {subsection}{\numberline {5.3.4}High Resolution Timer}{16}
+\contentsline {subsection}{\numberline {5.3.5}Input from pointing devices}{17}
+\contentsline {subsubsection}{Wacom Webplugin pen API}{17}
+\contentsline {subsubsection}{Touch Events API}{17}
+\contentsline {subsubsection}{Pointer Events API}{17}
+\contentsline {section}{\numberline {5.4}Drawing curves}{18}
+\contentsline {subsection}{\numberline {5.4.1}DynaDraw algorithm}{18}
+\contentsline {chapter}{\numberline {6}Integration into other applications}{21}
+\contentsline {section}{\numberline {6.1}Video player}{21}
+\contentsline {section}{\numberline {6.2}Video recording}{21}
+\contentsline {chapter}{\numberline {7}Testing}{22}
+\contentsline {section}{\numberline {7.1}Comparint the tool to youtube}{22}
+\contentsline {chapter}{\numberline {8}Users' documentation}{23}
+\contentsline {chapter}{\numberline {9}Programmers' documentation}{24}
+\contentsline {chapter}{Conclusion}{25}
+\contentsline {chapter}{Bibliography}{26}
+\contentsline {chapter}{List of Tables}{28}
+\contentsline {chapter}{List of Abbreviations}{29}
+\contentsline {chapter}{Attachments}{30}

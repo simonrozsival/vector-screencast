@@ -32,12 +32,19 @@
 \usepackage{graphicx}
 \usepackage{amsthm}
 
+%% My packages:
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{commath}
+\usepackage{float}
+\floatstyle{ruled} \newfloat{pseudocode}{thp}{lop} \floatname{pseudocode}{Pseudocode}
+
 %% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
 %% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
 %% POZOR, nezapomeňte vyplnit jméno práce a autora.
-\usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
-\hypersetup{pdftitle=Vector Screencast}
-\hypersetup{pdfauthor=Šimon Rozsíval}
+%\usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
+%\hypersetup{pdftitle=Vector Screencast}
+%\hypersetup{pdfauthor=Šimon Rozsíval}
 
 %%% Drobné úpravy stylu
 
@@ -64,14 +71,13 @@
 \addcontentsline{toc}{chapter}{#1}
 }
 
+%\include{macros/htmlcssjs_syntax}
+
 \begin{document}
 
 % Trochu volnější nastavení dělení slov, než je default.
 \lefthyphenmin=2
 \righthyphenmin=2
-
-
-\include{macros/htmlcssjs_syntax}
 
 %%% Titulní strana práce
 
@@ -114,11 +120,11 @@ Department of Distributed and Dependable Systems
 
 \begin{tabular}{rl}
 
-Supervisor of the bachelor thesis: Mgr. Martin Děcký \\
+Supervisor of the bachelor thesis: & Mgr. Martin Děcký \\
 \noalign{\vspace{2mm}}
-Study programme: Informatika \\
+Study programme: & Computer science \\
 \noalign{\vspace{2mm}}
-Specialization: Programování a softwarové systémy \\
+Specialization: & Programming and software systems \\
 \end{tabular}
 
 \vfill
@@ -139,7 +145,7 @@ Prague 2015
 \openright
 
 \noindent
-Dedication. @todo
+Dedication.
 
 \newpage
 
@@ -190,7 +196,7 @@ Mgr. Martin Děcký
 % dle Organizační struktury MFF UK, případně plný název pracoviště mimo MFF UK
 
 Abstrakt:
-@todo
+Cílem bakalářské práce je vytvořit software pro záznam a přehrávání výukových videí pro potřeby Khanovy školy. Na rozdíl od běžných videí nejsou obrazová data uložena ve formě bitmap, ale jako vektory, což umožní snížit datovou náročnost a vykreslit obraz ostře při libovolně velkém rozlišení obrazovky uživatele. Přehrávač videa i nástroj pro nahrávání běží ve webovém prohlížeči. Součástí práce je také návrh a implementace vhodného formátu pro uchovávání obrazových a zvukových dat a implementace v softwarové architektuře klient/server.
 % abstrakt v rozsahu 80-200 slov; nejedná se však o opis zadání bakalářské práce
 
 Klíčová slova:
@@ -216,7 +222,7 @@ Mgr. Martin Děcký
 % mimo MFF UK v angličtině
 
 Abstract:
-@todo
+The goal of this bachelor thesis is to create a software for recording and playback of educational videos for Khanova škola (Czech clone of Khan Academy). Contrary to common videos the visual data is not stored as a sequence of bitmaps, but as vectors. This allows to reduce the data bandwidth and playback sharp images in any target resolution. The player and also the tool for recording the videos runs in a web browser. The thesis also focuses on designing and implementing a suitable file format for storing the visual and audio data and implementing the software according to the client/server paradigm.
 % abstrakt v rozsahu 80-200 slov v angličtině; nejedná se však o překlad
 % zadání bakalářské práce
 
@@ -240,7 +246,6 @@ screencast, vector, video, on-line
 %%% Jednotlivé kapitoly práce jsou pro přehlednost uloženy v samostatných souborech
 \include{preface}
 \include{chapters/02_online_education}
-\include{chapters/03_technological_enhancements}
 \include{chapters/04_short_specification}
 \include{chapters/05_choice_of_technologies}
 \include{chapters/06_file_format}
