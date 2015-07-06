@@ -108,11 +108,12 @@ module AudioData {
 				var canPlayAtLeastOne: boolean = false;			
 				for (var i = 0; i < sources.length; i++) {
 					var element: AudioSource = sources[i];
-					if(audio.canPlayType(element.MimeType) === "probably") { // probably is the best we can get ()
+					if(audio.canPlayType(element.MimeType) === "probably"
+						|| audio.canPlayType(element.MimeType) === "maybe") { // 'probably' is the best we can get ('maybe' might also work...)
 						var source: HTMLElement = Helpers.HTML.CreateElement("source", {
 							src: element.Url,
 							type: element.MimeType
-						});				
+						});
 						audio.appendChild(source);
 						canPlayAtLeastOne = true;	
 					}
