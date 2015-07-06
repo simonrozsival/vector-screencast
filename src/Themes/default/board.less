@@ -9,7 +9,9 @@
 	.vector-video-board {
 		min-height: 100%;
 		width: 100%;
-		position: relative;
+		position: fixed; // disable scrolling trick
+		top: 0;
+		left: 0;
 		
 		.recording & {
 			cursor: none; // custom cursor
