@@ -41,7 +41,8 @@
     "node-uuid": "^1.4.3",
     "typescript": "1.5.0-beta",
     "wav": "^1.0.0",
-    "ws": "^0.7.2"
+    "ws": "^0.7.2",
+    "gulp-ignore": "~1.2.1"
   },
   "devDependencies": {
     "busboy": "^0.2.9"
