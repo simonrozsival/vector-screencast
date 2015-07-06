@@ -2139,18 +2139,21 @@ var UI;
             //
             this.GetHTML().classList.add("ui-progressbar");
             // create progress bar
-            var bar = new UI.SimpleElement("div");
-            bar.GetHTML().classList.add("ui-progress");
+            var bar = new UI.Panel("div");
+            bar.AddClass("ui-progress");
+            bar.AddChild(new UI.SimpleElement("div").AddClass("ui-current-time"));
             this.progresbar = bar;
             this.AddChild(bar);
+            bar = null;
             // create progress bar
-            bar = new UI.SimpleElement("div");
-            bar.GetHTML().classList.add("ui-buffer");
-            this.bufferbar = bar;
-            this.AddChild(bar);
+            var buffer = new UI.SimpleElement("div");
+            buffer.AddClass("ui-buffer");
+            this.bufferbar = buffer;
+            this.AddChild(buffer);
+            buffer = null;
             // skipping helper
             this.arrow = new UI.SimpleElement("div", "0:00");
-            this.arrow.GetHTML().classList.add("ui-arrow");
+            this.arrow.AddClass("ui-arrow");
             this.AddChild(this.arrow);
             // init progresbar with
             this.Sync(0);
@@ -2599,6 +2602,19 @@ var AudioData;
                         });
                         audio.appendChild(source);
                         canPlayAtLeastOne = true;
+                    }
+                }
+                if (canPlayAtLeastOne === false) {
+                    for (var i = 0; i < sources.length; i++) {
+                        var element = sources[i];
+                        if (audio.canPlayType(element.MimeType) === "maybe") {
+                            var source = Helpers.HTML.CreateElement("source", {
+                                src: element.Url,
+                                type: element.MimeType
+                            });
+                            audio.appendChild(source);
+                            canPlayAtLeastOne = true;
+                        }
                     }
                 }
                 // no source can be played by the browser?

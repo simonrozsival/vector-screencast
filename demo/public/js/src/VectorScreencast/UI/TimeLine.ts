@@ -27,20 +27,23 @@ module UI {
 			this.GetHTML().classList.add("ui-progressbar");
 			
 			// create progress bar
-			var bar: SimpleElement = new SimpleElement("div");
-			bar.GetHTML().classList.add("ui-progress");			
+			var bar: Panel = new Panel("div");
+			bar.AddClass("ui-progress");			
+			bar.AddChild(new SimpleElement("div").AddClass("ui-current-time"));
 			this.progresbar = bar;
 			this.AddChild(bar);
+			bar = null;
 			
 			// create progress bar
-			bar = new SimpleElement("div");
-			bar.GetHTML().classList.add("ui-buffer");			
-			this.bufferbar = bar;
-			this.AddChild(bar);
+			var buffer: SimpleElement = new SimpleElement("div");
+			buffer.AddClass("ui-buffer");			
+			this.bufferbar = buffer;
+			this.AddChild(buffer);
+			buffer = null;
 			
 			// skipping helper
 			this.arrow = new SimpleElement("div", "0:00");
-			this.arrow.GetHTML().classList.add("ui-arrow");
+			this.arrow.AddClass("ui-arrow");
 			this.AddChild(this.arrow);
 			
 			// init progresbar with

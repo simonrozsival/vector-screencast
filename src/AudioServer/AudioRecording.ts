@@ -29,6 +29,7 @@ module AudioRecording {
     }     
     
     export interface IServerConfiguration {
+        hostName: string;
         port?: number;
         path?: string;
         outputDir?: string;
@@ -79,7 +80,7 @@ module AudioRecording {
                             fileWriter = this.InitRecording(name, msg);                        
                         } else if (!!msg && msg.type === "end") {
                             recordingEndedProperly = true;
-                            this.FinishRecording(name, fileWriter, socket);
+                            this.FinishRecording(this.cfg.hostName, name, fileWriter, socket);
                         } else {
                             // error - unsupported message
                             console.log(colors.red("Unsupported message"), message);                        
@@ -130,7 +131,7 @@ module AudioRecording {
             return fileWriter;
         }
                 
-        private FinishRecording(name: string, fileWriter: any, socket: any): void {
+        private FinishRecording(hostName: string, name: string, fileWriter: any, socket: any): void {
             // write the Wav into the file
             fileWriter.end();
             fileWriter = null;
@@ -138,6 +139,10 @@ module AudioRecording {
             this.TryConvertTo(name, function(results) {
                 // inform the client about the result
                 if(!!socket) {
+                    for (var i = 0; i < results.length; i++) {
+                        results[i].url = hostName + results[i].url;                        
+                    }
+                    
                     socket.send(JSON.stringify({
                         error: false,
                         files: results
