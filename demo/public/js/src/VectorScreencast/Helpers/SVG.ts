@@ -1,5 +1,5 @@
-/// <reference path="vector.ts" />
-/// <reference path="HTML.ts" />
+/// <reference path="Vector" />
+/// <reference path="HTML" />
 /// <reference path="HelperFunctions" />
 
 /**

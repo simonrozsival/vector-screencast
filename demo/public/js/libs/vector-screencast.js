@@ -516,8 +516,8 @@ var Helpers;
     Helpers.millisecondsToString = millisecondsToString;
     ;
 })(Helpers || (Helpers = {}));
-/// <reference path="vector.ts" />
-/// <reference path="HTML.ts" />
+/// <reference path="Vector" />
+/// <reference path="HTML" />
 /// <reference path="HelperFunctions" />
 /**
  * SVG helper
@@ -927,8 +927,6 @@ var Helpers;
     })();
     Helpers.VideoEvents = VideoEvents;
 })(Helpers || (Helpers = {}));
-/// <reference path="../UI/Color" />
-/// <reference path="../UI/Brush" />
 /// <reference path="../Helpers/HTML" />
 var UI;
 (function (UI) {
@@ -1645,7 +1643,6 @@ var Drawing;
 /// <reference path="../Helpers/SVG.ts" />
 /// <reference path="../Helpers/Spline.ts" />
 /// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
 /// <reference path="Path" />
 var Drawing;
@@ -5115,6 +5112,8 @@ var VectorScreencast;
     })();
     VectorScreencast.Player = Player;
 })(VectorScreencast || (VectorScreencast = {}));
+/// <reference path="../UI/Color" />
+/// <reference path="../UI/Brush" />
 /// <reference path="../Drawing/DrawingStrategy.ts" />
 /// <reference path="../Localization/IRecorderLocalization.ts" />
 /// <reference path="../UI/Color" />
