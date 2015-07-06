@@ -220,7 +220,7 @@ module VideoFormat.SVGAnimation {
 				var initCmds: Array<Command> = this.InitCommandsFromSVG(init, cmdFactory);
 				
 				// now the chunk instance can be created
-				var chunk: PathChunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+				var chunk: PathChunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), 0); // 0 will be changed to last erase later
 				chunk.InitCommands = initCmds;
 				
 				// [3 ..] all the others are cmds
@@ -241,8 +241,7 @@ module VideoFormat.SVGAnimation {
 				var node: Node = SVG.CreateElement("g");
 				SVGA.SetAttributes(node, {
 					"type": PathChunkFactory.NodeName,
-					"t": chunk.StartTime.toFixed(TIME_PRECISION),
-					"lastErase": chunk.LastErase
+					"t": chunk.StartTime.toFixed(TIME_PRECISION)
 				});
 				
 				// [1] path
@@ -412,7 +411,7 @@ module VideoFormat.SVGAnimation {
 				var initCmds: Array<Command> = this.InitCommandsFromSVG(init, cmdFactory);
 				
 				// now the chunk instance can be created
-				var chunk: EraseChunk = new EraseChunk(new UI.Color("", SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+				var chunk: EraseChunk = new EraseChunk(new UI.Color("", SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), 0); // last erase will be added later
 				chunk.InitCommands = initCmds;
 								
 				// [3 ..] all the others are cmds
@@ -433,8 +432,7 @@ module VideoFormat.SVGAnimation {
 				var node: Node = SVG.CreateElement("g");
 				SVGA.SetAttributes(node, {
 					"type": EraseChunkFactory.NodeName,
-					"t": chunk.StartTime.toFixed(TIME_PRECISION),
-					"lastErase": chunk.LastErase
+					"t": chunk.StartTime.toFixed(TIME_PRECISION)
 				});
 				
 				// [1] rect

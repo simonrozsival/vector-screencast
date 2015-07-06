@@ -33,7 +33,7 @@ module Drawing {
 		/** Physical constants */
 		private minMass: number = 1;
 		private maxMass: number = 10;
-		private minFriction: number = 0.4; // 0.4 is experimentaly derived constant, that gives nice results for all weights
+		private minFriction: number = 0.4;
 		private maxFriction: number = 0.6;
 				
 		/** Currently used brush size */
@@ -148,7 +148,8 @@ module Drawing {
 		 * @param	{number}		pressure	Cursor pressure
 		 */
 		public EndPath(position: Vector2, pressure: number) {
-			this.position = position;			
+			//this.position = position;
+			this.position = null;			
 		}
 				
 		/**
@@ -186,20 +187,19 @@ module Drawing {
 		private oneFrame: number = 1000 / 60; // 60 Hz in milliseconds
 		
 		private Tick(time: number) {
-			if(!!this.position) {
+			if(!!this.path) {
 				if(this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
 					this.cursor.Draw(this.path, this.pressure);
 				} else {
-					this.position = null; // skip Apply(..) that will return false next time	
-				}
+					if(!this.position) { // mouse is released
+						this.path = null; // stop drawing the path
+					}
+				}				
 			}
 			
 			// do the next tick
 			this.lastAnimationTime = time;
 			requestAnimationFrame((time: number) => this.Tick(time)); // ~ 60 FPS
-			//setTimeout(() => this.Tick(time + 1), 1); // ~ 1000 FPS
-			//setTimeout(() => this.Tick(time + 30), 30); // ~ 30 FPS
-			//setTimeout(() => this.Tick(time + 200), 200); // ~ 30 FPS
 		}
 	}	
 	
@@ -215,7 +215,6 @@ module Drawing {
 	}
 	
 	const enum Threshold {
-		Force = 1,
 		Velocity = 1
 	}
 	
@@ -278,32 +277,31 @@ module Drawing {
 		 * @param	{number}	elapsedFrames	The number of frames elapsed since last movement
 		 * @return	{number}					Brush movement distance squared 
 		 */
-		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {			
-			// calculate the force
-			var force: Vector2 = mouse.clone().subtract(this.position);
-			if(force.getSizeSq() < Threshold.Force) {
-				return 0; // too subtle movement
+		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {
+			if(mouse !== null) { // if there is an impulse from the mouse
+				// calculate the force
+				var force: Vector2 = mouse.clone().subtract(this.position);	
+				// calculate acceleration and velocity
+				this.acceleration = force.clone().scale(1/this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
+				this.velocity.add(this.acceleration);		
+		 		this.mousePosition = mouse;		
 			}
 			
-			// calculate acceleration and velocity
-			this.acceleration = force.clone().scale(1/this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
-			this.velocity.add(this.acceleration);
+			// apply friction		
+			this.velocity.scale((1 - this.brush.Friction) * elapsedFrames);			
+			// brush stops - unnoticable shift
 			if(this.velocity.getSizeSq() < Threshold.Velocity) {
 				return 0; // nearly no movement (a "heavy" brush)
 			}
 			
 		 	// destroy unnecessary references
-		 	this.mousePosition = mouse.clone();
 			mouse = null;
 			force = null;	
 			this.acceleration = null;
 			
 			// calculate the angle of the mouse
 			this.angle = this.velocity.getNormal();
-			
-			// apply the drag of the digital drawing tool
-			this.velocity.scale((1 - this.brush.Friction) * elapsedFrames); // more friction means less movement
-			
+						
 			// update position
 			this.position.add(this.velocity);	
 						

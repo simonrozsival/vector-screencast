@@ -1,5 +1,5 @@
 /// <reference path="../UI/Color" />
-/// <reference path="../UI/BrushSize" />
+/// <reference path="../UI/Brush" />
 
 module Settings {
 	

@@ -23,7 +23,6 @@ module VideoFormat.JSONAnimation {
 	export interface ChunkJSONFormat {
 		type: string,
 		t: number,
-		lastErase: number,
 		init: Array<CommandJSONFormat>,
 		cmds: Array<CommandJSONFormat>
 	}
@@ -80,9 +79,9 @@ module VideoFormat.JSONAnimation {
 
 		FromJSON(node: any, cmdFactory: CommandFactory): Chunk {
 			if (node.hasOwnProperty("type") && node.type === VoidChunkFactory.TypeName
-				&& node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
+				&& node.hasOwnProperty("t")) {
 					
-				var chunk: VoidChunk = new VoidChunk(node.t, node.lastErase);
+				var chunk: VoidChunk = new VoidChunk(node.t, 0); // last erase will be set later
 				// load init commands
 				if(node.hasOwnProperty("init") === false || Array.isArray(node.init) === false) {
 					throw new Error(`Node ${node} has no 'init' attr or it is not an array`);						
@@ -110,7 +109,6 @@ module VideoFormat.JSONAnimation {
 				return {
 					type: VoidChunkFactory.TypeName,
 					t: maxDecPlaces(chunk.StartTime),
-					lastErase: chunk.LastErase,
 					init: this.CommandsToJSON(chunk.Commands, cmdFactory),
 					cmds: this.CommandsToJSON(chunk.Commands, cmdFactory)
 				};
@@ -256,7 +254,7 @@ module VideoFormat.JSONAnimation {
 				
 		FromJSON(node: any, cmdFactory: CommandFactory): Chunk {			
 			if (node.hasOwnProperty("type") && node.type === PathChunkFactory.TypeName
-				&& node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
+				&& node.hasOwnProperty("t")) {
 							
 				// [1] PATH child
 				if (node.hasOwnProperty("path") === false
@@ -282,7 +280,7 @@ module VideoFormat.JSONAnimation {
 					path.Segments.push(this.segmentFactory.FromJSON(node.path.segments[i]));					
 				}
 								
-				var chunk: PathChunk = new PathChunk(path, node.t, node.lastErase);
+				var chunk: PathChunk = new PathChunk(path, node.t, 0); // last erase will be set later
 				chunk.InitCommands = this.CommandsFromJSON(node.init, cmdFactory);
 				
 				var cmds = this.CommandsFromJSON(node.cmds, cmdFactory);
@@ -306,7 +304,6 @@ module VideoFormat.JSONAnimation {
 				return {
 					type: "path",
 					t: maxDecPlaces(chunk.StartTime),
-					lastErase: chunk.LastErase,
 					path: {
 						color: chunk.Path.Color,
 						segments: segments
@@ -326,7 +323,7 @@ module VideoFormat.JSONAnimation {
 		
 		FromJSON(node: any, cmdFactory: CommandFactory): Chunk {
 			if (node.hasOwnProperty("type") && node.type === EraseChunkFactory.TypeName
-				&& node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
+				&& node.hasOwnProperty("t")) {
 					
 				if(node.hasOwnProperty("color") === false) {
 					throw new Error(`Erase chunk must have a valid 'color' attr`);
@@ -341,7 +338,7 @@ module VideoFormat.JSONAnimation {
 					throw new Error(`Node ${node} has no 'cmds' attr or it is not an array`);
 				}
 
-				var chunk: EraseChunk = new EraseChunk(new UI.Color("", node.color), node.t, node.lastErase);
+				var chunk: EraseChunk = new EraseChunk(new UI.Color("", node.color), node.t, 0); // last erase will be added later
 				chunk.InitCommands = this.CommandsFromJSON(node.init, cmdFactory);
 				var cmds = this.CommandsFromJSON(node.cmds, cmdFactory);
 				for (var i = 0; i < cmds.length; i++) {
@@ -359,7 +356,6 @@ module VideoFormat.JSONAnimation {
 				return {
 					type: EraseChunkFactory.TypeName,
 					t: maxDecPlaces(chunk.StartTime),
-					lastErase: chunk.LastErase,
 					color: chunk.Color.CssValue,
 					init: this.CommandsToJSON(chunk.Commands, cmdFactory),
 					cmds: this.CommandsToJSON(chunk.Commands, cmdFactory)

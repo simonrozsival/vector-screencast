@@ -1,4 +1,5 @@
-
+/// <reference path="../UI/Color" />
+/// <reference path="../UI/Brush" />
 
 module Settings {
 	

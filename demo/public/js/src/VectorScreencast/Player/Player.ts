@@ -220,9 +220,16 @@ module VectorScreencast {
                     this.MoveToNextChunk();
                     
                     // I might have reached the end here
-                    if(!this.video.CurrentChunk) {
-                        this.ReachedEnd();
-                        return;
+                    if(!this.video.CurrentChunk
+                        || !this.video.CurrentChunk.CurrentCommand) {
+                            
+                        // the audio might be running, but there are no more commands,
+                        // check that it is really the end of the video 
+                        if(this.timer.CurrentTime() >= this.video.Metadata.Length) {
+                            this.ReachedEnd();                            
+                        }                            
+                        
+                        break;
                     }
                 }
                 

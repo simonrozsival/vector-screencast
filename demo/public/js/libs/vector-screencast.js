@@ -927,6 +927,8 @@ var Helpers;
     })();
     Helpers.VideoEvents = VideoEvents;
 })(Helpers || (Helpers = {}));
+/// <reference path="../UI/Color" />
+/// <reference path="../UI/Brush" />
 /// <reference path="../Helpers/HTML" />
 var UI;
 (function (UI) {
@@ -1637,12 +1639,12 @@ var Drawing;
     Drawing.CanvasPath = CanvasPath;
 })(Drawing || (Drawing = {}));
 /// <reference path="./DrawingStrategy.ts" />
-/// <reference path="../helpers/Vector.ts" />
-/// <reference path="../helpers/State.ts" />
-/// <reference path="../helpers/HTML.ts" />
-/// <reference path="../helpers/SVG.ts" />
-/// <reference path="../helpers/Spline.ts" />
-/// <reference path="../helpers/VideoEvents.ts" />
+/// <reference path="../Helpers/Vector.ts" />
+/// <reference path="../Helpers/State.ts" />
+/// <reference path="../Helpers/HTML.ts" />
+/// <reference path="../Helpers/SVG.ts" />
+/// <reference path="../Helpers/Spline.ts" />
+/// <reference path="../Helpers/VideoEvents.ts" />
 /// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
 /// <reference path="Path" />
@@ -1743,7 +1745,6 @@ var Drawing;
 /// <reference path="../Helpers/SVG.ts" />
 /// <reference path="../Helpers/Spline.ts" />
 /// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../settings/BrushSettings.ts" />
 /// <reference path="../UI/BasicElements" />
 /// <reference path="Path" />
 var Drawing;
@@ -2407,11 +2408,11 @@ var UI;
                 .AddClass("ui-controls-panel");
         };
         /**
-         * @param	time	Current time in seconds
+         * @param	time	Optional - specific time in seconds
          */
-        PlayerUI.prototype.UpdateCurrentTime = function () {
-            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.Timer.CurrentTime());
-            this.timeline.Sync(this.Timer.CurrentTime());
+        PlayerUI.prototype.UpdateCurrentTime = function (time) {
+            this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(!!time ? time : this.Timer.CurrentTime());
+            this.timeline.Sync(!!time ? time : this.Timer.CurrentTime());
         };
         /**
          * React to end of playing - show the replay button
@@ -2422,6 +2423,7 @@ var UI;
             this.PausePlaying();
             this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
             this.reachedEnd = true;
+            this.UpdateCurrentTime(); // make the time be exacetely the duration of the video and the timeline is at 100%
         };
         /**
          * Busy/Ready states
@@ -3717,7 +3719,7 @@ var VideoFormat;
                     }
                     var initCmds = this.InitCommandsFromSVG(init, cmdFactory);
                     // now the chunk instance can be created
-                    var chunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    var chunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), 0); // 0 will be changed to last erase later
                     chunk.InitCommands = initCmds;
                     // [3 ..] all the others are cmds
                     var cmd = init.nextElementSibling;
@@ -3734,8 +3736,7 @@ var VideoFormat;
                     var node = SVG.CreateElement("g");
                     SVGA.SetAttributes(node, {
                         "type": PathChunkFactory.NodeName,
-                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
-                        "lastErase": chunk.LastErase
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION)
                     });
                     // [1] path
                     node.appendChild(this.PathToSVGNode(chunk.Path));
@@ -3885,7 +3886,7 @@ var VideoFormat;
                     }
                     var initCmds = this.InitCommandsFromSVG(init, cmdFactory);
                     // now the chunk instance can be created
-                    var chunk = new EraseChunk(new UI.Color("", SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    var chunk = new EraseChunk(new UI.Color("", SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), 0); // last erase will be added later
                     chunk.InitCommands = initCmds;
                     // [3 ..] all the others are cmds
                     var cmd = init.nextElementSibling;
@@ -3902,8 +3903,7 @@ var VideoFormat;
                     var node = SVG.CreateElement("g");
                     SVGA.SetAttributes(node, {
                         "type": EraseChunkFactory.NodeName,
-                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
-                        "lastErase": chunk.LastErase
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION)
                     });
                     // [1] rect
                     node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: "100%", height: "100%" }));
@@ -4377,8 +4377,8 @@ var VideoFormat;
             }
             VoidChunkFactory.prototype.FromJSON = function (node, cmdFactory) {
                 if (node.hasOwnProperty("type") && node.type === VoidChunkFactory.TypeName
-                    && node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
-                    var chunk = new VoidChunk(node.t, node.lastErase);
+                    && node.hasOwnProperty("t")) {
+                    var chunk = new VoidChunk(node.t, 0); // last erase will be set later
                     // load init commands
                     if (node.hasOwnProperty("init") === false || Array.isArray(node.init) === false) {
                         throw new Error("Node " + node + " has no 'init' attr or it is not an array");
@@ -4400,7 +4400,6 @@ var VideoFormat;
                     return {
                         type: VoidChunkFactory.TypeName,
                         t: maxDecPlaces(chunk.StartTime),
-                        lastErase: chunk.LastErase,
                         init: this.CommandsToJSON(chunk.Commands, cmdFactory),
                         cmds: this.CommandsToJSON(chunk.Commands, cmdFactory)
                     };
@@ -4542,7 +4541,7 @@ var VideoFormat;
             }
             PathChunkFactory.prototype.FromJSON = function (node, cmdFactory) {
                 if (node.hasOwnProperty("type") && node.type === PathChunkFactory.TypeName
-                    && node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
+                    && node.hasOwnProperty("t")) {
                     // [1] PATH child
                     if (node.hasOwnProperty("path") === false
                         && node.path.hasOwnProperty("color")
@@ -4562,7 +4561,7 @@ var VideoFormat;
                     for (var i = 0; i < node.path.segments.length; i++) {
                         path.Segments.push(this.segmentFactory.FromJSON(node.path.segments[i]));
                     }
-                    var chunk = new PathChunk(path, node.t, node.lastErase);
+                    var chunk = new PathChunk(path, node.t, 0); // last erase will be set later
                     chunk.InitCommands = this.CommandsFromJSON(node.init, cmdFactory);
                     var cmds = this.CommandsFromJSON(node.cmds, cmdFactory);
                     for (var i = 0; i < cmds.length; i++) {
@@ -4581,7 +4580,6 @@ var VideoFormat;
                     return {
                         type: "path",
                         t: maxDecPlaces(chunk.StartTime),
-                        lastErase: chunk.LastErase,
                         path: {
                             color: chunk.Path.Color,
                             segments: segments
@@ -4603,7 +4601,7 @@ var VideoFormat;
             }
             EraseChunkFactory.prototype.FromJSON = function (node, cmdFactory) {
                 if (node.hasOwnProperty("type") && node.type === EraseChunkFactory.TypeName
-                    && node.hasOwnProperty("t") && node.hasOwnProperty("lastErase")) {
+                    && node.hasOwnProperty("t")) {
                     if (node.hasOwnProperty("color") === false) {
                         throw new Error("Erase chunk must have a valid 'color' attr");
                     }
@@ -4614,7 +4612,7 @@ var VideoFormat;
                     if (node.hasOwnProperty("cmds") === false && Array.isArray(node.cmds) === false) {
                         throw new Error("Node " + node + " has no 'cmds' attr or it is not an array");
                     }
-                    var chunk = new EraseChunk(new UI.Color("", node.color), node.t, node.lastErase);
+                    var chunk = new EraseChunk(new UI.Color("", node.color), node.t, 0); // last erase will be added later
                     chunk.InitCommands = this.CommandsFromJSON(node.init, cmdFactory);
                     var cmds = this.CommandsFromJSON(node.cmds, cmdFactory);
                     for (var i = 0; i < cmds.length; i++) {
@@ -4629,7 +4627,6 @@ var VideoFormat;
                     return {
                         type: EraseChunkFactory.TypeName,
                         t: maxDecPlaces(chunk.StartTime),
-                        lastErase: chunk.LastErase,
                         color: chunk.Color.CssValue,
                         init: this.CommandsToJSON(chunk.Commands, cmdFactory),
                         cmds: this.CommandsToJSON(chunk.Commands, cmdFactory)
@@ -4947,9 +4944,14 @@ var VectorScreencast;
                 if (this.video.CurrentChunk.CurrentCommand === undefined) {
                     this.MoveToNextChunk();
                     // I might have reached the end here
-                    if (!this.video.CurrentChunk) {
-                        this.ReachedEnd();
-                        return;
+                    if (!this.video.CurrentChunk
+                        || !this.video.CurrentChunk.CurrentCommand) {
+                        // the audio might be running, but there are no more commands,
+                        // check that it is really the end of the video 
+                        if (this.timer.CurrentTime() >= this.video.Metadata.Length) {
+                            this.ReachedEnd();
+                        }
+                        break;
                     }
                 }
                 if (this.video.CurrentChunk.CurrentCommand.Time > this.timer.CurrentTime()) {
@@ -5842,7 +5844,7 @@ var Drawing;
             /** Physical constants */
             this.minMass = 1;
             this.maxMass = 10;
-            this.minFriction = 0.4; // 0.4 is experimentaly derived constant, that gives nice results for all weights
+            this.minFriction = 0.4;
             this.maxFriction = 0.6;
             /**
              * Each brush has different properties - larger brushes are heavier and have greater drag
@@ -5934,7 +5936,8 @@ var Drawing;
          * @param	{number}		pressure	Cursor pressure
          */
         DynaDraw.prototype.EndPath = function (position, pressure) {
-            this.position = position;
+            //this.position = position;
+            this.position = null;
         };
         /**
          * Simulate brush's movement frame by frame as long as it keeps moving.
@@ -5965,20 +5968,19 @@ var Drawing;
         };
         DynaDraw.prototype.Tick = function (time) {
             var _this = this;
-            if (!!this.position) {
+            if (!!this.path) {
                 if (this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
                     this.cursor.Draw(this.path, this.pressure);
                 }
                 else {
-                    this.position = null; // skip Apply(..) that will return false next time	
+                    if (!this.position) {
+                        this.path = null; // stop drawing the path
+                    }
                 }
             }
             // do the next tick
             this.lastAnimationTime = time;
             requestAnimationFrame(function (time) { return _this.Tick(time); }); // ~ 60 FPS
-            //setTimeout(() => this.Tick(time + 1), 1); // ~ 1000 FPS
-            //setTimeout(() => this.Tick(time + 30), 30); // ~ 30 FPS
-            //setTimeout(() => this.Tick(time + 200), 200); // ~ 30 FPS
         };
         return DynaDraw;
     })();
@@ -6040,26 +6042,26 @@ var Drawing;
          * @return	{number}					Brush movement distance squared
          */
         BrushTip.prototype.ApplyForce = function (mouse, elapsedFrames) {
-            // calculate the force
-            var force = mouse.clone().subtract(this.position);
-            if (force.getSizeSq() < 1 /* Force */) {
-                return 0; // too subtle movement
+            if (mouse !== null) {
+                // calculate the force
+                var force = mouse.clone().subtract(this.position);
+                // calculate acceleration and velocity
+                this.acceleration = force.clone().scale(1 / this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
+                this.velocity.add(this.acceleration);
+                this.mousePosition = mouse;
             }
-            // calculate acceleration and velocity
-            this.acceleration = force.clone().scale(1 / this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
-            this.velocity.add(this.acceleration);
+            // apply friction		
+            this.velocity.scale((1 - this.brush.Friction) * elapsedFrames);
+            // brush stops - unnoticable shift
             if (this.velocity.getSizeSq() < 1 /* Velocity */) {
                 return 0; // nearly no movement (a "heavy" brush)
             }
             // destroy unnecessary references
-            this.mousePosition = mouse.clone();
             mouse = null;
             force = null;
             this.acceleration = null;
             // calculate the angle of the mouse
             this.angle = this.velocity.getNormal();
-            // apply the drag of the digital drawing tool
-            this.velocity.scale((1 - this.brush.Friction) * elapsedFrames); // more friction means less movement
             // update position
             this.position.add(this.velocity);
             return this.velocity.getSizeSq(); // there is something to render

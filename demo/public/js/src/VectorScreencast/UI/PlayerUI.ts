@@ -266,11 +266,11 @@ module UI {
 		private tickingInterval: number = 200;
 		
 		/**
-		 * @param	time	Current time in seconds
+		 * @param	time	Optional - specific time in seconds
 		 */
-		public UpdateCurrentTime() : void {
-			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(this.Timer.CurrentTime());
-			this.timeline.Sync(this.Timer.CurrentTime());
+		public UpdateCurrentTime(time?: number) : void {
+			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(!!time ? time : this.Timer.CurrentTime());
+			this.timeline.Sync(!!time ? time : this.Timer.CurrentTime());
 		}
 		
 		
@@ -281,7 +281,8 @@ module UI {
 			if(!this.controls) return;
 			this.PausePlaying();
 			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
-			this.reachedEnd = true;
+			this.reachedEnd = true;			
+			this.UpdateCurrentTime(); // make the time be exacetely the duration of the video and the timeline is at 100%
 		}
 		
 		/**
