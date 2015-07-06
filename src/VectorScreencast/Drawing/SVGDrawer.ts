@@ -5,7 +5,7 @@
 /// <reference path="../Helpers/SVG.ts" />
 /// <reference path="../Helpers/Spline.ts" />
 /// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../settings/BrushSettings.ts" />
+/// <reference path="../settings/Brush.ts" />
 /// <reference path="../UI/BasicElements" />
 /// <reference path="Path" />
 
