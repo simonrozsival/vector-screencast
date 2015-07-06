@@ -2,10 +2,12 @@
 
 Vector video file must contain all the information about cursor movement and precise data of the lines, including their variable width, and the times at which every single segment of a line is drawn. This data is then used to reconstruct the precise movement of the author's cursor and draw the very sqme lines at the very same pace.
 
-There are several vector based formats available.
+There are several binary vector based formats available for animations. EVA, Flash SWF
 
-\paragraph{Scalable Vector Graphics (SVG)}
+\section{Extending SVG}
 Scalable Vector Graphics (SVG)\footnote{http://www.w3.org/TR/SVG/} is an Extensible Markup Language (XML)\footnote{http://www.w3.org/XML/} based file format designed for describing two-dimensional vector images. It is an open format developed and maintained by the W3C SVG Working Group \cite{}. Current W3C Recommendation is SVG 1.1 (Second Edition).
+
+SVG format is common and is implemented in web browsers and in many programs. These programs can open an SVG image and draw it's contents. The idea is to create an SVG file, which contains all the information needed using custom namespace attributes and elements and shows the state of the blackboard at the end of recording.
 
 A valid SVG document must have an \textit{svg} root element with specific namespace attributes and specified \textit{width} and \textit{height} attributes. An example of an empty, but valid, SVG document might look as shown:
 

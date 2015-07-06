@@ -3864,6 +3864,9 @@ var VideoFormat;
             __extends(EraseChunkFactory, _super);
             function EraseChunkFactory() {
                 _super.apply(this, arguments);
+                /** Dimensions of the video - so the SVG rectangle covers the whole underlaying layers */
+                this.Width = 0;
+                this.Height = 0;
             }
             EraseChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
                 if (SVGA.attr(node, "type") === EraseChunkFactory.NodeName) {
@@ -3903,7 +3906,7 @@ var VideoFormat;
                         "t": chunk.StartTime.toFixed(TIME_PRECISION)
                     });
                     // [1] rect
-                    node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: "100%", height: "100%" }));
+                    node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: this.Width, height: this.Height }));
                     // [2] init commands
                     node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
                     // [3] all the commands
@@ -4026,7 +4029,8 @@ var VideoFormat;
                 // chain of responsibility - command factory and chunk factory
                 // note: moving cursor is the most typical and far most frequent command - IT **MUST** BE FIRST IN THE CHAIN!
                 this.commandFactory = new SVGAnimation.MoveCursorFactory(new SVGAnimation.DrawSegmentFactory(new SVGAnimation.ChangeBrushColorFactory(new SVGAnimation.ChangeBrushSizeFactory(new SVGAnimation.ClearCanvasFactory()))));
-                this.chunkFactory = new SVGAnimation.VoidChunkFactory(new SVGAnimation.PathChunkFactory(new SVGAnimation.EraseChunkFactory()));
+                this.eraseChunkFactory = new SVGAnimation.EraseChunkFactory();
+                this.chunkFactory = new SVGAnimation.VoidChunkFactory(new SVGAnimation.PathChunkFactory(this.eraseChunkFactory));
                 this.metadataFactory = new SVGAnimation.MetadataFactory();
             }
             /**
@@ -4046,6 +4050,9 @@ var VideoFormat;
                 });
                 // save the metadata
                 doc.rootElement.appendChild(this.metadataFactory.ToSVG(data.Metadata));
+                // configure erase factory with canvas dimensions
+                this.eraseChunkFactory.Width = data.Metadata.Width;
+                this.eraseChunkFactory.Height = data.Metadata.Height;
                 // all the chunks
                 var chunks = SVG.CreateElement("g");
                 SVGA.SetAttributes(chunks, { "type": this.VideoChunksLayerType });
@@ -5617,15 +5624,16 @@ var VideoData;
             board.addEventListener("touchmove", function (ev) { return _this.TouchMove(ev); });
         }
         TouchEventsAPI.prototype.TouchStart = function (event) {
-            event.preventDefault();
+            //event.preventDefault();
             var touches = event.changedTouches;
             // select the first touch and follow only this one touch			
             var touch = touches[0];
             this.currentTouch = touch.identifier;
+            this.isInside = true;
             this.onDown(touch);
         };
         TouchEventsAPI.prototype.TouchLeave = function (event) {
-            event.preventDefault();
+            //event.preventDefault();
             var touch = this.filterTouch(event.changedTouches);
             if (touch === null) {
                 return; // current touch hasn't left the board
@@ -5633,7 +5641,6 @@ var VideoData;
             this.onLeave(touch);
         };
         TouchEventsAPI.prototype.TouchEnd = function (event) {
-            event.preventDefault();
             var touch = this.filterTouch(event.changedTouches);
             if (touch === null) {
                 return;
@@ -5643,7 +5650,7 @@ var VideoData;
             this.currentTouch = null;
         };
         TouchEventsAPI.prototype.TouchMove = function (event) {
-            event.preventDefault();
+            //event.preventDefault();			
             var touch = this.filterTouch(event.changedTouches);
             if (touch === null) {
                 return;

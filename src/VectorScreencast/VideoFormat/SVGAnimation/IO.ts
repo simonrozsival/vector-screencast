@@ -22,6 +22,8 @@ module VideoFormat.SVGAnimation {
 		private commandFactory: CommandFactory; 
 		private metadataFactory: MetadataFactory;
 		
+		/** Erase factory needs aditional information */
+		private eraseChunkFactory: EraseChunkFactory;
 		
 		constructor() {				
 			// chain of responsibility - command factory and chunk factory
@@ -36,9 +38,10 @@ module VideoFormat.SVGAnimation {
 										)
 									);
 									
+			this.eraseChunkFactory = new EraseChunkFactory();
 			this.chunkFactory = new VoidChunkFactory(
 										new PathChunkFactory(
-											new EraseChunkFactory()
+											this.eraseChunkFactory
 										)
 									);
 									
@@ -62,9 +65,13 @@ module VideoFormat.SVGAnimation {
 				height: data.Metadata.Height,
 				viewBox: `0 0 ${data.Metadata.Width} ${data.Metadata.Height}`				
 			});
-			
+						
 			// save the metadata
 			doc.rootElement.appendChild(this.metadataFactory.ToSVG(data.Metadata));
+			
+			// configure erase factory with canvas dimensions
+			this.eraseChunkFactory.Width = data.Metadata.Width;
+			this.eraseChunkFactory.Height = data.Metadata.Height;
 			
 			// all the chunks
 			var chunks: Node = SVG.CreateElement("g");

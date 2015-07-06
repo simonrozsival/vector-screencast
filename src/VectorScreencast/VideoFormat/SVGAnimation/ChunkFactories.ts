@@ -390,6 +390,10 @@ module VideoFormat.SVGAnimation {
 	export class EraseChunkFactory extends ChunkFactory {
 		private static NodeName: string = "erase";
 		
+		/** Dimensions of the video - so the SVG rectangle covers the whole underlaying layers */
+		public Width: number = 0;		
+		public Height: number = 0;
+		
 		FromSVG(node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === EraseChunkFactory.NodeName) {				
 				// [0] erase chunk must have at least two child nodes
@@ -436,7 +440,7 @@ module VideoFormat.SVGAnimation {
 				});
 				
 				// [1] rect
-				node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: "100%", height: "100%" }));
+				node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: this.Width, height: this.Height }));
 				// [2] init commands
 				node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
 				// [3] all the commands

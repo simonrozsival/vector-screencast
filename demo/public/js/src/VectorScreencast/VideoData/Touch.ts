@@ -22,18 +22,19 @@ module VideoData {
 		private currentTouch: number;
 		
 		private TouchStart(event: TouchEvent): void {			
-			event.preventDefault();
+			//event.preventDefault();
 			var touches: TouchList = event.changedTouches;
 			
 			// select the first touch and follow only this one touch			
 			var touch = touches[0];
 			this.currentTouch = touch.identifier;
+			this.isInside = true;
 			
 			this.onDown(touch);
 		}
 		
 		protected TouchLeave(event: TouchEvent): void {
-			event.preventDefault();
+			//event.preventDefault();
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
 				return; // current touch hasn't left the board
@@ -43,8 +44,6 @@ module VideoData {
 		}
 		
 		protected TouchEnd(event: TouchEvent): void {
-			event.preventDefault();			
-			
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
 				return;
@@ -56,7 +55,7 @@ module VideoData {
 		}
 		
 		protected TouchMove(event: TouchEvent): void {
-			event.preventDefault();			
+			//event.preventDefault();			
 				
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
