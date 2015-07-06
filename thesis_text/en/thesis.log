@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=cslatex 2015.1.20)  4 JUL 2015 16:52
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=cslatex 2015.1.20)  6 JUL 2015 15:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -385,9 +385,7 @@ LaTeX Info: Redefining \] on input line 2666.
 (./chapters/04_short_specification.aux)
 (./chapters/05_choice_of_technologies.aux) (./chapters/06_file_format.aux)
 (./chapters/07_implementation.aux) (./chapters/08_integration.aux)
-(./chapters/09_testing.aux) (./chapters/10_user_documentation.aux)
-(./chapters/11_programmers_documentation.aux) (./epilog.aux)
-(./bibliography.aux
+(./chapters/10_user_documentation.aux) (./epilog.aux) (./bibliography.aux
 
 LaTeX Warning: Label `' multiply defined.
 
@@ -468,7 +466,7 @@ Chapter 1.
  (./chapters/04_short_specification.tex
 Chapter 2.
 
-Overfull \hbox (9.84315pt too wide) in paragraph at lines 15--16
+Overfull \hbox (9.84315pt too wide) in paragraph at lines 17--18
 \OT1/cmr/m/n/12 browsers with-out any spe-cial soft-ware or plu-g-in in-stalled
 , in-clud-ing mo-bile browsers. 
  []
@@ -486,12 +484,18 @@ Chapter 3.
 
 
 
-] [10]) [11]
+] [10]
+Underfull \hbox (badness 10000) in paragraph at lines 48--48
+[][]\OT1/cmr/m/n/10 http://blogs.windows.com/msedgedev/2015/05/13/announcing-me
+dia-capture-
+ []
+
+[11]) [12]
 \openout2 = `chapters/06_file_format.aux'.
 
  (./chapters/06_file_format.tex
 Chapter 4.
-) [12
+) [13
 
 
 
@@ -501,52 +505,42 @@ Chapter 4.
  (./chapters/07_implementation.tex
 Chapter 5.
 
-Overfull \hbox (1.00883pt too wide) in paragraph at lines 12--13
+Overfull \hbox (27.72493pt too wide) in paragraph at lines 14--14
+[][]\OT1/cmr/m/n/10 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inh
+eritance[]and[]the[]prototype[]chain| 
+ []
+
+
+Overfull \hbox (1.00883pt too wide) in paragraph at lines 14--15
 []\OT1/cmr/m/n/12 Object ori-ent-ed pro-gram-ming (OOP) [] in JavaScript dif-fe
 rs from class-oriented
  []
 
-[13
+[14
 
 
 
-]
-Overfull \hbox (87.61029pt too wide) in paragraph at lines 44--44
-[]\OT1/cmtt/m/n/12 console.log("received message backwards:", message.split("")
-.reverse().join(""));[] 
- []
-
-[14] [15]
-Underfull \hbox (badness 10000) in paragraph at lines 106--106
-[][]\OT1/cmr/m/n/10 getUserMedia: http://www.w3.org/TR/mediacapture-streams/#do
-m-mediadevices-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 108--108
-[][]\OT1/cmr/m/n/10 MediaStreamError: http://www.w3.org/TR/mediacapture-streams
-/#idl-def-
- []
-
-
-Overfull \hbox (30.35541pt too wide) in paragraph at lines 118--118
-[][]\OT1/cmr/m/n/10 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Ref
-erence/Global[]Objects/Date/now| 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 118--118
-[][]\OT1/cmr/m/n/10 http://updates.html5rocks.com/2012/08/When-milliseconds-are
--not-enough-performance-
- []
-
-[16] [17]
-Overfull \hbox (0.24326pt too wide) in paragraph at lines 161--162
+] [15] [16]
+Overfull \hbox (0.24326pt too wide) in paragraph at lines 93--94
 []\OT1/cmr/m/n/12 Heavier brush-es move slow-ly, but the path they leave be-hin
 d is much smoother,
  []
 
-[18] [19]) [20]
+[17] [18]
+File: ../img/draw-segment-quadrilateral.eps Graphic file (type eps)
+ <../img/draw-segment-quadrilateral.eps>
+File: ../img/bezier_curves.eps Graphic file (type eps)
+ <../img/bezier_curves.eps>
+[19]
+Overfull \hbox (1.63788pt too wide) in paragraph at lines 194--195
+\OT1/cmr/m/n/12 ing cu-bic B^^Sezier con-trol points $\OT1/cmr/bx/n/12 P[]\OML/
+cmm/m/it/12 ; \OT1/cmr/bx/n/12 P[]\OML/cmm/m/it/12 ; \OT1/cmr/bx/n/12 P[]\OML/c
+mm/m/it/12 ; \OT1/cmr/bx/n/12 P[]$\OT1/cmr/m/n/12 , from the points $\OT1/cmr/b
+x/n/12 X[]\OML/cmm/m/it/12 ; \OT1/cmr/bx/n/12 X[]\OML/cmm/m/it/12 ; \OT1/cmr/bx
+/n/12 X[]\OML/cmm/m/it/12 ; \OT1/cmr/bx/n/12 X[]$
+ []
+
+) [20]
 \openout2 = `chapters/08_integration.aux'.
 
  (./chapters/08_integration.tex
@@ -556,43 +550,18 @@ Chapter 6.
 
 
 ]
-\openout2 = `chapters/09_testing.aux'.
-
- (./chapters/09_testing.tex
-Chapter 7.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 5.
-(/usr/local/texlive/2014/texmf-dist/tex/latex/base/omscmr.fd
-File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-)
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 5.
-) [22
-
-
-
-]
 \openout2 = `chapters/10_user_documentation.aux'.
 
-
-(./chapters/10_user_documentation.tex
-Chapter 8.
-) [23
-
-
-
-]
-\openout2 = `chapters/11_programmers_documentation.aux'.
-
- (./chapters/11_programmers_documentation.tex
-Chapter 9.
-) [24
+ (./chapters/10_user_documentation.tex
+Chapter 7.
+) [22
 
 
 
 ]
 \openout2 = `epilog.aux'.
 
- (./epilog.tex) [25
+ (./epilog.tex) [23
 
 
 
@@ -663,35 +632,33 @@ Underfull \hbox (badness 10000) in paragraph at lines 69--71
 
  []
 
-[26
+[24
 
 
 
-]) [27] [28
+]) [25] [26
 
 
-] [29
+] [27
 
-] [30
+] [28
 
 ] (./thesis.aux (./preface.aux)
 (./chapters/02_online_education.aux) (./chapters/04_short_specification.aux)
 (./chapters/05_choice_of_technologies.aux) (./chapters/06_file_format.aux)
 (./chapters/07_implementation.aux) (./chapters/08_integration.aux)
-(./chapters/09_testing.aux) (./chapters/10_user_documentation.aux)
-(./chapters/11_programmers_documentation.aux) (./epilog.aux)
-(./bibliography.aux))
+(./chapters/10_user_documentation.aux) (./epilog.aux) (./bibliography.aux))
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2302 strings out of 494916
- 29431 string characters out of 6180010
- 94112 words of memory out of 5000000
- 5517 multiletter control sequences out of 15000+600000
- 12838 words of font info for 46 fonts, out of 8000000 for 9000
+ 2281 strings out of 494916
+ 28818 string characters out of 6180010
+ 89234 words of memory out of 5000000
+ 5507 multiletter control sequences out of 15000+600000
+ 14040 words of font info for 50 fonts, out of 8000000 for 9000
  24 hyphenation exceptions out of 8191
- 34i,8n,22p,1081b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,8n,22p,964b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.dvi (34 pages, 79464 bytes).
+Output written on thesis.dvi (32 pages, 77284 bytes).

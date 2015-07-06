@@ -1,15 +1,17 @@
 \chapter{The Vector Video project}
 
-In the spring of 2014 the people behind ``Khanova Škola'' --- the Czech branch of the Khan Academy --- were looking for a person to develop an experimental video technology based on vector graphics. Their idea was to record raw data of user's input as he creates a Khan Academy style video and later draw the video scaled to match user's device's resolution and achieving maximum quality of the output. Thanks to the sparse nature of vectors in comparison to bitmaps, the data consumption might also be reduced or at least similar. This animation would also be linked to an audio track of authors voice commentary forming a complex Khan Academy style video suitable for educational purposes.
+In the spring of 2014 the people behind ``Khanova Škola'' -- the Czech branch of the Khan Academy -- were looking for a person to develop an experimental video technology based on vector graphics. Their idea was to record raw data of user's input as he creates a Khan-style-video and later, when another user watches the video, draw the video scaled to match user's device's resolution and thus achieving maximum quality of the output. The result of this will be that the video will never become obsolete because it's quality isn not keeping up with the times.
+
+Thanks to the sparse nature of vectors, in comparison to bitmaps, the data consumption might also be reduced or at least similar. This animation would also be linked to an audio track of authors voice commentary forming a complex KSV video suitable for educational purposes.
 
 \section{Video recording tool requirements}
-User, who wants to create a new video, should enter website with his web browser and without installing any additional software start recording a video using his mouse, touchscreen or digital drawing pen and a microphone. This video should then be uploaded to the server.
+User, who wants to create a new video, should enter a website in his web browser and without installing any additional software start recording a video using his mouse, touchscreen or digital stylus and a microphone. This video should then be uploaded to the server.
 
-If the user uses a digital pressure-sensitive stylus, then the applied pressure during cursor movement should be recorded too. The more pressure the user applies, the thicker the line will be in that point. Using this specific hardware might require additional drivers or specific software installed.
+If the user uses a pressure-sensitive stylus, then the applied pressure during drawing should be recorded too. The more pressure the user applies, the thicker the line will be and vice versa. Using this specific hardware might require additional drivers or specific software installed.
 
-User should be able to choose from different brush sizes, brush colors and select background color. User should be able to erase certain parts of the canvas or the whole canvas at once. User should be able to pause and continue recording at any time.
+Different brush sizes, brush colors and background colors are available for the user. User should be able to erase certain parts of the canvas or the whole canvas at once. User should be able to pause and continue recording at any time.
 
-User should have direct visual feedback of the drawn data on the canvas so he sees exactly the same output as the viewer will when he is playing the video later. All the raw data collected from the user should be stored, including the data that has no effect for video playback, like recording cursor movement while recording is paused. This will allow the user to simulate the process of video recording in the future and use it for further post-processing. Recording of this redundant information should be optional.
+Lines are immediately rendered on the screen as the user draws them, so he sees exactly the same output as the viewer will when he is playing the video later. All the raw data collected from the user should be stored, including the data that have no effect for video playback, like recording cursor movement while recording is paused. This will allow the user to simulate the process of video recording in the future and use it for further post-processing in any distant future. Recording of this redundant information should be optional.
 
 \section{Video player requirements}
 Any user should be able to play vector video on-line in all major modern web browsers without any special software or plugin installed, including mobile browsers.
@@ -20,7 +22,7 @@ User can pause and continue with the playback of the video at any time. User can
 
 If the author of the video had recorded his voice, it must be played along the video. Audio must be synchronized with the video whenever user plays or pauses the video or when he skips to a different point on the time line.
 
-User interface should be intuitive and easy to use either on a desktop computer using mouse and keyboard, but also with touchscreens.
+User interface should be intuitive and easy to use either on a desktop computer using mouse and keyboard, but also with touchscreens on mobile devices.
 
 \section{Goal of this thesis}
 

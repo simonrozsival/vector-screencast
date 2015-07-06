@@ -21,7 +21,7 @@
         <div id="demo"></div>
         
         <!-- load the libary JS -->
-        <script src="/js/libs/vector-video.js"></script>
+        <script src="/js/libs/vector-screencast.js"></script>
             
         <!-- initialisation script -->
         <script>
@@ -34,11 +34,11 @@
             // if no file was specified, ask the user directly
             // - this is just for the convenience of the demo, it would be better to redirect to some search page
             if(!sourceFile) {
-                sourceFile = prompt("Please enter name of the video you want to watch.", "video1.svg");    
+                sourceFile = prompt("Please enter name of the video you want to watch.", "/recordings/video1.svg");    
             }
             
             // create the recorder
-            var player = new VectorVideo.Player("demo", {
+            var player = new VectorScreencast.Player("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 Source: sourceFile,
                 VideoFormat: !!urlQuery["format"] && urlQuery["format"] === "json" ? new VideoFormat.JSONAnimation.IO() : new VideoFormat.SVGAnimation.IO(),

@@ -1,5 +1,5 @@
 /**
- * GULP file for Vector Video project
+ * GULP file for Vector Screencast project
  * @author	Šimon Rozsíval
  * @contact	simon@roszival.com
  * @licence	MIT 
@@ -91,68 +91,68 @@ gulp.task("themes-demo", function() {
 });
 
 /**
- * Compile the VectorVideo JavaScript library
- * The source of VectorVideo is written in TypeScript and must be transpiled to pure Javascript.
+ * Compile the VectorScreencast JavaScript library
+ * The source of VectorScreencast is written in TypeScript and must be transpiled to pure Javascript.
  */
 
 
-var libProject = require("./src/VectorVideo/tsconfig.json", { sourceMap: false }); // source maps are irrelevant for the release version
-var recorderProject = require("./src/VectorVideo/Recorder/tsconfig.json", { sourceMap: false }); 
-var playerProject = require("./src/VectorVideo/Player/tsconfig.json", { sourceMap: false });
+var libProject = require("./src/VectorScreencast/tsconfig.json", { sourceMap: false }); // source maps are irrelevant for the release version
+var recorderProject = require("./src/VectorScreencast/Recorder/tsconfig.json", { sourceMap: false }); 
+var playerProject = require("./src/VectorScreencast/Player/tsconfig.json", { sourceMap: false });
 
 //
 // A) for release
 //
  
 gulp.task("player-release", function() {
-	return gulp.src("./src/VectorVideo/Player/Player.ts")
+	return gulp.src("./src/VectorScreencast/Player/Player.ts")
 			.pipe(tsc(playerProject.compilerOptions))
 			.pipe(ignore.exclude([ "**/*.map" ])) // do not uglify .map files
 			.pipe(uglify())
-			.pipe(gulp.dest("./release/vector-video-lib"));
+			.pipe(gulp.dest("./release/vector-screencast-lib"));
 });
 
 gulp.task("recorder-release", function() {
-	return gulp.src("./src/VectorVideo/Recorder/Recorder.ts")
+	return gulp.src("./src/VectorScreencast/Recorder/Recorder.ts")
 			.pipe(tsc(recorderProject.compilerOptions))
 			.pipe(ignore.exclude([ "**/*.map" ])) // do not uglify .map files
 			.pipe(uglify())
-			.pipe(gulp.dest("./release/vector-video-lib"));
+			.pipe(gulp.dest("./release/vector-screencast-lib"));
 });
 
-gulp.task("vector-video-release", function() {
-	return gulp.src("./src/VectorVideo/lib.ts")
+gulp.task("vector-screencast-release", function() {
+	return gulp.src("./src/VectorScreencast/lib.ts")
 			.pipe(tsc(libProject.compilerOptions))
 			.pipe(ignore.exclude([ "**/*.map" ])) // do not uglify .map files
 			.pipe(uglify())
-			.pipe(gulp.dest("./release/vector-video-lib"));
+			.pipe(gulp.dest("./release/vector-screencast-lib"));
 });
 
-gulp.task("lib-release", ["vector-video-release", "player-release", "recorder-release"]);
+gulp.task("lib-release", ["vector-screencast-release", "player-release", "recorder-release"]);
 
 //
 // B) for the demo
 //
 
 gulp.task("copy-source-for-sourcemaps", function () {
-	return gulp.src("./src/VectorVideo/**/*")
-				.pipe(gulp.dest("./demo/public/js/src/VectorVideo/"));
+	return gulp.src("./src/VectorScreencast/**/*")
+				.pipe(gulp.dest("./demo/public/js/src/VectorScreencast/"));
 });
 
-gulp.task("vector-video-demo", ["copy-source-for-sourcemaps"], function() {
-	return gulp.src("./src/VectorVideo/lib.ts")
+gulp.task("vector-screencast-demo", ["copy-source-for-sourcemaps"], function() {
+	return gulp.src("./src/VectorScreencast/lib.ts")
 			.pipe(sourcemaps.init())
 			.pipe(tsc(libProject.compilerOptions))
 			.pipe(sourcemaps.write("./demo/public/js/libs"))
 			.pipe(gulp.dest("./demo/public/js/libs"));
 });
 
-gulp.task("lib-demo", ["vector-video-demo"]);
+gulp.task("lib-demo", ["vector-screencast-demo"]);
 
 
 /**
- * Compile the VectorVideo JavaScript library
- * The source of VectorVideo is written in TypeScript and must be transpiled to pure Javascript.
+ * Compile the VectorScreencast JavaScript library
+ * The source of VectorScreencast is written in TypeScript and must be transpiled to pure Javascript.
  */
 var workersProject = require("./src/AudioRecordingWorkers/tsconfig.json");
 

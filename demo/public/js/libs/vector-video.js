@@ -3590,7 +3590,7 @@ var VideoFormat;
             }
             VoidChunkFactory.prototype.FromSVG = function (node, cmdFactory) {
                 if (SVGA.attr(node, "type") === VoidChunkFactory.NodeName) {
-                    var chunk = new VoidChunk(SVGA.numAttr(node, "t"), SVGA.numAttr(node, "lastErase"));
+                    var chunk = new VoidChunk(SVGA.numAttr(node, "t"), 0); // 0 will be changed later in the IO class
                     // load init commands
                     var init = node.firstElementChild;
                     chunk.InitCommands = this.InitCommandsFromSVG(init, cmdFactory);
@@ -3608,8 +3608,7 @@ var VideoFormat;
                     var node = SVG.CreateElement("g");
                     SVGA.SetAttributes(node, {
                         "type": VoidChunkFactory.NodeName,
-                        "t": chunk.StartTime.toFixed(TIME_PRECISION),
-                        "lastErase": chunk.LastErase
+                        "t": chunk.StartTime.toFixed(TIME_PRECISION)
                     });
                     node.appendChild(this.InitCommandsToSVG(chunk.InitCommands, cmdFactory));
                     this.CommandsToSVG(node, chunk.Commands, cmdFactory);
@@ -4086,10 +4085,19 @@ var VideoFormat;
                     throw new Error(("SVGAnimation IO parsing error: chunks layer must be a SVG\u00A0<g> node with a:type='" + this.VideoChunksLayerType + "',")
                         + (" got <" + chunksLayer.localName + "> with a:type='" + SVGA.attr(chunksLayer, "type") + "'"));
                 }
+                var lastErase = 0;
+                var i = 0;
                 var chunk = chunksLayer.firstElementChild;
                 while (!!chunk) {
-                    video.PushChunk(this.chunkFactory.FromSVG(chunk, this.commandFactory));
+                    var next = this.chunkFactory.FromSVG(chunk, this.commandFactory);
+                    next.LastErase = lastErase;
+                    video.PushChunk(next);
+                    if (next instanceof VideoData.EraseChunk) {
+                        // remember the position of last erase 
+                        lastErase = i;
+                    }
                     chunk = chunk.nextElementSibling;
+                    i++;
                 }
                 video.Rewind(); // currentChunk = 0
                 return video;
@@ -4755,8 +4763,14 @@ var VideoFormat;
                 }
                 var video = new Video();
                 video.Metadata = this.metadataFactory.FromJSON(data.meta);
+                var lastErase = 0;
                 for (var i = 0; i < data.chunks.length; ++i) {
-                    video.PushChunk(this.chunkFactory.FromJSON(data.chunks[i], this.commandFactory));
+                    var next = this.chunkFactory.FromJSON(data.chunks[i], this.commandFactory);
+                    next.LastErase = lastErase;
+                    video.PushChunk(next);
+                    if (next instanceof VideoData.EraseChunk) {
+                        lastErase = i;
+                    }
                 }
                 video.Rewind(); // currentChunk = 0
                 return video;
@@ -4786,8 +4800,8 @@ var VideoFormat;
 /// <reference path="../UI/Cursor" />
 /// <reference path="../Helpers/State" />
 /// <reference path="../VideoFormat/JSONAnimation/IO" />
-var VectorVideo;
-(function (VectorVideo) {
+var VectorScreencast;
+(function (VectorScreencast) {
     var AudioPlayer = AudioData.AudioPlayer;
     var VideoEvents = Helpers.VideoEvents;
     var VideoEventType = Helpers.VideoEventType;
@@ -5097,8 +5111,8 @@ var VectorVideo;
         };
         return Player;
     })();
-    VectorVideo.Player = Player;
-})(VectorVideo || (VectorVideo = {}));
+    VectorScreencast.Player = Player;
+})(VectorScreencast || (VectorScreencast = {}));
 /// <reference path="../Drawing/DrawingStrategy.ts" />
 /// <reference path="../Localization/IRecorderLocalization.ts" />
 /// <reference path="../UI/Color" />
@@ -5295,6 +5309,7 @@ var AudioData;
          * Stop the recording
          */
         AudioRecorder.prototype.Stop = function (success, error) {
+            var _this = this;
             if (this.initSuccessful === true) {
                 // stop recording
                 if (this.Pause()) {
@@ -5302,6 +5317,9 @@ var AudioData;
                         // prepare for response from the worker first
                         this.recordingWorker.onmessage = function (e) {
                             var msg = e.data;
+                            // destroy the worker
+                            _this.recordingWorker.terminate();
+                            _this.recordingWorker = null;
                             if (!msg.hasOwnProperty("error")) {
                                 console.log("Worker response is invalid (missing property 'error')", e.data);
                                 error();
@@ -6344,8 +6362,8 @@ var UI;
 /// <reference path="../Localization/IRecorderLocalization" />
 /// <reference path="../VideoFormat/SVGAnimation/IO" />
 /// <reference path="../VideoFormat/JSONAnimation/IO" />
-var VectorVideo;
-(function (VectorVideo) {
+var VectorScreecast;
+(function (VectorScreecast) {
     var Video = VideoData.Video;
     var Mouse = VideoData.Mouse;
     var WacomTablet = VideoData.WacomTablet;
@@ -6662,7 +6680,7 @@ var VectorVideo;
             var formData = new FormData();
             formData.append("extension", writer.GetExtension());
             formData.append("file", videoBlob);
-            var req = new XMLHttpRequest();
+            var req = new XMLHttpRequest(); // remove the "_fix" when next version of TypeScript fixes this but: https://github.com/Microsoft/TypeScript/issues/3002
             req.open("POST", this.settings.UploadURL, true); // async post request			
             req.onerror = function (e) { return _this.FinishRecording(false); }; // upload failed
             req.onload = function (e) {
@@ -6712,8 +6730,8 @@ var VectorVideo;
         };
         return Recorder;
     })();
-    VectorVideo.Recorder = Recorder;
-})(VectorVideo || (VectorVideo = {}));
+    VectorScreecast.Recorder = Recorder;
+})(VectorScreecast || (VectorScreecast = {}));
 /// <reference path="Player/Player.ts" />
 /// <reference path="Recorder/Recorder.ts" /> 
 //# sourceMappingURL=vector-video.js.map

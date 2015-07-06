@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" value="noindex, nofollow"> <!-- this is just a demo app, no indexing by search engines please -->
-        <title>Record a new vector video</title>
+        <title>Record a new vector screencast</title>
 
         <!-- CSS -->
         <link rel="stylesheet" media="screen,projection,tv" href="/css/demo-skin.css">
@@ -21,14 +21,14 @@
         <div id="demo"></div>
         
         <!-- load the libary JS -->
-        <script src="/js/libs/vector-video.js"></script>
+        <script src="/js/libs/vector-screencast.js"></script>
             
         <!-- initialisation script -->
         <script>
         // wait until the DOM is loaded and ready
         window.onload = function() {
             // create the recorder
-            var recorder = new VectorVideo.Recorder("demo", {
+            var recorder = new VectorScreencast.Recorder("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 UploadURL: "/upload/result",
                 Audio: {
