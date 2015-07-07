@@ -46,7 +46,13 @@ gulp.task("clean-demo", function() {
 	]);	
 });
 
-gulp.task("clean", ["clean-release", "clean-demo"]);
+gulp.task("clean-doc", function() {
+	del([
+		"./docs/**/*", // delete everything in docs directory
+	])
+});
+
+gulp.task("clean", ["clean-release", "clean-demo", "clean-doc"]);
 
 /**
  * Gulp task for transpiling .LESS files into .CSS
