@@ -1,5 +1,5 @@
 
-module Helpers {
+module VectorScreencast.Helpers {
 
 	/**
 	 * Common interface for my intended usage of Date and Performance.

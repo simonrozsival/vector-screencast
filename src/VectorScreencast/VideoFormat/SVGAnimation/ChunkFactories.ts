@@ -1,10 +1,7 @@
-/// <reference path="../../VideoData/Chunk" />
-/// <reference path="../../VideoData/Command" />
-/// <reference path="CommandFactories" />
-/// <reference path="../../Helpers/SVG" />
+/// <reference path="../../VectorScreencast" />
 
 
-module VideoFormat.SVGAnimation {
+module VectorScreencast.VideoFormat.SVGAnimation {
 
 	import SVG = Helpers.SVG;
 	import SVGA = Helpers.SVGA;

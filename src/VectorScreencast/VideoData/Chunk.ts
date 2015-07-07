@@ -1,10 +1,6 @@
-/// <reference path="Command" />
-/// <reference path="../Helpers/State" />
-/// <reference path="../Helpers/VideoTimer" />
-/// <reference path="../Helpers/VideoEvents" />
-/// <reference path="../Drawing/Path" />
+/// <reference path="../VectorScreencast" />
 
-module VideoData {
+module VectorScreencast.VideoData {
 	
 	
 	import StateType = Helpers.StateType;

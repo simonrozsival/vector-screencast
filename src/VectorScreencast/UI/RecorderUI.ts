@@ -1,14 +1,6 @@
-/// <reference path="BasicElements" />
-/// <reference path="Buttons" />
-/// <reference path="Color" />
-/// <reference path="Brush" />
-/// <reference path="Board" />
-/// <reference path="../Helpers/VideoEvents" />
-/// <reference path="../Localization/IRecorderLocalization" />
-/// <reference path="../Helpers/HelperFunctions" />
+/// <reference path="../VectorScreencast" />
 
-
-module UI {
+module VectorScreencast.UI {
 
 	/**
 	 * This class wraps the whole UI of the recorder.
@@ -43,7 +35,7 @@ module UI {
 		}
 
 		/** Translated strings */
-		public Localization: Localization.IRecorderLocalization;
+		public Localization: Localization.RecorderLocalization;
 		
 		/** (High res.) timer */
 		public Timer: Helpers.VideoTimer;

@@ -1,10 +1,6 @@
-/// <reference path="../../Helpers/SVG" />
-/// <reference path="../../UI/Color" />
-/// <reference path="../../UI/Brush" />
-/// <reference path="../../VideoData/Command" />
-/// <reference path="../../Helpers/HelperFunctions" />
+/// <reference path="../../VectorScreencast" />
 
-module VideoFormat.JSONAnimation {
+module VectorScreencast.VideoFormat.JSONAnimation {
 	
 	import Command = VideoData.Command;
 	import MoveCursor = VideoData.MoveCursor;

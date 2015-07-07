@@ -1,7 +1,7 @@
 /// <reference path="Path" />
 /// <reference path="../Helpers/VideoTimer" />
 
-module Drawing {
+module VectorScreencast.Drawing {
 	
 	import Vector2 = Helpers.Vector2;
 	import VideoTimer = Helpers.VideoTimer;

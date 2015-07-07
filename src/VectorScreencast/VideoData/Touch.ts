@@ -1,7 +1,6 @@
-/// <reference path="Mouse.ts" />
-/// <reference path="../Helpers/HTML.ts" />
+/// <reference path="../VectorScreencast" />
 
-module VideoData {
+module VectorScreencast.VideoData {
 		
 	/**
 	 * Touch Events API

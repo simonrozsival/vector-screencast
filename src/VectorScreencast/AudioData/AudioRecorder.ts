@@ -1,10 +1,7 @@
 /// <reference path="audio.d.ts" />
-/// <reference path="AudioPlayer" />
-/// <reference path="../Settings/RecorderSettings" /> 
-/// <reference path="../Helpers/Errors" />
-/// <reference path="../Helpers/VideoEvents" />
+/// <reference path="../VectorScreencast" />
 
-module AudioData {
+module VectorScreencast.AudioData {
 	
 	import Errors = Helpers.Errors;
 	import ErrorType = Helpers.ErrorType;
@@ -33,7 +30,7 @@ module AudioData {
 		private doNotStartRecording: boolean = false;
 	
 		/** Default settings of audio recording */
-		private settings: Settings.IAudioRecorderSettings = {
+		private settings: Settings.AudioRecorderSettings = {
 			host: "http://localhost",
 			port: 4000,
 			path: "/upload/audio",			
@@ -47,7 +44,7 @@ module AudioData {
 		 * Initialise the audio recoder
 		 * @param	config	Audio recorder settings from the outside.
 		 */
-		constructor(config: Settings.IAudioRecorderSettings) {
+		constructor(config: Settings.AudioRecorderSettings) {
 			// update default settings
 			if(!!config.host) this.settings.host = config.host;
 			if(!!config.port) this.settings.port = config.port;
@@ -130,7 +127,7 @@ module AudioData {
 		 * @param	success			This callback will be called if the worker is created
 	 	 * @param	error			This callback will be called if web workers aren't supported
 		 */
-		private CreateAudioProcessor(processorType: string, cfg: Settings.IAudioRecorderSettings, success?: Function, error?: Function) {
+		private CreateAudioProcessor(processorType: string, cfg: Settings.AudioRecorderSettings, success?: Function, error?: Function) {
 			if(Worker) { // if web workers are supported
 				this.recordingWorker = new Worker(cfg.recordingWorkerPath);
 				this.recordingWorker.postMessage({

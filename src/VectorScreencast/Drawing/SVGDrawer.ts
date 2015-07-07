@@ -8,7 +8,7 @@
 /// <reference path="../UI/BasicElements" />
 /// <reference path="Path" />
 
-module Drawing {
+module VectorScreencast.Drawing {
 
     import HTML = Helpers.HTML;
     import SVG = Helpers.SVG;

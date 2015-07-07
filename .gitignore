@@ -1,2 +1,6 @@
 node_modules/*
 release/*
+docs/*
+demo/public/recordings/*
+demo/public/js/*
+demo/AudioServer*

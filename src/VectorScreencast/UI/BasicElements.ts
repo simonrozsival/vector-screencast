@@ -1,6 +1,6 @@
 /// <reference path="../Helpers/HTML" />
 
-module UI {
+module VectorScreencast.UI {
 	
 	import HTML = Helpers.HTML;
 		

@@ -1,7 +1,7 @@
-/// <reference path="../Helpers/HTML.ts" />
-/// <reference path="../Helpers/VideoEvents.ts" />
+/// <reference path="audio.d.ts" />
+/// <reference path="../VectorScreencast" />
 
-module AudioData {
+module VectorScreencast.AudioData {
 
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
@@ -12,8 +12,11 @@ module AudioData {
 	 * Enumeration of supported audio types.
 	 */
 	export enum AudioSourceType {
+		/** audio/mp3 */
 		MP3,
+		/** audio/ogg */
 		OGG,
+		/** audio/wav */
 		WAV
 	}
 	

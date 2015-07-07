@@ -1,4 +1,4 @@
- module Helpers {  
+ module VectorScreencast.Helpers {  
      
      
     const COORDS_PRECISION = 3;

@@ -4,7 +4,7 @@
 /// <reference path="../Helpers/HTML" />
 /// <reference path="../Helpers/VideoEvents" />
 
-module UI {
+module VectorScreencast.UI {
 	
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;

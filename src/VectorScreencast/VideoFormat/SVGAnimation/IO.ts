@@ -1,10 +1,10 @@
-/// <reference path="../IO" />
-/// <reference path="../../VideoData/Chunk" />
-/// <reference path="./ChunkFactories" />
-/// <reference path="./CommandFactories" />
-/// <reference path="./MetadataFactory" />
+/// <reference path="ChunkFactories" />
+/// <reference path="CommandFactories" />
+/// <reference path="MetadataFactory" />
 
-module VideoFormat.SVGAnimation {
+/// <reference path="../../VectorScreencast" />
+
+module VectorScreencast.VideoFormat.SVGAnimation {
 	
 	import Video = VideoData.Video;
 	import Metadata = VideoData.Metadata;

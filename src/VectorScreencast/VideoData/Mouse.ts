@@ -1,10 +1,6 @@
-/// <reference path="../Helpers/State" />
-/// <reference path="ICursor" />
-/// <reference path="../Helpers/VideoTimer" />
-/// <reference path="../Helpers/VideoEvents" />
-/// <reference path="PointingDevice" />
+/// <reference path="../VectorScreencast" />
 
-module VideoData {	
+module VectorScreencast.VideoData {	
 
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;

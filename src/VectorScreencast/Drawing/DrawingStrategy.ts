@@ -1,6 +1,6 @@
 
 
-module Drawing {
+module VectorScreencast.Drawing {
 	
     /**
      * An interface describing a drawing strategy.

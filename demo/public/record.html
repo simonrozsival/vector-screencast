@@ -26,9 +26,12 @@
         <!-- initialisation script -->
         <script>
         // wait until the DOM is loaded and ready
-        window.onload = function() {
+        window.onload = function() {            
+            // shortcut:
+            var VS = VectorScreencast;
+        
             // create the recorder
-            var recorder = new VectorScreencast.Recorder("demo", {
+            var recorder = new VS.Recorder("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 UploadURL: "/upload/result",
                 Audio: {
@@ -37,12 +40,12 @@
                     path: "/upload/audio"
                 },
                 RecordAllRawData: false,
-                //VideoFormat: new VideoFormat.JSONAnimation.IO(),
+                //VideoFormat: new VS.VideoFormat.JSONAnimation.IO(),
                 
-                DrawingStrategy: new Drawing.CanvasDrawer(true)
-                //DrawingStrategy: new Drawing.CanvasDrawer(false)
-                //DrawingStrategy: new Drawing.SVGDrawer(true)
-                //DrawingStrategy: new Drawing.SVGDrawer(false)
+                DrawingStrategy: new VS.Drawing.CanvasDrawer(true)
+                //DrawingStrategy: new VS.Drawing.CanvasDrawer(false)
+                //DrawingStrategy: new VS.Drawing.SVGDrawer(true)
+                //DrawingStrategy: new VS.Drawing.SVGDrawer(false)
             });
         };
         </script>

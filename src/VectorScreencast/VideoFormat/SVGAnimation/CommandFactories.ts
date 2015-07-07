@@ -1,9 +1,6 @@
-/// <reference path="../../Helpers/SVG" />
-/// <reference path="../../VideoData/Command" />
-/// <reference path="../../Helpers/HelperFunctions" />
-/// <reference path="../../Helpers/SVG" />
+/// <reference path="../../VectorScreencast" />
 
-module VideoFormat.SVGAnimation {
+module VectorScreencast.VideoFormat.SVGAnimation {
 	
 	import Command = VideoData.Command;
 	import MoveCursor = VideoData.MoveCursor;

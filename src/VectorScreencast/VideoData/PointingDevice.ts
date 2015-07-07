@@ -1,9 +1,6 @@
-/// <reference path="../Helpers/State" />
-/// <reference path="ICursor" />
-/// <reference path="../Helpers/VideoTimer" />
-/// <reference path="../Helpers/VideoEvents" />
+/// <reference path="../VectorScreencast" />
 
-module VideoData {	
+module VectorScreencast.VideoData {	
 
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
@@ -35,10 +32,10 @@ module VideoData {
 		protected isHoveringOverUIControl: boolean;
 		
 		/** Last known cursor position */
-		protected cursor: ICursor;
+		protected cursor: Cursor;
 		
 		/** Last known cursor position */
-		public getCursor() : ICursor { return this.cursor; }
+		public getCursor() : Cursor { return this.cursor; }
 		
 		/** (High resolution) timer */
 		private timer: Timer;
@@ -158,12 +155,12 @@ module VideoData {
 		/**
 		 * Extract the information about cursor position relative to the board.
 		 */
-		protected getCursorPosition(e: PointingDeviceEvent) : ICursor {
+		protected getCursorPosition(e: PointingDeviceEvent) : Cursor {
 			if (e.clientX == undefined || e.clientY == undefined) {
 				console.log("Wrong 'getCursorPosition' parameter. Event data required.");
 			}
 	
-			return <ICursor> {
+			return <Cursor> {
 				x: e.clientX,
 				y: e.clientY
 			};

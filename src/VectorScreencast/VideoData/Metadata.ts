@@ -1,6 +1,6 @@
-/// <reference path="../AudioData/AudioPlayer" />
+/// <reference path="../VectorScreencast" />
 
-module VideoData {	
+module VectorScreencast.VideoData {	
 	
 	import AudioSource = AudioData.AudioSource;
 

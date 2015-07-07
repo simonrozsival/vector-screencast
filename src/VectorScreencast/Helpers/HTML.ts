@@ -2,7 +2,7 @@
 /**
  * HTML helper.
  */
-module Helpers {
+module VectorScreencast.Helpers {
     
     export interface IAttributes {
         [index: string]: any;

@@ -1,6 +1,6 @@
 /// <reference path="HTML" />
 
-module Helpers {
+module VectorScreencast.Helpers {
 	
 	/**
 	 * File helper

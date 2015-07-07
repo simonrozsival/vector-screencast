@@ -29,6 +29,9 @@
         var urlQuery = parseUrl();
         var sourceFile = urlQuery["source"];
         
+        // shortcut:
+        var VS = VectorScreencast;
+        
         // wait until the DOM is loaded and ready
         window.onload = function() {
             // if no file was specified, ask the user directly
@@ -38,14 +41,14 @@
             }
             
             // create the recorder
-            var player = new VectorScreencast.Player("demo", {
+            var player = new VS.Player("demo", {
                 // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
                 Source: sourceFile,
-                VideoFormat: !!urlQuery["format"] && urlQuery["format"] === "json" ? new VideoFormat.JSONAnimation.IO() : new VideoFormat.SVGAnimation.IO(),
+                VideoFormat: !!urlQuery["format"] && urlQuery["format"] === "json" ? new VS.VideoFormat.JSONAnimation.IO() : new VS.VideoFormat.SVGAnimation.IO(),
                 Autohide: true,
                 Autoplay: !!urlQuery["autoplay"],
                 ShowControls: !urlQuery["hide-controls"],                
-                DrawingStrategy: !!urlQuery["method"] && urlQuery["method"] === "svg" ? new Drawing.SVGDrawer() : new Drawing.CanvasDrawer()
+                DrawingStrategy: !!urlQuery["method"] && urlQuery["method"] === "svg" ? new VS.Drawing.SVGDrawer() : new VS.Drawing.CanvasDrawer()
             });
         };
         

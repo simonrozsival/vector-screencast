@@ -1,6 +1,6 @@
 
 
-module UI {
+module VectorScreencast.UI {
 		
 	/**
 	 * Brush size representation.

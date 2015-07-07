@@ -1,7 +1,6 @@
-/// <reference path="../Helpers/Vector" />
-/// <reference path="../Helpers/Spline" />
+/// <reference path="../Helpers" />
 
-module Drawing {
+module VectorScreencast.Drawing {
 	
 	import Vector2 = Helpers.Vector2;
 	import BezierCurveSegment = Helpers.BezierCurveSegment;

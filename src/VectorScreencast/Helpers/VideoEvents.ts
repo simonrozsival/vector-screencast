@@ -2,7 +2,7 @@
  * Event Aggregator object.
  * @author Šimon Rozsíval
  */
-module Helpers {   
+module VectorScreencast.Helpers {   
     
     /**
      * The list of supported video events.

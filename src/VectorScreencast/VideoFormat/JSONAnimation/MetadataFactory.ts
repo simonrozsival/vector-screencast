@@ -1,7 +1,6 @@
-/// <reference path="../../VideoData/Metadata" />
-/// <reference path="../../Helpers/SVG" />
+/// <reference path="../../VectorScreencast" />
 
-module VideoFormat.JSONAnimation {
+module VectorScreencast.VideoFormat.JSONAnimation {
 	
 	import Metadata = VideoData.Metadata;
 	

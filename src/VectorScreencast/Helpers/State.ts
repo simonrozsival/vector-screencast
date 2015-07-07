@@ -2,7 +2,7 @@
 /// <reference path="../UI/Color" />
 /// <reference path="../UI/Brush" />
 
-module Helpers {
+module VectorScreencast.Helpers {
     
     export enum StateType {
         ChangeBrushSize,

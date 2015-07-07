@@ -1,13 +1,7 @@
-/// <reference path="../../VideoData/Chunk" />
-/// <reference path="../../VideoData/Command" />
-/// <reference path="../../Drawing/Segments" />
-/// <reference path="../../Drawing/Path" />
-/// <reference path="./CommandFactory" />"
-/// <reference path="../../Helpers/SVG" />
-/// <reference path="../../Helpers/Vector" />
+/// <reference path="../../VectorScreencast" />
 
 
-module VideoFormat.JSONAnimation {
+module VectorScreencast.VideoFormat.JSONAnimation {
 
 	import Command = VideoData.Command;
 	import Chunk = VideoData.Chunk;

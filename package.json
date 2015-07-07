@@ -46,6 +46,7 @@
     "pm2": "~0.14.3"
   },
   "devDependencies": {
-    "busboy": "^0.2.9"
+    "busboy": "^0.2.9",
+    "gulp-typedoc": "^1.1.0"
   }
 }

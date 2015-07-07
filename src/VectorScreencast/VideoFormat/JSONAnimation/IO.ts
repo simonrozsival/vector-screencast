@@ -1,10 +1,10 @@
-/// <reference path="../IO" />
-/// <reference path="../../VideoData/Chunk" />
 /// <reference path="ChunkFactories" />
 /// <reference path="CommandFactory" />
 /// <reference path="MetadataFactory" />
 
-module VideoFormat.JSONAnimation {
+/// <reference path="../../VectorScreencast" />
+
+module VectorScreencast.VideoFormat.JSONAnimation {
 	
 	import Video = VideoData.Video;
 	import Metadata = VideoData.Metadata;

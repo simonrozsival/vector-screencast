@@ -1,4 +1,4 @@
-module Helpers {
+module VectorScreencast.Helpers {
     
     /**
      * Immutable two dimensional vector representation with basic operations.     

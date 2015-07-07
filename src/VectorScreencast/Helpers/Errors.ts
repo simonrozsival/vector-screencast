@@ -1,6 +1,5 @@
-/// <reference path="Log" />
 
-module Helpers {
+module VectorScreencast.Helpers {
 	
 	export enum ErrorType {
 		Warning,
@@ -30,7 +29,7 @@ module Helpers {
 			if(type === ErrorType.Fatal) {
 				throw new Error(`Fatal Error: ${args.join("; ")}`)
 			} else {
-				Debug.Log(LogLevel.Normal, Errors.ErrorTypeName(type), args);
+				console.log(Errors.ErrorTypeName(type), args);
 			}
 		}
 		

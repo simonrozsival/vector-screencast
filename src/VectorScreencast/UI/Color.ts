@@ -1,6 +1,6 @@
 
 
-module UI {
+module VectorScreencast.UI {
 		
 	/**
 	 * Color representation.

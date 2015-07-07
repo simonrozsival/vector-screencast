@@ -1,6 +1,6 @@
 ///<reference path="./Vector.ts" />
 
-module Helpers {
+module VectorScreencast.Helpers {
     
     /**
      * A set of functions for better spline handling. 

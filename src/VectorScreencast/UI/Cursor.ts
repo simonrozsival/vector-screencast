@@ -3,7 +3,7 @@
 /// <reference path="../Helpers/HTML.ts" />
 /// <reference path="../Helpers/SVG.ts" />
 
-module UI {
+module VectorScreencast.UI {
 	
 	import Vector2 = Helpers.Vector2;
 	

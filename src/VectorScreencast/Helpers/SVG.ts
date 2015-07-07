@@ -6,7 +6,7 @@
  * SVG helper
  * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function, moveToString: Function, lineToString: Function, curveToString: Function}}
  */
-module Helpers {
+module VectorScreencast.Helpers {
     
     import precise = Helpers.precise;
     

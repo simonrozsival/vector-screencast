@@ -1,6 +1,6 @@
+/// <reference path="../VectorScreencast" />
 
-
-module VideoData {
+module VectorScreencast.VideoData {
 	
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;

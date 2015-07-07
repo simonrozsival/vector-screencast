@@ -1,6 +1,6 @@
 
 
-module VideoFormat.Binary.IO {
+module VectorScreencast.VideoFormat.Binary.IO {
 	
 	interface BinaryType<T> {
 		name: string,

@@ -2,7 +2,7 @@
 /// <reference path="../Helpers/SVG" />
 /// <reference path="./Segments" />
 
-module Drawing {
+module VectorScreencast.Drawing {
 	
 	import BezierHelper = Helpers.BezierCurveSegment;
 	import SVG = Helpers.SVG;

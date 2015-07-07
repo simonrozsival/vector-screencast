@@ -1,14 +1,6 @@
-/// <reference path="BasicElements" />
-/// <reference path="Buttons" />
-/// <reference path="Color" />
-/// <reference path="Brush" />
-/// <reference path="Board" />
-/// <reference path="TimeLine" />
-/// <reference path="../Helpers/HelperFunctions" />
-/// <reference path="../Helpers/VideoEvents" />
-/// <reference path="../Localization/IPlayerLocalization" />
+/// <reference path="../VectorScreencast" />
 
-module UI {
+module VectorScreencast.UI {
 
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
@@ -42,7 +34,7 @@ module UI {
 		/** The total duration of the video in milliseconds */
 		private videoDuration: number;
 				
-		public Localization: Localization.IPlayerLocalization;
+		public Localization: Localization.PlayerLocalization;
 		
 		public Timer: Helpers.VideoTimer;
 		
