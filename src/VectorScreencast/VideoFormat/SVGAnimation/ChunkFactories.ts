@@ -87,7 +87,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		private static initCmds: InitCommands = [null, null, null];
 		
 		protected static GetCommands(cmd: Element, cmdFactory: CommandFactory): CommandsPair {
-			var initCommands = this.initCmds;
+			var initCommands = this.initCmds.filter(v => v !== null).map(v => v.Clone());
 			var cmds: Array<Command> = []; // loaded commands
 						
 			while (!!cmd) {
@@ -105,7 +105,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				}
 			}
 			
-			return [initCommands.filter((v) => v !== null), cmds];
+			return [initCommands, cmds];
 		} 
 	}
 

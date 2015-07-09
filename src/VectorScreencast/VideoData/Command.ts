@@ -16,6 +16,9 @@ module VectorScreencast.VideoData {
 		Execute(): void {
 			throw new Error("Not implemented");
 		}
+		Clone(): Command {
+			throw new Error("Not implemented");
+		}
 	}
 	
 	/**
@@ -46,6 +49,13 @@ module VectorScreencast.VideoData {
 		Execute(): void {
 			VideoEvents.trigger(VideoEventType.CursorState, new Helpers.CursorState(this.Time, this.x, this.y, this.p));
 		}
+		
+		/**
+		 * Create a clone of this command.
+		 */
+		Clone(): Command {
+			return new MoveCursor(this.x, this.y, this.p, this.Time);
+		}
 	}		
 			
 	/**
@@ -58,6 +68,13 @@ module VectorScreencast.VideoData {
 		 */
 		Execute(): void {
 			VideoEvents.trigger(VideoEventType.DrawSegment);
+		}
+		
+		/**
+		 * Create a clone of this command.
+		 */
+		Clone(): Command {
+			return new DrawNextSegment(this.Time);
 		}
 	}
 		
@@ -83,6 +100,13 @@ module VectorScreencast.VideoData {
 		Execute(): void {			
 			VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
 		}
+		
+		/**
+		 * Create a clone of this command.
+		 */
+		Clone(): Command {
+			return new ChangeBrushColor(this.color, this.Time);
+		}
 	}
 	
 	/**
@@ -107,6 +131,13 @@ module VectorScreencast.VideoData {
 		Execute(): void {			
 			VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.size);
 		}
+		
+		/**
+		 * Create a clone of this command.
+		 */
+		Clone(): Command {
+			return new ChangeBrushSize(this.size, this.Time);
+		}
 	}
 	
 	/**
@@ -126,6 +157,13 @@ module VectorScreencast.VideoData {
 		
 		Execute(): void {	
 			VideoEvents.trigger(VideoEventType.ClearCanvas, this.color);			
+		}
+		
+		/**
+		 * Create a clone of this command.
+		 */
+		Clone(): Command {
+			return new ClearCanvas(this.color, this.Time);
 		}
 	}			
 }
