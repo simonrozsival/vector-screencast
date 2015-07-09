@@ -1,3 +1,4 @@
+/// <reference path="PointingDevice" />
 /// <reference path="../VectorScreencast" />
 
 module VectorScreencast.VideoData {	
@@ -15,8 +16,8 @@ module VectorScreencast.VideoData {
 						
 		private currentEvent: PointerEvent; 
 						
-		constructor(board: HTMLElement) {
-			super(board);
+		constructor(board: HTMLElement, timer: Helpers.VideoTimer) {
+			super(board, timer);
 							
 			// board events						
 			this.board.addEventListener("pointermove",  	(e) => this.onPointerMove(e));
@@ -31,6 +32,7 @@ module VectorScreencast.VideoData {
 		
 		/**
 		 * Return pressure of the mouse, touch or pen.
+		 * @return		Current presure in percent
 		 */
 		public GetPressure(): number {
 			if(this.isDown === false || this.currentEvent === null) {

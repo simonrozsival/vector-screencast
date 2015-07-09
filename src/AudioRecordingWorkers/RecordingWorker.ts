@@ -10,7 +10,7 @@ var CMD_FINISH = "finish";
  */
 function error(msg) : void {
     console.log("Recording Worker error: " + msg);
-    this.postMessage({ error: true, msg: msg }); // report error
+    this.postMessage({ type: "error", msg: msg }); // report error
 }
 
 /** The audio processing object */
@@ -35,14 +35,16 @@ this.onmessage = function(e) {
                 path: msg.path,
                 secured: false,
                 opened: () => console.log("Streaming was initialised successfully."),
-                finished: (files) => this.postMessage({ error: false, files: files }),
+                finished: (files) => this.postMessage({ type: "finished", files: files }),
                 error: () => error("Can't init audio processor")
             });
             break;
             
         // next block of data is available
         case CMD_PUSH_DATA:
-            audioProcessor.PushData(msg.data);
+            if(!audioProcessor.PushData(msg.data)) {
+                this.postMessage({ type: "network-error" });
+            }
             break;
             
         // user stopped the recording
@@ -149,14 +151,18 @@ class BinaryAudioStreamingProcessor {
      * Send data to the remote server.
      * It is necessary to encode the data into 16-bit integers, so the other side can work with them properly. 
      */
-    public PushData(data: Float32Array) {
+    public PushData(data: Float32Array): boolean {
         if(this.socket) {
             if(this.socket.readyState !== WebSocket.OPEN) {
                 this.Error("Connection was lost");
                 this.socket = null;
+                return false;
             } else {
                 this.socket.send(this.ConvertTo16BitInt(data).buffer);
+                return true;
             }
+        } else {
+            return false;
         }
     }
 

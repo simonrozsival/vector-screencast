@@ -1,15 +1,16 @@
+/// <reference path="PointingDevice" />
 /// <reference path="../VectorScreencast" />
 
 module VectorScreencast.VideoData {
 		
 	/**
-	 * Touch Events API
+	 * Touch Events API implementation
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
 	 */
 	export class TouchEventsAPI extends PointingDevice {
 				
-		constructor(board: HTMLElement) {
-			super(board); // obligatory parent constructor call
+		constructor(board: HTMLElement, timer: Helpers.VideoTimer) {
+			super(board, timer);
 			
 			board.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
 			board.addEventListener("touchend", 		(ev: TouchEvent) => this.TouchEnd(ev));
@@ -18,8 +19,13 @@ module VectorScreencast.VideoData {
 			board.addEventListener("touchmove", 	(ev: TouchEvent) => this.TouchMove(ev));
 		}
 		
+		/** current touch identifier */
 		private currentTouch: number;
 		
+		/**
+		 * Some finger touches the screen.
+		 * @param	event	Touch event information.
+		 */
 		private TouchStart(event: TouchEvent): void {			
 			//event.preventDefault();
 			var touches: TouchList = event.changedTouches;
@@ -32,6 +38,10 @@ module VectorScreencast.VideoData {
 			this.onDown(touch);
 		}
 		
+		/**
+		 * Some touch left the screen.
+		 * @param	event	Touch event information.
+		 */
 		protected TouchLeave(event: TouchEvent): void {
 			//event.preventDefault();
 			var touch = this.filterTouch(event.changedTouches);
@@ -42,6 +52,10 @@ module VectorScreencast.VideoData {
 			this.onLeave(touch);
 		}
 		
+		/**
+		 * Some finger was lifted.
+		 * @param	event	Touch event information.
+		 */
 		protected TouchEnd(event: TouchEvent): void {
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
@@ -53,6 +67,10 @@ module VectorScreencast.VideoData {
 			this.currentTouch = null;			
 		}
 		
+		/**
+		 * Change of touch position.
+		 * @param	event	Touch event information.
+		 */
 		protected TouchMove(event: TouchEvent): void {
 			//event.preventDefault();			
 				

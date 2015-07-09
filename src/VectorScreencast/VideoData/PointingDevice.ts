@@ -8,20 +8,21 @@ module VectorScreencast.VideoData {
 	import State = Helpers.State;
 	import Timer = Helpers.VideoTimer;
 
-
+	/**
+	 * Minimum information needed to determine cursor movement across different events - Mouse/Touch/Pointer... 
+	 */
 	export interface PointingDeviceEvent {
+		/** Relative X position of the mouse to the top left corner of the target element */
 		clientX: number;
+		/** Relative Y position of the mouse to the top left corner of the target element */
 		clientY: number;
 	}
 	
 	/**
-	 * Mouse input detection and processing. 
+	 * Any pointing device input detection and processing. 
 	 */
 	export class PointingDevice {
 				
-		/** Is video recording running? */
-		private isRunning: boolean;		
-		
 		/** Left mouse button state */
 		protected isDown: boolean;
 		
@@ -36,21 +37,13 @@ module VectorScreencast.VideoData {
 		
 		/** Last known cursor position */
 		public getCursor() : Cursor { return this.cursor; }
-		
-		/** (High resolution) timer */
-		private timer: Timer;
-				
-		constructor(protected board: HTMLElement) {
-			// video events			
-			VideoEvents.on(VideoEventType.Start, 	() => this.Start());
-			VideoEvents.on(VideoEventType.Start, 	() => this.Start());
-			VideoEvents.on(VideoEventType.Pause, 	() => this.Pause());
-			VideoEvents.on(VideoEventType.Stop, 	() => this.Pause());
-			
-			// init the timer - a high resolution timer, if possible
-			this.timer = new Timer();
-			this.timer.Pause();
-			
+					
+		/**
+		 * Listen to events
+		 * @param	board	HTML element of the board
+		 * @param	timer	(High resolution) timer
+		 */
+		constructor(protected board: HTMLElement, protected timer: Helpers.VideoTimer) {			
 			this.isHoveringOverUIControl = false; 
 		}
 		
@@ -58,7 +51,7 @@ module VectorScreencast.VideoData {
 		 * Filter all clicks on buttons and other possible UI controls
 		 */
 		public InitControlsAvoiding(): void {			
-			var controls: NodeList = document.getElementsByClassName("ui-control");
+			var controls: NodeList = document.getElementsByClassName("ui-control-panel");
 			for (var i = 0; i < controls.length; i++) {
 				var element = <HTMLElement> controls[i];
 				element.onmouseover = (e: MouseEvent) => this.isHoveringOverUIControl = true;
@@ -67,23 +60,8 @@ module VectorScreencast.VideoData {
 		}
 		
 		/**
-		 * Start capturing mouse movement.
-		 */
-		private Start() : void {
-			this.isRunning = true;
-			this.timer.Resume();
-		}
-		
-		/**
-		 * Pause mouse movement caputring.
-		 */
-		private Pause() : void {
-			this.isRunning = false;
-			this.timer.Pause();
-		}
-		
-		/**
 		 * Mouse pressure is either 1 (mouse button is down) or 0 (mouse button is up) while the mouse is inside the area of canvas.
+		 * @return	Current device pressure in percent
 		 */
 		protected GetPressure() : number {
 			return (this.isDown === true && this.isInside === true) ? 1 : 0;
@@ -91,20 +69,19 @@ module VectorScreencast.VideoData {
 	
 		/**
 		 * Trace mouse movement.
+		 * @param	e	Cursor position information
 		 */
 		protected onMove(e: PointingDeviceEvent) : any {
-			//if(this.isRunning) { // experiment: track mouse movement event when not recording, but don't record clicking		
-				this.cursor = this.getCursorPosition(e);
-				this.ReportAction();
-			//}
+			this.cursor = this.getCursorPosition(e);
+			this.ReportAction();
 		}
 	
 		/**
 		 * Start drawing lines.
+		 * @param	e	Cursor position information
 		 */
 		protected onDown(e: PointingDeviceEvent) : any {
-			if(/*this.isRunning
-				&&*/ this.isHoveringOverUIControl === false) {		
+			if(this.isHoveringOverUIControl === false) {		
 				this.isDown = true;
 				this.cursor = this.getCursorPosition(e);
 				this.ReportAction();
@@ -113,32 +90,32 @@ module VectorScreencast.VideoData {
 	
 		/**
 		 * Stop drawing lines.
+		 * @param	e	Cursor position information
 		 */
 		protected onUp(e: PointingDeviceEvent) : any {
-			//if(this.isRunning) {
-				this.isDown = false;
-				this.cursor = this.getCursorPosition(e);
-				this.ReportAction();
-			//}
+			this.isDown = false;
+			this.cursor = this.getCursorPosition(e);
+			this.ReportAction();
 		}
 		
 		/**
 		 * Stop drawing lines.
+		 * @param	e	Cursor position information
 		 */
 		protected onLeave(e: PointingDeviceEvent) : any {
-			if(/*this.isRunning
-				&& */this.GetPressure() > 0) {
-					
+			if(this.GetPressure() > 0) {					
 				this.onMove(e); // draw one more segment
 				this.isDown = false;
 				this.onMove(e); // discontinue the line
 				this.isDown = true; // back to current state
 			}
+			
 			this.isInside = false;
 		}
 				
 		/**
 		 * Mark down that the cursor is hovering over the canvas.
+		 * @param	e	Cursor position information
 		 */
 		protected onOver(e: PointingDeviceEvent) : any {
 			this.isInside = true;
@@ -146,6 +123,7 @@ module VectorScreencast.VideoData {
 		
 		/**
 		 * Force stop drawing lines.
+		 * @param	e	Event information
 		 */
 		private onLooseFocus(e: FocusEvent) : any {
 			this.isInside = false;

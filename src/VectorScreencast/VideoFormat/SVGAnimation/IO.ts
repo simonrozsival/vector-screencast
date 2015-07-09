@@ -25,6 +25,9 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/** Erase factory needs aditional information */
 		private eraseChunkFactory: EraseChunkFactory;
 		
+		/**
+		 * Initialises parsing factories for chunks, commands and metadata.
+		 */
 		constructor() {				
 			// chain of responsibility - command factory and chunk factory
 			// note: moving cursor is the most typical and far most frequent command - IT **MUST** BE FIRST IN THE CHAIN!
@@ -135,10 +138,16 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			return video;
 		}
 				
+		/**
+		 * The extension is SVG.
+		 */
 		GetExtension(): string {
 			return "svg";
 		}
 		
+		/**
+		 * MIME type of SVG files is "application/svg+xml"
+		 */
 		GetMimeType(): string {
 			return "application/svg+xml";
 		}

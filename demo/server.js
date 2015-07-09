@@ -11,6 +11,7 @@ var express = require("express"),
 	formidable = require('formidable'),
     errorHandler = require('errorhandler'),
     methodOverride = require('method-override'),
+	compression = require('compression'),
     hostname = process.env.HOSTNAME || 'localhost',
     port = getPort(),
     publicDir = __dirname + '/public',
@@ -18,6 +19,7 @@ var express = require("express"),
 
 app.post("/upload/result", UploadResult);
 
+app.use(compression());
 app.use(methodOverride());
 app.use(bodyParser.json());
 app.use(bodyParser.raw());

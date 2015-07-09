@@ -1,5 +1,5 @@
 /// <reference path="audio.d.ts" />
-/// <reference path="../VectorScreencast" />
+/// <reference path="../Helpers" />
 
 module VectorScreencast.AudioData {
 	
@@ -23,11 +23,14 @@ module VectorScreencast.AudioData {
 		/** The background worker */
 		private recordingWorker: Worker;
 	
-		/** @type {Boolean} */
+		/** Recording was initialised successfully. */
 		private initSuccessful: boolean = false;
 	
-		/** @type {Boolean} */
+		/** Do not start recording even if the author enables microphone - recording has probably already started. */
 		private doNotStartRecording: boolean = false;
+		
+		/** Recording of audio is paused while the screen recording continues. */
+		private muted: boolean;
 	
 		/** Default settings of audio recording */
 		private settings: Settings.AudioRecorderSettings = {
@@ -38,6 +41,11 @@ module VectorScreencast.AudioData {
 																	// This path is absolute and it should be changed
 																	// if the worker path changes.
 		};
+	
+		/** Error callback */
+		private error: (msg: any) => void;
+		/** Success callback */
+		private success: (msg: any) => void; 
 	
 	
 		/**
@@ -52,6 +60,12 @@ module VectorScreencast.AudioData {
 	
 			// wait until the user starts recording
 			this.recording = false;
+			this.muted = false;
+			VideoEvents.on(VideoEventType.MuteAudioRecording, () => this.muted = !this.muted);
+			
+			// default callbacks
+			this.error = (msg: any) => console.log("AudioRecorder error: ", msg);
+			this.success = (msg: any) => console.log("AudioRecorder success: ", msg);
 		}
 	
 		/**
@@ -99,6 +113,7 @@ module VectorScreencast.AudioData {
 							if(!!success) {
 								success();								
 							}
+							VideoEvents.trigger(VideoEventType.AudioRecordingAvailable);
 							VideoEvents.trigger(VideoEventType.RegisterRecordingTool, "audio-recorder");
 							VideoEvents.trigger(VideoEventType.Ready); // now the recording might start
 						}
@@ -110,6 +125,7 @@ module VectorScreencast.AudioData {
 							Errors.Report(ErrorType.Warning, "User didn't allow microphone recording.");
 						}						
 						Errors.Report(ErrorType.Warning, "Can't record audio", err);
+						VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
 						VideoEvents.trigger(VideoEventType.Ready); // now the recording might start
 					}
 				);
@@ -117,6 +133,7 @@ module VectorScreencast.AudioData {
 			} else {
 				console.log("getUserMedia not supported by the browser");
 				Errors.Report(ErrorType.Warning, "getUserMedia not supported by the browser");
+				VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
 			}
 		}
 	
@@ -130,6 +147,7 @@ module VectorScreencast.AudioData {
 		private CreateAudioProcessor(processorType: string, cfg: Settings.AudioRecorderSettings, success?: Function, error?: Function) {
 			if(Worker) { // if web workers are supported
 				this.recordingWorker = new Worker(cfg.recordingWorkerPath);
+				this.recordingWorker.onmessage = (e: MessageEvent) => this.ReceiveMessageFromWorker(e);
 				this.recordingWorker.postMessage({
 					cmd: "init",
 					AudioProcessorType: processorType || "web-sockets",
@@ -217,40 +235,14 @@ module VectorScreencast.AudioData {
 		 * Stop the recording
 		 */
 		public Stop(success: (sources: Array<AudioSource>) => any, error: () => void) : void {
+			// prepare callbacks
+			this.success = success;
+			this.error = error;
+			
 			if(this.initSuccessful === true) {
 				// stop recording
 				if(this.Pause()) {	
 					if(this.recordingWorker) {
-						// prepare for response from the worker first
-						this.recordingWorker.onmessage = (e) => {
-							var msg = e.data;
-							
-							// destroy the worker
-							this.recordingWorker.terminate();
-							this.recordingWorker = null;
-							
-							if(!msg.hasOwnProperty("error")) {
-								console.log("Worker response is invalid (missing property 'error')", e.data);
-								error();
-								return;
-							}
-	
-							if(msg.error === true) {								
-								Errors.Report(ErrorType.Fatal, msg.message);
-								error();								
-								return;
-							} else {
-								VideoEvents.trigger(VideoEventType.RecordingToolFinished, "audio-recorder");
-								var sources: Array<AudioSource> = [];
-								for (var i = 0; i < msg.files.length; i++) {
-									var file = msg.files[i];
-									var source: AudioSource = new AudioSource(file.url, AudioSource.StringToType(file.type));
-									sources.push(source);									
-								}
-								success(sources);
-							}
-						};
-	
 						// now send the message to the worker
 						this.recordingWorker.postMessage({
 							cmd: "finish"
@@ -265,14 +257,14 @@ module VectorScreencast.AudioData {
 		}
 	
 		/**
-		 * 
+		 * Is audio recorder ready to be recording?
 		 */
 		public isRecording() : boolean {
 			return this.initSuccessful;
 		}
 	
 		/**
-		 *
+		 * Pass data from the microphone to the worker to be processed.
 		 */
 		private processData(data: AudioProcessingEvent) : void {
 			if(this.recording === false) {
@@ -281,7 +273,12 @@ module VectorScreencast.AudioData {
 	
 			// grab only the left channel - lower quality but half the data to transfer..
 			// most NTB microphones are mono..
-			var left: Float32Array = data.inputBuffer.getChannelData(0);
+			var left: Float32Array = data.inputBuffer.getChannelData(0);				
+			if(this.muted) {
+				for (var i = 0; i < left.length; i++) {
+					left[i] = 0; // mute the sound, but keep the audio synchronized with the image as soon as it is un-muted
+				}	
+			}
 	
 			if(this.recordingWorker) {
 				this.recordingWorker.postMessage({
@@ -290,6 +287,58 @@ module VectorScreencast.AudioData {
 				});
 			}
 		}	
+		
+		/**
+		 * Process a message from the WebWorker processing the data.
+		 */
+		private ReceiveMessageFromWorker(e: MessageEvent): void {
+			var msg = e.data;
+			
+			if(!msg.hasOwnProperty("type")) {
+				console.log("Worker response is invalid (missing property 'type')", e.data);
+				this.error("AudioRecorder received invalid message from the worker.");
+				return;
+			}	
+			
+			switch (msg.type) {
+				case "error":
+					this.error(msg.msg);
+				case "network-error":
+					this.WorkerNetworkError();
+					break;
+				case "finished":
+					this.WorkerFinished(msg);
+					break;
+				default:
+					console.log("Unknown message type: ", msg.type, msg);
+					break;
+			}
+		}
+		
+		/**
+		 * Process information from the web worker.
+		 */
+		private WorkerFinished(msg: any): void {
+			// destroy the worker
+			this.recordingWorker.terminate();
+			this.recordingWorker = null;
+			
+			VideoEvents.trigger(VideoEventType.RecordingToolFinished, "audio-recorder");
+			var sources: Array<AudioSource> = [];
+			for (var i = 0; i < msg.files.length; i++) {
+				var file = msg.files[i];
+				var source: AudioSource = new AudioSource(file.url, AudioSource.StringToType(file.type));
+				sources.push(source);									
+			}
+			this.success(sources);
+		}
+		
+		/**
+		 * Inform about network connection loss.
+		 */
+		 private WorkerNetworkError(): void {
+			 VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
+		 }
 	}
 	
 }

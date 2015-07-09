@@ -7,20 +7,21 @@ module VectorScreencast.VideoData {
 	import VideoEvents = Helpers.VideoEvents;
 	import VideoEventType = Helpers.VideoEventType;
 				
+	/**
+	 * Video data storage - contains information about the chunks,
+	 * commands and metadata of the video.
+	 */
 	export class Video {				
-		
-		/**
-		 * Video data storage
-		 */
-		
 		constructor() {
 			this.chunks = [];
 		}
 		
-		/** Video information. */
+		/** Video meta-information getter. */
 		public get Metadata() : Metadata { return this.metadata; }	
+		/** Video meta-information setter. */
 		public set Metadata(value: Metadata) { this.metadata = value; }		
-		protected metadata: Metadata;		
+		/** Video meta-information. */
+		protected metadata: Metadata;	
 		
 		/** Data chunks iteration */
 		protected chunks: Array<Chunk>;
@@ -84,7 +85,7 @@ module VectorScreencast.VideoData {
 		 * Go on in time until you find the given timeframe and skip to the very preciding "erase" chunk.
 		 * If the "erase" chunk preceded current chunk, then there are no erased chunks to fastforward and currentChunk
 		 * remains untouched.
-		 * @param	{number}	time			Searched time point in milliseconds
+		 * @param	time			Searched time point in milliseconds
 		 */
 		public FastforwardErasedChunksUntil(time: number): number {			
 			var c: number = this.FindChunk(time, +1); // seek among the future chunks
@@ -93,7 +94,7 @@ module VectorScreencast.VideoData {
 		
 		/**
 		 * Go back in time until you find the given timeframe and skip to the very preceding "erase" chunk.
-		 * @param	{number}	time			Searched time point in milliseconds
+		 * @param	time			Searched time point in milliseconds
 		 */	
 		public RewindToLastEraseBefore(time: number): number {
 			var c: number = this.FindChunk(time, -1); // seek among the past chunks
@@ -102,8 +103,8 @@ module VectorScreencast.VideoData {
 		
 		/**
 		 * Find a chunk that starts at or after "time" and ends after "time"
-		 * @param	{number}	time			Searched time point in milliseconds
-		 * @param	{number}	directionHint	1 for searching in the future, -1 to search in the past
+		 * @param	time			Searched time point in milliseconds
+		 * @param	directionHint	1 for searching in the future, -1 to search in the past
 		 */
 		private FindChunk(time: number, directionHint: number): number {			
 			var foundChunk: number = Math.min(this.currentChunk, this.chunks.length - 2);			

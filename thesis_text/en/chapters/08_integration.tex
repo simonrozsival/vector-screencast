@@ -1,8 +1,49 @@
-\chapter{Integration into other applications}
-How to integrate the player and the recorder into another web application.
+\chapter{Integration of the library in a HTML web page}
+\label{ch:integration}
 
-\section{Video player}
-The frontend. And a short comment on how to deal with large data transfers - CDN like Amazon S3, Google App Platform, Microsoft Azure...
+Using Vector Screencast library is intended to be as simple as possible. All the user needs to do is include a JavaScript file of the library and a CSS file of a theme into his HTML code and configure the player in a few lines of code.
 
-\section{Video recording}
-The frontend. And the server program. A short comment on how to implement the the website backend - insert the data into a database.
+\section{Obtaining the Vector Screencast library}
+Prepared library files can be obtained either from the attached files or from the GIT repository https://github.com/simonrozsival/vectorvideo in the \textit{/release/VectorScreencast} and \textit{/release/themes/} folders. You only need to copy files \textit{vector-screencast.min.js} and \textit{theme-default.min.css} into your project.
+
+The library files must be linked to your document and you should make sure that your website will be displayed properly on mobile devices by specifying the \textit{viewport} meta tag in the \textit{head} section of your document\footnote{https://developers.google.com/speed/docs/insights/ConfigureViewport}. Also create an empty element with a specific \textit{id} attribute -- this will be the container, into which either the screencast player or the recorder will be placed.
+
+An example of a HTML5 template with correct setup can look similarly (irrelevant parts of the document were let omitted and replaced by suspension points):
+
+\begin{lstlisting}
+<!DOCTYPE html>
+<html>
+	<head>
+		...
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="/path/to/theme-default.min.css" media="screen, projection">
+		...
+	</head>
+	<body>
+		...
+		<div id="some-specific-id"></div>
+		...
+		<script src="/path/to/vector-screencast.min.js"></script>
+	</body>
+</html>
+\end{lstlisting}
+
+The initialisation scripts must be executed afte all web page resources are downloaded and the DOM is ready -- this can be achieved by putting this code inside a handler of the \textit{window.onload} event.
+
+\section{Vector Screencast Player}
+Inside your scripts, create a new instance of \textit{VectorScreencast.Player}. The constructor takes two arguments, first of them is the \textit{id} attribute of a container element and the second is a configuration object. The only obligatory property of the configuration object is the \textit{Source} property -- the URL of the source SVG file. 
+
+There are several other interesting optional settings, that will help you customize the screencast player. One of them is the \textit{Localization} property, which takes an object implementing the \textit{VectorScreencast.Localization.PlayerLocalization} interface. To see the complete list of all configuration options and further details, please refer to the \textit{VectorScreencast.Settings.PlayerSettings} interface in the API reference of the project in the \textit{/docs/} folder of the attached files. You can see an advanced example of \textit{VectorScreencast.Player} usage \textit{/demo/public/play.html} in the attached files.
+
+\section{Vector Screencast Recorder}
+
+Inside your scripts, create a new instance of \textit{VectorScreencast.Player}. The constructor takes two arguments, first of them is the \textit{id} attribute of a container element and the second is a configuration object. The only obligatory property of the configuration object is the \textit{Source} property -- the URL of the source SVG file. 
+
+There are several other interesting optional settings, that will help you customize the screencast player. One of them is the \textit{Localization} property, which takes an object implementing the \textit{VectorScreencast.Localization.PlayerLocalization} interface. To see the complete list of all configuration options and further details, please refer to the \textit{VectorScreencast.Settings.PlayerSettings} interface in the API reference of the project in the \textit{/docs/} folder of the attached files. You can see an advanced example of \textit{VectorScreencast.Player} usage \textit{/demo/public/play.html} in the attached files.
+
+
+\section{Embedding Vector Screencast Player}
+@todo
+
+\section{Custom theme}
+@todo

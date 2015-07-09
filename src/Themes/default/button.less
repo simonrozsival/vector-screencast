@@ -44,6 +44,10 @@ button {
 	
 	&.has-icon {
 		min-width: @btn-size;
+		
+		.icon {
+			float: left;
+		}
 	}
 	
 	[class^="icon-"] {
@@ -64,6 +68,7 @@ button {
 		
 		.icon {
 			margin: 0;
+			float: none;
 		}
 	}
 	
@@ -86,6 +91,10 @@ button {
 			
 			&.icon-upload:before {
 				border-bottom-color: @foreground;
+			}
+					
+			&.icon-mic-off {
+				color: @red;
 			}
 		}			
 	}

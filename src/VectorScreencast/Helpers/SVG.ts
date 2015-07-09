@@ -2,18 +2,18 @@
 /// <reference path="HTML" />
 /// <reference path="HelperFunctions" />
 
-/**
- * SVG helper
- * @type {{namespace: string, dot: Function, circle: Function, line: Function, createElement: Function, setAttributes: Function, moveToString: Function, lineToString: Function, curveToString: Function}}
- */
 module VectorScreencast.Helpers {
     
     import precise = Helpers.precise;
     
+    /**
+     * A shortcut for creating and modifying elements with a specific SVG namespace.
+     */
     export class SVG {
         
-        /** XML namespace of SVG */
+        /** XML namespace of SVG 1.1 */
         private static namespace: string = "http://www.w3.org/2000/svg";
+        /** XML namespace of SVG 1.1 */
         public static get Namespace(): string { return this.namespace; }
         
         /**
@@ -156,10 +156,13 @@ module VectorScreencast.Helpers {
     }
     
     
+    /**
+     * A shortcut for creating and modifying elements with a specific Vector Screencast SVG namespace.
+     */
     export class SVGA {
         
         /** XML namespace of SVG */
-        private static namespace: string = "http://www.rozsival.com/2015/vector-video";
+        private static namespace: string = "http://www.rozsival.com/2015/vector-screencast";
         public static get Namespace(): string { return this.namespace; }
                 
         /**

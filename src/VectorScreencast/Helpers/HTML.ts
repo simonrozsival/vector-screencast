@@ -1,15 +1,16 @@
+/// <references path="../VectorScreencast" />
 
-/**
- * HTML helper.
- */
 module VectorScreencast.Helpers {
     
+    /**
+     * String key => any value mapping type.
+     */
     export interface IAttributes {
         [index: string]: any;
     }
 
     /**
-     * 
+     * A simple helper for creating and modifying DOM elements.
      */
     export class HTML {
             
@@ -41,9 +42,5 @@ module VectorScreencast.Helpers {
                 el.setAttribute(attr, attributes[attr]);
             }
         }
-
-
     }
-    
-
 };

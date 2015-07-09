@@ -1,26 +1,72 @@
 \chapter{Vector Screencast file format}
-
-Vector video file must contain all the information about cursor movement and precise data of the lines, including their variable width, and the times at which every single segment of a line is drawn. This data is then used to reconstruct the precise movement of the author's cursor and draw the very sqme lines at the very same pace.
-
-There are several binary vector based formats available for animations. EVA, Flash SWF
-
-\section{Extending SVG}
-Scalable Vector Graphics (SVG)\footnote{http://www.w3.org/TR/SVG/} is an Extensible Markup Language (XML)\footnote{http://www.w3.org/XML/} based file format designed for describing two-dimensional vector images. It is an open format developed and maintained by the W3C SVG Working Group \cite{}. Current W3C Recommendation is SVG 1.1 (Second Edition).
+\label{c:the-format}
 
 SVG format is common and is implemented in web browsers and in many programs. These programs can open an SVG image and draw it's contents. The idea is to create an SVG file, which contains all the information needed using custom namespace attributes and elements and shows the state of the blackboard at the end of recording.
 
-A valid SVG document must have an \textit{svg} root element with specific namespace attributes and specified \textit{width} and \textit{height} attributes. An example of an empty, but valid, SVG document might look as shown:
+A valid SVG document must have an \textit{svg} root element with specific namespace attributes and specified \textit{width} and \textit{height} attributes. For the purpose of extending the document, a new namespace \textit{http://www.rozsival.com/2015/vector-screencast} is added with the prefix \textit{a}. An example of an empty SVG document with this namespace looks as follows:
 
-\begin{verbatim}
+\begin{lstlisting}
 <?xml version="1.0"?>
 <svg version="1.1"
         width="470"
         height="100"
         xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:ev="http://www.w3.org/2001/xml-events">
+        xmlns:a="http://www.rozsival.com/2015/vector-screencast">
 
 </svg>
-\end{verbatim}
+\end{lstlisting}
 
-The specification of SVG introduces several graphical primitives, that can be used to compose complex shapes. Each primitive is represented by an XML element and a set of attributes. The list of primitives is long, though we will need only two of them -- the \verb|<circle>|, \verb|<rect>| and \verb|<path>|. The \verb|<g>| element\footnote{http://www.w3.org/TR/SVG/struct.html\#GElement} is intended for grouping related graphics elements. These groups might be also nested.
+SVG specification allows inclusion of elements and attributes from foreign namespaces anywhere with the SVG context. Attributes from foreign namespaces might be attached to any element. Both elements and attributes will be included in the DOM by the SVG user agent, but will be ignored otherwise \cite{svg_exteding}.
+
+Vector Screencast root element must have two child elements: \verb|<metadata></metadata>| and \verb|<g a:type="chunks"></g>|
+
+SVG \verb|<g>| element\footnote{http://www.w3.org/TR/SVG/struct.html\#GElement} is intended for grouping related graphics elements. These groups might be also nested.
+
+\section{Video Metadata}
+The first child element of the \verb|<svg>| element must be a \verb|<metadata>| element. This element must contain these child elements:
+
+\paragraph{\texttt{\textless a:width\textgreater}}
+The content is the original width of the blackboard. This number will be used to correct coordinates when playing the video with different video resolution. The \verb|width| attribute of the \verb|<svg>| element might contain different value.
+
+\paragraph{\texttt{\textless a:height\textgreater}}
+The content is the original height of the blackboard. This number will be used to correct coordinates when playing the video with different video resolution. The \verb|height| attribute of the \verb|<svg>| element might contain different value.
+
+\paragraph{\texttt{\textless a:length\textgreater}}
+The content is the duration of the video in milliseconds.
+
+\paragraph{\texttt{\textless a:audio\textgreater}}
+Contains the list of audio sources as child elements.
+
+\subparagraph{\texttt{\textless a:source \textgreater}}
+Defines one audio source. It has two attributes: \verb|a:src| -- containing the URL of the audio source, and \verb|a:type| -- containing the MIME type of the audio source.
+
+\section{Video Chunks}
+Video is divided into smaller consequent parts, called \textit{chunks}. Chunks have varaible time duration based on user's behaviour. They are a logical unit of the video, each of them can be rendered at once as one primitive. This structuring of the whole video into smaller chunks helps optimalizing skipping parts of the video. Some parts can be skipped entirely, as the author cleared the canvas at some point, others are rendered at once without evaluating any animation commands.
+
+There are three types of chunks: \textit{path}, \textit{erase}, and \textit{void}. Each chunk is stored as one SVG group elment with a specific \verb|a:type| attribute (\textit{path}, \textit{erase}, \textit{void}) and an \verb|a:t| attribute, which is the time, when this chunk starts to be processed, in milliseconds. Chunks contain the prerendered primitive and a list of animation commands.
+
+\paragraph{``Path''}
+This type of chunk represents one line the user draws. The first child element is an SVG \verb|<path>| element. The \verb|fill| attribute should correspond to the real color of the path, but is not neccesary for later use. The data attribute \verb|d| includes serialized information about the segments of the path in the form of a valid SVG path instructions\footnote{http://www.w3.org/TR/SVG/paths.html\#PathData}. For more details about the serialization and deserialization of this data, see section @todo on page @todo. One or more child elements might follow after the \verb|<path>|, all of which must be animation command elements.
+
+\paragraph{``Erase''}
+This type of chunk represents clearing the whole canvas with one color. The first child element is an SVG \verb|<rect>| element. The \verb|fill| attribute should correspond to the real color of the new background. One or more child elements might follow after the \verb|<rect>|, all of which must be animation command elements.
+
+\paragraph{``Void''}
+This type of chunk does not render anything on the canvas. It might contain one or more child elements, all of which must be animation command elements.
+
+\section{Animation Commands}
+Animation commands are necessary for correct actions timing during the video. Chunks contain the information of how the resulting primitive looks like, commands user's gradual forming of these primitives.
+
+Animation command must be a child element of a chunk. Every chunk must have a \verb|a:t| attribute with the precise time of the action in milliseconds. The value of the time attribute of an element must be greater or equal to the values of the preceding sibling action elements.
+
+\paragraph{\texttt{\textless m\textgreater}}
+\textit{Move cursor} command tells the player to move cursor to a specific position defined by attributes \verb|a:x| and \verb|a:y|.
+
+\paragraph{\texttt{\textless c\textgreater}}
+\textit{Change color} command tells the player to switch current brush color according to the value of \verb|a:c|. Value of the attribute must be valid CSS color value\footnote{http://www.w3.org/TR/CSS2/syndata.html\#value-def-color}.
+
+\paragraph{\texttt{\textless s\textgreater}}
+\textit{Change brush size} command tells the player to change current brush size to the value of \verb|a:w| attribute. The units of this value are pixels and the size is relative to the width and height stated in the \textit{metadata}.
+
+\paragraph{\texttt{\textless d\textgreater}}
+\textit{Draw next segment} segment of the line will be rendered with current brush color and size. This command doesn't carry any aditional information, all the information about the segment is inside the \textit{path} chunk. \textit{Draw next segment} commands can be present only in an \textit{path} chunk. There must not be any \textit{change color} or \textit{change brush size} command between the first \textit{draw next segment} command and the last one inside one \textit{path} chunk -- color or size can't be changed in the middle of the path.

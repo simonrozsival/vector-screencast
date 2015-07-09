@@ -1,3 +1,4 @@
+/// <reference path="PointingDevice" />
 /// <reference path="../VectorScreencast" />
 
 module VectorScreencast.VideoData {	
@@ -13,9 +14,8 @@ module VectorScreencast.VideoData {
 	 */
 	export class Mouse extends PointingDevice {
 						
-		constructor(board: HTMLElement) {
-			super(board);
-							
+		constructor(board: HTMLElement, timer: Helpers.VideoTimer) {
+			super(board, timer);
 			// board events						
 			this.board.onmousemove = 	(e) => this.onMouseMove(e);
 			this.board.onmousedown =	(e) => this.onMouseDown(e);

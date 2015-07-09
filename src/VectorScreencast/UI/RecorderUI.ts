@@ -19,6 +19,9 @@ module VectorScreencast.UI {
 		/** Is recording running? */
 		private isRecording: boolean;
 		
+		/** Microphone is muted by the user. */
+		private micIsMuted: boolean;
+		
 		/** Get the width of the board in pixels. */
 		public get Width(): number {
 			return this.board.Width;
@@ -55,7 +58,8 @@ module VectorScreencast.UI {
 			this.AddClass("vector-video-wrapper");
 			
 			this.isRecording = false;
-			this.isBusy = false;											
+			this.isBusy = false;		
+			this.micIsMuted = false;									
 		}
 		
 		public CreateHTML(autohide: boolean, colorPallete: Array<Color>, brushSizes: Array<BrushSize>): void {			
@@ -69,7 +73,8 @@ module VectorScreencast.UI {
 										this.CreateColorsPanel(colorPallete).AddClass("ui-controls-panel"),
 										this.CreateBrushSizesPanel(brushSizes).AddClass("ui-controls-panel"),			
 										this.CreateEraserPanel().AddClass("ui-controls-panel"),			
-										this.CreateEraseAllPanel().AddClass("ui-controls-panel")		
+										this.CreateEraseAllPanel().AddClass("ui-controls-panel"),
+										this.CreateMicPanel().AddClass("ui-controls-panel")	
 									)
 									.AddClasses("ui-controls", "ui-control");
 									
@@ -250,11 +255,13 @@ module VectorScreencast.UI {
 						);
 		}	
 		
-		/** Current selected color */
+		/** Current selected color. */
 		private currentColor: UI.Color;
 		
+		/** Special brush color button - current color of the canvas background. */
 		private switchToEraserButton: ChangeColorButton;
 		
+		/** Button for clearing the canvas with single color. */
 		private eraseAllButton: ChangeColorButton;
 		
 		/**
@@ -294,6 +301,50 @@ module VectorScreencast.UI {
 		private EraseAll(): void {
 			Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas, this.currentColor);
 			this.switchToEraserButton.SetColor(this.currentColor);			
+		}
+		
+		
+		/** Audio recording control button */
+		private micButton: IconOnlyButton;
+		
+		/**
+		 * Create a panel with microphone statistics. 
+		 */
+		protected CreateMicPanel(): IElement {
+			this.micButton = new IconOnlyButton("icon-mic-off", this.Localization.AudioRecordingUnavailable, () => this.MuteMic());
+			Helpers.HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
+			
+			// Change the microphone icon and text according to current settings
+			Helpers.VideoEvents.on(Helpers.VideoEventType.AudioRecordingAvailable, () => {			
+				this.micButton.GetHTML().removeAttribute("disabled");
+				if(!this.micIsMuted) {
+					this.micButton.ChangeIcon("icon-mic").ChangeContent(this.Localization.AudioRecordingAvailable);					
+				}
+			});
+			
+			Helpers.VideoEvents.on(Helpers.VideoEventType.AudioRecordingUnavailable, () => {
+				this.micButton.ChangeIcon("icon-mic-off").ChangeContent(this.Localization.AudioRecordingUnavailable);
+				Helpers.HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
+			});
+			
+			return new Panel("div").AddChildren(
+				new H2(this.Localization.AudioRecording),
+				this.micButton
+			);
+		}
+		
+		/**
+		 * Mute/Unmute the microphone.
+		 */
+		protected MuteMic(): void {
+			Helpers.VideoEvents.trigger(Helpers.VideoEventType.MuteAudioRecording);
+			this.micIsMuted = !this.micIsMuted;
+			
+			if(this.micIsMuted) {
+				this.micButton.ChangeIcon("icon-mic-off");
+			} else {
+				this.micButton.ChangeIcon("icon-mic");
+			}			
 		}
 	}	
 }

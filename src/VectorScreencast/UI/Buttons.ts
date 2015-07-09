@@ -30,6 +30,7 @@ module VectorScreencast.UI {
 		
 		/**
 		 * Announce color change
+		 * @param	e	Event information
 		 */
 		private ChangeColor(e: MouseEvent) : void {
 			// mark this button as active and remove the emphasis from the previous one
@@ -43,6 +44,9 @@ module VectorScreencast.UI {
 			VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
 		}
 	
+		/**
+		 * Set the color of the button.
+		 */
 		public SetColor(color: Color): void {
 			this.color = color;
 			
@@ -50,7 +54,6 @@ module VectorScreencast.UI {
 			Helpers.HTML.SetAttributes(this.GetHTML(), {
 				class: "option",
 				"data-color": color.CssValue,
-				title: color.Name,
 				style: "background-color: " + color.CssValue					
 			});			
 		}
@@ -85,20 +88,19 @@ module VectorScreencast.UI {
 			// make the button a color option
 			Helpers.HTML.SetAttributes(this.GetHTML(), {
 				class: "option",
-				"data-size": size.Size,
-				title: size.Name				
+				"data-size": size.Size	
 			});
 			
 			// announce color change when the button is clicked
-			this.GetHTML().onclick = (e) => this.ChangeColor(e);
+			this.GetHTML().onclick = (e) => this.ChangeSize(e);
 		}
 		
 		
 		/**
-		 * Announce color change
+		 * Announce change of brush size.
+		 * @param	e	Event information
 		 */
-		private ChangeColor(e: MouseEvent) : void {
-			// do not draw a dot behind the bar
+		private ChangeSize(e: MouseEvent) : void {
 			e.preventDefault();
 			
 			// mark this button as active and remove the emphasis from the previous one

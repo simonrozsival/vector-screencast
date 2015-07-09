@@ -1,6 +1,6 @@
 \chapter{Programmers docummentation}
 
-\section{Compiling and using the library}
+\section{Building the library}
 
 Source code of the project can be found either on the attached CD, or in git repository \textit{https://github.com/simonrozsival/vectorvideo}. Copy or clone this code to your computer.
 
@@ -10,7 +10,7 @@ Build all code by running \verb|gulp| command in the same directory. This will c
 
 A demo audio recording server was also compiled in this process and is available in the \textit{./release/audio-server/AudioServer.js} JavaScript file. This server can used in a Node.js program.
 
-For details on how to use the library in your project, see chapter \textit{Integration} (@todo - link).
+For details on how to use the library in your project, see chapter~\ref{ch:integration} on page~\pageref{ch:integration}.
 
 
 
@@ -21,7 +21,7 @@ Each object handles only it's own task without knowing anything about the other 
 
 This mechanism is sometimes called the \textit{Event Aggregator} design pattern \cite{}. It is implemented through the \textit{VideoEvents}\footnote{Implementation can be found in \textit{/public/js/app/Helpers/VideoEvents.ts} file} static class, which makes it a simple singleton object. This class provides an interface for registering and triggering callbacks for specified events. Callbacks executed by a triggered event are called asynchronously. It is worth mentioning that web browsers execute all scripts in a single thread.
 
-\begin{verbatim}
+\begin{lstlisting}
 VideoEvents.on(VideoEventType.Message, function(message) {
 	console.log("received message:", message);
 });
@@ -31,20 +31,19 @@ VideoEvents.on(VideoEventType.Message, function(message) {
 });
 
 VideoEvents.trigger(VideoEventType.Message, "Hello world.");
-\end{verbatim}
-
-
+\end{lstlisting}
 
 
 
 \subsubsection{Audio capturing, processing and upload}
 
-HTML5 provides only one way to access microphone data at the moment and it is through the \textit{getUserMedia API} \footnote{getUserMedia: http://www.w3.org/TR/mediacapture-streams/\#dom-mediadevices-getusermedia} \cite{}. \textit{navigator.getUserMedia} function prompts the user to for permission to use their audio input (this function is also used to access webcam stream in other applications). The \textit{navigator.getUserMedia} function is well documented on Mozilla Developer Network (MDN) \footnote{MDN: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getUserMedia} website.
+HTML5 provides only one way to access microphone data at the moment and it is through the \textit{getUserMedia API} \cite{get_user_media}. \textit{navigator.getUserMedia} function prompts the user to for permission to use their audio input (this function is also used to access webcam stream in other applications). The \textit{navigator.getUserMedia} function is well documented on Mozilla Developer Network (MDN) \footnote{MDN: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getUserMedia} website.
 
-If user's device has a connected microphone and user gives his permission to use his audio input, then a \textit{MediaStream} \footnote{MediaStream: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStream} object is provided by the browser and from this time on audio can be captured. Error callback with \textit{MediaStreamError}\footnote{MediaStreamError: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStreamError} instance is called otherwise.
+If user's device has a connected microphone and user gives his permission to use his audio input, then a \textit{MediaStream} \footnote{MediaStream: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStream} object is provided by the browser and from this time on audio can be processed. Error callback with \textit{MediaStreamError}\footnote{MediaStreamError: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStreamError} instance as a parameter is called otherwise.
 
-Once the \textit{MediaStream} is obtained, 
+Current browsers implement \textit{ScriptProcessorNode} according to the W3C Working Draft from 10 October 2013 of \textit{Web Audio API}. Unfortunately, the \textit{ScriptProcessorNode} interface is deprecated in newer drafts of the specification and should be replaced with \textit{AudioWorkerNote} in the future\cite{mic_deprecated}. This new approach is not yet standardised, implemented and documented in web browsers. Both of these methods provide access to \textit{AudioBuffer} instance, which contains \tetxit{linear pulse-code modulation} (LPCM)\cite{wiki_pcm} sampled data from the microphone \cite{mic_pcm}.
 
+This data is then sent to the server using a WebSocket. 
 
 
 

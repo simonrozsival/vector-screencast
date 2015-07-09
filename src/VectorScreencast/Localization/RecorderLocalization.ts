@@ -41,8 +41,14 @@ module VectorScreencast.Localization {
 		/** Erase tool button title */
 		Erase: string,
 		/** Erase the whole canvas with current color button title */
-		EraseAll: string
+		EraseAll: string,
 		
+		/** Audio recording panel title */
+		AudioRecording: string,
+		/** Audio recording is avalable */
+		AudioRecordingAvailable: string,
+		/** Audio recording is unavailable for some reason. */
+		AudioRecordingUnavailable: string
 	}
 	
 }

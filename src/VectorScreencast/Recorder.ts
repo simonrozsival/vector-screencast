@@ -38,9 +38,16 @@ module VectorScreencast {
 
 
 
+	/**
+	 * The main class responsible for video recording. Recorder creates all the necessary
+	 * objects and connects them. Recorder captures user's input and actions and stores them
+	 * and uploads it to the server when the recording is finsihed.
+	 */
 	export class Recorder {	
-		/** The best available drawing strategy */
+		/** Line drawing algorithm */
 		private dynaDraw: Drawing.DynaDraw;
+		
+		/** Current drawing strategy */
 		private drawer: Drawing.DrawingStrategy;
 			
 		/** UI factory */
@@ -61,19 +68,14 @@ module VectorScreencast {
 		
 		/** Recording might be blocked at some moment - i.e. when uploading data */
 		protected recordingBlocked: boolean;
-		
-		// Current state values:
-		private currColor: UI.Color;
-		private currSize: UI.BrushSize;
-		private lastCurState: CursorState;
-		
+				
 		// Cursor movement and pressure is irrelevant for playback, should it be recorded anyway?
 		private recordAllRawData: boolean;
 		
 		/**
-		 * Create a new instance of recorder.
-		 * @param	id			Unique ID of this Recorder instance
-		 * @param	sttings		Recorder settings
+		 * Create a new instance of recorder.		 
+         * @param   id          ID of the container element
+		 * @param	sttings		User's own recorder settings
 		 */
 		constructor(private id: string, private settings: Settings.RecorderSettings) {
 			// do not start recording until the user want's to start
@@ -98,6 +100,10 @@ module VectorScreencast {
 			// THE UI
 			//
 			
+			// set the colors according to the 
+			if(!!settings.DefaultBackgroundColor) UI.Color.BackgroundColor = settings.DefaultBackgroundColor;
+			if(!!settings.DefaultBrushColor) UI.Color.ForegroundColor = settings.DefaultBrushColor;
+			
 			// select the container - it must exist
 			var container: HTMLElement = document.getElementById(id);
 			if (!container) {
@@ -108,26 +114,31 @@ module VectorScreencast {
 			if (!settings.ColorPallete || settings.ColorPallete.length === 0) {
 				// default color pallete
 				var colors: Array<UI.Color> = [];
-				colors.push(new UI.Color("white", "#ffffff"));
-				colors.push(new UI.Color("red", "#fa5959"));
-				colors.push(new UI.Color("green", "#8cfa59"));
-				colors.push(new UI.Color("blue", "#59a0fa"));
-				colors.push(new UI.Color("yellow", "#fbff06"));
+				colors.push(new UI.Color("#ffffff"));
+				colors.push(new UI.Color("#fa5959"));
+				colors.push(new UI.Color("#8cfa59"));
+				colors.push(new UI.Color("#59a0fa"));
+				colors.push(new UI.Color("#fbff06"));
 				colors.push(UI.Color.BackgroundColor);
 				settings.ColorPallete = colors;
+			}
+			
+			// make sure there is an eraser available in the color pallete:
+			if(!colors.indexOf(UI.Color.BackgroundColor)) {
+				colors.push(UI.Color.BackgroundColor); // eraser is just another brush with a color of the background
 			}
 
 			if (!settings.BrushSizes || settings.BrushSizes.length === 0) {
 				// default brush sizes
 				var brushes: Array<UI.BrushSize> = [];
-				brushes.push(new UI.BrushSize("pixel", 2, "px"));
-				brushes.push(new UI.BrushSize("odd", 3, "px"));
-				brushes.push(new UI.BrushSize("tiny", 4, "px"));
-				brushes.push(new UI.BrushSize("ok", 6, "px"));
-				brushes.push(new UI.BrushSize("small", 8, "px"));
-				brushes.push(new UI.BrushSize("medium", 10, "px"));
-				brushes.push(new UI.BrushSize("large", 15, "px"));
-				brushes.push(new UI.BrushSize("extra", 80, "px"));
+				brushes.push(new UI.BrushSize(2));
+				brushes.push(new UI.BrushSize(3));
+				brushes.push(new UI.BrushSize(4));
+				brushes.push(new UI.BrushSize(6));
+				brushes.push(new UI.BrushSize(8));
+				brushes.push(new UI.BrushSize(10));
+				brushes.push(new UI.BrushSize(15));
+				brushes.push(new UI.BrushSize(80));
 				settings.BrushSizes = brushes;
 			}
 
@@ -150,6 +161,9 @@ module VectorScreencast {
 					RedirectPrompt: "Upload was successful - do you want to view your just recorded video?",
 					UploadFailure: "Upload failed.",
 					FailureApology: "We are sorry, but upload failed. Do you want to download your data to your computer instead?",
+					AudioRecording: "Audio recording",
+					AudioRecordingAvailable: "Audio recording is available",
+					AudioRecordingUnavailable: "Audio recording is unavailable"
 				};
 				settings.Localization = loc;
 			}
@@ -160,7 +174,6 @@ module VectorScreencast {
 			VideoEvents.on(VET.CursorState, (state: CursorState) => this.ProcessCursorState(state));
 			VideoEvents.on(VET.ClearCanvas, (color: UI.Color) => this.ClearCanvas(color));
 			VideoEvents.on(VET.Start, () => this.Start());
-			VideoEvents.on(VET.Continue, () => this.Continue());
 			VideoEvents.on(VET.Pause, () => this.Pause());
 			VideoEvents.on(VET.StartUpload, () => this.StartUpload());
 			
@@ -199,16 +212,16 @@ module VectorScreencast {
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
 			if (window.hasOwnProperty("PointerEvent")) {
-				var pointer = new PointerEventsAPI(container);
+				var pointer = new PointerEventsAPI(container, this.timer);
 				pointer.InitControlsAvoiding();
 				console.log("Pointer Events API is used");
 			} else if (wacomApi !== null) {
-				var tablet = new WacomTablet(container, wacomApi);
+				var tablet = new WacomTablet(container, this.timer, wacomApi);
 				console.log("Wacom WebPAPI is used");
 			} else {
-				var mouse = new Mouse(container);
+				var mouse = new Mouse(container, this.timer);
 				mouse.InitControlsAvoiding();
-				var touch = new TouchEventsAPI(container);
+				var touch = new TouchEventsAPI(container, this.timer);
 				console.log("Mouse and Touch Events API are used.");
 			}
 			
@@ -217,17 +230,12 @@ module VectorScreencast {
 				this.audioRecorder = new AudioRecorder(settings.Audio);
 				this.audioRecorder.Init();
 			}
-			
-			// init board state
-			this.currColor = UI.Color.ForegroundColor;
-			this.currSize = brushes.length > 0 ? brushes[0] : new UI.BrushSize("default", 5, "px");
-			this.lastCurState = new CursorState(0, 0, 0, 0); // reset the cursor
 		
 			// set default bg color and init the first chunk
 			this.ClearCanvas(UI.Color.BackgroundColor); 
 			// init some values for the brush - user will change it immediately, but some are needed from the very start
-			VideoEvents.trigger(VET.ChangeColor, this.currColor);
-			VideoEvents.trigger(VET.ChangeBrushSize, this.currSize);
+			VideoEvents.trigger(VET.ChangeColor, UI.Color.ForegroundColor);
+			VideoEvents.trigger(VET.ChangeBrushSize, new UI.BrushSize(5));
 		}
 		
 		/**
@@ -253,16 +261,6 @@ module VectorScreencast {
 				this.timer.Pause();
 				if (this.audioRecorder) { this.audioRecorder.Pause(); }				
 			}
-		}
-	
-		/**
-		 * Continue recording after the process has been paused for a while.
-		 */
-		private Continue(): void  {
-			this.isRecording = true;
-			this.timer.Resume();
-			if (this.audioRecorder) { this.audioRecorder.Continue(); }
-			this.PushChunk(new VideoData.VoidChunk(this.timer.CurrentTime(), this.lastEraseData));
 		}
 			
 		/**
@@ -303,7 +301,6 @@ module VectorScreencast {
 		 */
 		private ChangeBrushSize(size: UI.BrushSize): void {			
 			// User can change the size even if recording hasn't started or is paused
-			this.currSize = size;
 			!this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.ChangeBrushSize(size, this.timer.CurrentTime()))
 			this.dynaDraw.SetBrushSize(size);
 		}
@@ -314,7 +311,6 @@ module VectorScreencast {
 		 */
 		private ChangeColor(color: UI.Color): void {
 			// User can change the color even if recording hasn't started or is paused
-			this.currColor = color;
 			!this.recordingBlocked && this.data.CurrentChunk.PushCommand(new VideoData.ChangeBrushColor(color, this.timer.CurrentTime()))
 			this.drawer.SetCurrentColor(color);
 		}
@@ -323,8 +319,6 @@ module VectorScreencast {
 		 * User moved the mouse or a digital pen.
 		 */
 		private ProcessCursorState(state: CursorState) {
-			this.lastCurState = state;			
-			
 			// record cursor movement only if the video recording isn't over (already uploading)
 			// or the recording is currently running or all raw data should be captured
 			!this.recordingBlocked
@@ -341,15 +335,14 @@ module VectorScreencast {
 			// add data only if recording is in progress
 			var time: number = this.timer.CurrentTime();
 			this.lastEraseData = this.PushChunk(new VideoData.EraseChunk(color, time, this.lastEraseData));
-			this.data.CurrentChunk.PushCommand(new VideoData.ClearCanvas(time, color));
+			this.data.CurrentChunk.PushCommand(new VideoData.ClearCanvas(color, time));
 			this.drawer.ClearCanvas(color);
 		}
 
+		/**
+		 * Record new push command.
+		 */
 		private PushChunk(chunk: VideoData.Chunk): number {			
-			// set init commands
-			chunk.InitCommands.push(new VideoData.ChangeBrushSize(this.currSize, chunk.StartTime));
-			chunk.InitCommands.push(new VideoData.ChangeBrushColor(this.currColor, chunk.StartTime));
-			chunk.InitCommands.push(new VideoData.MoveCursor(this.lastCurState.X, this.lastCurState.Y, this.lastCurState.Pressure, chunk.StartTime));
 			// now push it
 			return this.data.PushChunk(chunk);
 		}
@@ -442,10 +435,6 @@ module VectorScreencast {
 		 * @param  url 		Url to be redirected to
 		 */
 		private FinishRecording(success: boolean, url?: string|boolean): void {
-			// inform everyone..
-			VideoEvents.trigger(VET.RecordingFinished);
-			
-			// 
 			if (success === true) {
 				this.ui.SetBusyText(this.settings.Localization.UploadWasSuccessful);
 				if (typeof url === "string") {

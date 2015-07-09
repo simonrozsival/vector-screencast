@@ -1,6 +1,4 @@
-/// <reference path="Vector" />
-/// <reference path="../UI/Color" />
-/// <reference path="../UI/Brush" />
+/// <reference path="../VectorScreencast" />
 
 module VectorScreencast.Helpers {
     

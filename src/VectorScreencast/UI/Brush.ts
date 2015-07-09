@@ -6,12 +6,7 @@ module VectorScreencast.UI {
 	 * Brush size representation.
 	 */
 	export class BrushSize {
-		constructor(private name: string, private size: number, private unit: string) { }
-		
-		/**
-		 * Textual representation
-		 */
-		public get Name() : string { return this.name; }
+		constructor(private size: number) { }
 		
 		/**
 		 * The size of the brush
@@ -19,14 +14,14 @@ module VectorScreencast.UI {
 		public get Size() : number { return this.size; } 
 		
 		/**
-		 * The units of brush size
+		 * The units of brush size - pixels
 		 */
-		public get Unit() : string { return this.unit; } 
+		public get Unit() : string { return "px"; } 
 		
 		/**
 		 * The size with the unit suitable for css
 		 */
-		public get CssValue() : string { return `${this.size}${this.unit}`; }
+		public get CssValue() : string { return `${this.Size}${this.Unit}`; }
 	}
 	
 } 

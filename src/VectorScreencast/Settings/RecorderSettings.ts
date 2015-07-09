@@ -16,6 +16,10 @@ module VectorScreencast.Settings {
 		Localization?: 		Localization.RecorderLocalization;
 		/** Array of colors for the color palete. */
 		ColorPallete?: 		Array<UI.Color>;
+		/** Default brush color */
+		DefaultBrushColor?:	UI.Color;
+		/** Default board background color */
+		DefaultBackgroundColor?: UI.Color;
 		/** Array of brush size options. */
 		BrushSizes?: 		Array<UI.BrushSize>;
 		/** Object instance defining the HTML structure of the recorder. */		

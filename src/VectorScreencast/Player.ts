@@ -12,6 +12,11 @@ module VectorScreencast {
     import ErrorType = Helpers.ErrorType;
     import CursorState = Helpers.CursorState;
     
+    /**
+     * # Player class.
+     * This class defines the behavior of the video player. It loads a source file,
+     * prepares the UI and plays the video according to the settings and user's input.
+     */
     export class Player {
         
         /** Data of the currently played video */
@@ -39,7 +44,13 @@ module VectorScreencast {
         /** Dimensions of the container */
         private oldWidth: number;
         private oldHeight: number;
-                                
+                           
+        /**
+         * Create a new instance of the player and append it to a given container element.
+         * @param   id          ID of the container element
+         * @param   settings    User defined settings of the player
+         * @triggeres-event Busy
+         */     
         constructor(id: string, private settings: Settings.PlayerSettings) {
             var container: HTMLElement = document.getElementById(id);
             if(!container) {
@@ -126,6 +137,9 @@ module VectorScreencast {
             );
         }
         
+        /**
+         * Handler of window.onresize event.
+         */
         private MonitorResize(container: HTMLElement): void {
             var rect = container.getBoundingClientRect();
             if(rect.width !== this.oldWidth || rect.height !== this.oldHeight) {
@@ -138,6 +152,11 @@ module VectorScreencast {
             }
         }
         
+        /**
+         * Processes file data as soon as it is downloaded.
+         * @param   data    The content of the downloaded source document.
+         * @triggersEvents VideoInfoLoaded, Ready, Start
+         */
         private ProcessVideoData(data: any): void {
             try {
                 var reader: VideoFormat.Reader = !!this.settings.VideoFormat ? this.settings.VideoFormat : new VideoFormat.SVGAnimation.IO();
@@ -171,6 +190,7 @@ module VectorScreencast {
         
         /**
          * Start (resume) playing of the video from current position
+         * @handles-event   Start
          */
         public Play(): void {
             this.isPlaying = true;
@@ -181,6 +201,7 @@ module VectorScreencast {
         
         /**
          * Pause playing of the video immediately
+         * @handles-event   Pause, ReachedEnd
          */
         public Pause(): void {
             this.timer.Pause();
@@ -192,6 +213,9 @@ module VectorScreencast {
         /** Animation handler  */
         private ticking: number;
         
+        /**
+         * Make one "tick" of the playing algorithm and start a loop using requestAnimationFrame 
+         */
         public Tick() {
             this.Sync();
             this.ticking = requestAnimationFrame(() => this.Tick());
@@ -199,6 +223,10 @@ module VectorScreencast {
         
         
         private lastMouseMoveState: VideoData.Command = null;
+        
+        /**
+         * Synchronize the state of the screen with current time.
+         */
         private Sync(): void {                 
             // loop through the
             while(!!this.video.CurrentChunk) {                        
@@ -245,6 +273,10 @@ module VectorScreencast {
             }
         }
         
+        /**
+         * Proceed to next video chunk. This will process as many chunks, as it can, untill current time is reached.
+         * The chunks, that are skipped, are drawn at once.
+         */
         protected MoveToNextChunk() {            
             do {                        
                 this.video.MoveNextChunk();                    
@@ -284,7 +316,9 @@ module VectorScreencast {
         /**
          * Skip to a specific time on the timeline. This method is used mainly when the user clicks
          * on the progressbar and the percents are calculated.
-         * @param   {number}    progress    The progress to jump to in percent (value in [0; 1]).
+         * @param   progress    The progress to jump to in percent (value in [0; 1]).
+         * @triggeres-event Pause, Start
+         * @handles-event   JumpTo
          */
 		public JumpTo(progress: number) : void {
 			var wasPlaying: boolean = this.isPlaying;	
@@ -325,6 +359,7 @@ module VectorScreencast {
         
         /**
          * Redraw current screen - might be necessary after canvas size changes.
+         * @triggersEvents  Pause, Start
          */
         private RedrawCurrentScreen(): void {
             var wasPlaying: boolean = this.isPlaying;	
@@ -350,6 +385,7 @@ module VectorScreencast {
         
 		/**
 		 * Inform everyone, that I have reached the end
+         * @triggeres-event ReachedEnd
 		 */
 		private ReachedEnd() : void {
 			VideoEvents.trigger(VideoEventType.ReachEnd);			
@@ -357,6 +393,7 @@ module VectorScreencast {
         
         /**
          * Make the canvas clean.
+         * @handles-event   ClearCanvas
          */
         protected ClearCavnas(color: UI.Color): void {
             this.drawer.ClearCanvas(color);
@@ -383,6 +420,7 @@ module VectorScreencast {
          
         /**
          * Somethimg is taking long time -- probably downloading xml or audio files
+         * @triggeres-event Pause
          */
          protected Busy(): void {
              this.busyLevel++;
@@ -393,7 +431,8 @@ module VectorScreencast {
          
          
          /**
-          * The thing that instructed 
+          * The thing that instructed
+          * @triggeres-event    Start 
           */       
          protected Ready(): void {
              if(--this.busyLevel === 0) {

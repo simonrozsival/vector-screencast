@@ -1,5 +1,5 @@
 /// <reference path="audio.d.ts" />
-/// <reference path="../VectorScreencast" />
+/// <reference path="../Helpers" />
 
 module VectorScreencast.AudioData {
 

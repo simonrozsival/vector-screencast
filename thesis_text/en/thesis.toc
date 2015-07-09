@@ -1,43 +1,74 @@
-\contentsline {chapter}{Introduction}{3}
-\contentsline {chapter}{\numberline {1}Distance education}{4}
-\contentsline {section}{\numberline {1.1}Current systems}{4}
-\contentsline {subsection}{\numberline {1.1.1}Coursera}{4}
-\contentsline {subsection}{\numberline {1.1.2}Youtube.com}{5}
-\contentsline {subsection}{\numberline {1.1.3}Moodle}{5}
-\contentsline {subsection}{\numberline {1.1.4}Educreations and ShowMe}{5}
-\contentsline {subsection}{\numberline {1.1.5}Khan Academy}{6}
-\contentsline {chapter}{\numberline {2}The Vector Video project}{7}
-\contentsline {section}{\numberline {2.1}Video recording tool requirements}{7}
-\contentsline {section}{\numberline {2.2}Video player requirements}{7}
-\contentsline {section}{\numberline {2.3}Goal of this thesis}{8}
-\contentsline {chapter}{\numberline {3}Analysis}{9}
-\contentsline {section}{\numberline {3.1}Technical requirements}{9}
-\contentsline {section}{\numberline {3.2}Available techonologies}{9}
-\contentsline {subsection}{\numberline {3.2.1}Java applets}{9}
-\contentsline {subsection}{\numberline {3.2.2}Adobe Flash}{9}
-\contentsline {subsection}{\numberline {3.2.3}Microsoft Silverlight}{10}
-\contentsline {subsection}{\numberline {3.2.4}HTML5}{10}
-\contentsline {section}{\numberline {3.3}Conclusion}{11}
-\contentsline {section}{\numberline {3.4}Possible issues and known limitations}{11}
-\contentsline {chapter}{\numberline {4}Vector Screencast file format}{13}
-\contentsline {paragraph}{Scalable Vector Graphics (SVG)}{13}
-\contentsline {chapter}{\numberline {5}Implementation}{14}
-\contentsline {section}{\numberline {5.1}ECMAScript and JavaScript}{14}
-\contentsline {subsection}{\numberline {5.1.1}TypeScript}{15}
-\contentsline {section}{\numberline {5.2}HTML5}{15}
-\contentsline {paragraph}{Working with XML data}{15}
-\contentsline {paragraph}{Web sockets}{15}
-\contentsline {paragraph}{Web Workers}{15}
-\contentsline {subsubsection}{Rendering graphics using HTML5}{16}
-\contentsline {paragraph}{Canvas 2D Context}{16}
-\contentsline {section}{\numberline {5.3}Drawing lines}{16}
-\contentsline {subsection}{\numberline {5.3.1}DynaDraw algorithm}{17}
-\contentsline {chapter}{\numberline {6}Integration into other applications}{21}
-\contentsline {section}{\numberline {6.1}Video player}{21}
-\contentsline {section}{\numberline {6.2}Video recording}{21}
-\contentsline {chapter}{\numberline {7}Users' documentation}{22}
-\contentsline {chapter}{Conclusion}{23}
-\contentsline {chapter}{Bibliography}{24}
-\contentsline {chapter}{List of Tables}{26}
-\contentsline {chapter}{List of Abbreviations}{27}
-\contentsline {chapter}{Attachments}{28}
+\contentsline {chapter}{Introduction}{3}{chapter*.2}
+\contentsline {chapter}{\numberline {1}Distance education}{4}{chapter.1}
+\contentsline {section}{\numberline {1.1}Current systems}{4}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Coursera}{4}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}Youtube.com}{5}{subsection.1.1.2}
+\contentsline {subsection}{\numberline {1.1.3}Moodle}{5}{subsection.1.1.3}
+\contentsline {subsection}{\numberline {1.1.4}Educreations and ShowMe}{5}{subsection.1.1.4}
+\contentsline {subsection}{\numberline {1.1.5}Khan Academy}{6}{subsection.1.1.5}
+\contentsline {chapter}{\numberline {2}The Vector Video project}{7}{chapter.2}
+\contentsline {section}{\numberline {2.1}Video recording tool requirements}{7}{section.2.1}
+\contentsline {section}{\numberline {2.2}Video player requirements}{7}{section.2.2}
+\contentsline {section}{\numberline {2.3}Goal of this thesis}{8}{section.2.3}
+\contentsline {chapter}{\numberline {3}Analysis}{9}{chapter.3}
+\contentsline {section}{\numberline {3.1}Technical requirements}{9}{section.3.1}
+\contentsline {section}{\numberline {3.2}Available techonologies}{9}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}Java applets}{9}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}Adobe Flash}{9}{subsection.3.2.2}
+\contentsline {subsection}{\numberline {3.2.3}Microsoft Silverlight}{10}{subsection.3.2.3}
+\contentsline {subsection}{\numberline {3.2.4}HTML5}{10}{subsection.3.2.4}
+\contentsline {paragraph}{SVG}{11}{section*.7}
+\contentsline {paragraph}{SMIL}{11}{section*.8}
+\contentsline {subsection}{\numberline {3.2.5}Conclusion}{11}{subsection.3.2.5}
+\contentsline {subsection}{\numberline {3.2.6}Possible issues and known limitations}{12}{subsection.3.2.6}
+\contentsline {section}{\numberline {3.3}Drawing algorighm}{12}{section.3.3}
+\contentsline {section}{\numberline {3.4}Audio recording}{12}{section.3.4}
+\contentsline {paragraph}{Buffering recorded data}{13}{section*.10}
+\contentsline {paragraph}{Compression of data in browser}{13}{section*.11}
+\contentsline {paragraph}{Streaming data in background}{13}{section*.12}
+\contentsline {subsection}{\numberline {3.4.1}Conclusion}{13}{subsection.3.4.1}
+\contentsline {section}{\numberline {3.5}File format}{13}{section.3.5}
+\contentsline {paragraph}{EVA}{14}{section*.13}
+\contentsline {paragraph}{SWF}{14}{section*.14}
+\contentsline {paragraph}{SVG}{14}{section*.15}
+\contentsline {paragraph}{Custom extension of SVG}{14}{section*.16}
+\contentsline {subsection}{\numberline {3.5.1}Conclusion}{14}{subsection.3.5.1}
+\contentsline {chapter}{\numberline {4}Vector Screencast file format}{15}{chapter.4}
+\contentsline {section}{\numberline {4.1}Video Metadata}{15}{section.4.1}
+\contentsline {paragraph}{\texttt {\textless a:width\textgreater }}{15}{section*.17}
+\contentsline {paragraph}{\texttt {\textless a:height\textgreater }}{15}{section*.18}
+\contentsline {paragraph}{\texttt {\textless a:length\textgreater }}{16}{section*.19}
+\contentsline {paragraph}{\texttt {\textless a:audio\textgreater }}{16}{section*.20}
+\contentsline {subparagraph}{\texttt {\textless a:source \textgreater }}{16}{section*.21}
+\contentsline {section}{\numberline {4.2}Video Chunks}{16}{section.4.2}
+\contentsline {paragraph}{``Path''}{16}{section*.22}
+\contentsline {paragraph}{``Erase''}{16}{section*.23}
+\contentsline {paragraph}{``Void''}{16}{section*.24}
+\contentsline {section}{\numberline {4.3}Animation Commands}{16}{section.4.3}
+\contentsline {paragraph}{\texttt {\textless m\textgreater }}{17}{section*.25}
+\contentsline {paragraph}{\texttt {\textless c\textgreater }}{17}{section*.26}
+\contentsline {paragraph}{\texttt {\textless s\textgreater }}{17}{section*.27}
+\contentsline {paragraph}{\texttt {\textless d\textgreater }}{17}{section*.28}
+\contentsline {chapter}{\numberline {5}Implementation}{18}{chapter.5}
+\contentsline {section}{\numberline {5.1}ECMAScript and JavaScript}{18}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}TypeScript}{18}{subsection.5.1.1}
+\contentsline {section}{\numberline {5.2}HTML5}{19}{section.5.2}
+\contentsline {paragraph}{Working with XML data}{19}{section*.29}
+\contentsline {paragraph}{Web sockets}{19}{section*.30}
+\contentsline {paragraph}{Web Workers}{19}{section*.31}
+\contentsline {subsubsection}{Rendering graphics using HTML5}{20}{section*.32}
+\contentsline {paragraph}{Canvas 2D Context}{20}{section*.33}
+\contentsline {section}{\numberline {5.3}Drawing lines}{20}{section.5.3}
+\contentsline {subsection}{\numberline {5.3.1}DynaDraw algorithm}{21}{subsection.5.3.1}
+\contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{25}{chapter.6}
+\contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{25}{section.6.1}
+\contentsline {section}{\numberline {6.2}Vector Screencast Player}{26}{section.6.2}
+\contentsline {section}{\numberline {6.3}Vector Screencast Recorder}{26}{section.6.3}
+\contentsline {section}{\numberline {6.4}Embedding Vector Screencast Player}{26}{section.6.4}
+\contentsline {section}{\numberline {6.5}Custom theme}{26}{section.6.5}
+\contentsline {chapter}{\numberline {7}Users' documentation}{27}{chapter.7}
+\contentsline {chapter}{Conclusion}{28}{chapter*.36}
+\contentsline {chapter}{Bibliography}{29}{chapter*.37}
+\contentsline {chapter}{List of Tables}{32}{chapter*.38}
+\contentsline {chapter}{List of Abbreviations}{33}{chapter*.39}
+\contentsline {chapter}{Attachments}{34}{chapter*.40}

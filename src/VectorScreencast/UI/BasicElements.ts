@@ -151,7 +151,9 @@ module VectorScreencast.UI {
 		}
 	}
 	
-	
+	/**
+	 * Button with an icon but without any text.
+	 */
 	export class IconOnlyButton extends IconButton {
 		constructor(iconClass: string, title: string, onClick?: (e: Event) => void) {
 			super(iconClass, "", onClick); // empty content
@@ -159,18 +161,13 @@ module VectorScreencast.UI {
 			this.AddClass("icon-only-button");
 		}
 		
+		/**
+		 * Change the title attribute of the button.
+		 * @param	content		New button title.
+		 */
 		public ChangeContent(content: string): IconButton {
 			HTML.SetAttributes(this.GetHTML(), { title: content });
 			return this;
-		}
-	}
-	
-	/**
-	 * Basic HTML paragraph
-	 */
-	export class Paragraph extends SimpleElement {
-		constructor(text: string) {
-			super("p", text);
 		}
 	}
 		

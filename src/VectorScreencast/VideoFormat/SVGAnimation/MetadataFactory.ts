@@ -6,8 +6,17 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	import SVG = Helpers.SVG;
 	import SVGA = Helpers.SVGA;
 	
+	/**
+	 * Converts metadata to and from SVG elements.
+	 */
 	export class MetadataFactory {
 		
+		/**
+		 * Extract metadata information form an SVG element
+		 * @param	rootNode	The root node of metadata information
+		 * @return				Extracted metadata information
+		 * @throws				Error
+		 */
 		FromSVG(rootNode: Element): Metadata {
 			var meta: Metadata = new Metadata();
 			
@@ -56,9 +65,14 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			return meta;
 		}
 		
+		/**
+		 * Creates metadata SVG element from video data.
+		 * @param	data	The recorded data of the video.
+		 * @return			SVG element
+		 */
 		ToSVG(data: Metadata): Node {			
-			// the "root" element
-			var meta: Node = SVGA.CreateElement("metadata");
+			// the "root" element - http://www.w3.org/TR/SVG/metadata.html
+			var meta: Node = SVG.CreateElement("metadata");
 			
 			// video lenght
 			var length: Node = SVGA.CreateElement("length");

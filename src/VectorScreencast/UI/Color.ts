@@ -6,35 +6,45 @@ module VectorScreencast.UI {
 	 * Color representation.
 	 */
 	export class Color {
-		constructor(private name: string, private cssValue: string) { }
+		/**
+		 * @param	cssValue	Valid CSS value of a color.
+		 */
+		constructor(private cssValue: string) { }
 		
 		/**
-		 * Textual representation
+		 * CSS value of the color.
 		 */
-		public get Name() : string { return this.name; }
-		
+		public get CssValue(): string {  return this.cssValue;  }
+				 		
+		/** Current background color. */
+		private static backgroundPrototype: Color = new Color("#111"); // dark gray
 		/**
-		 * CSS value of the color
+		 * Set different background color.
+		 * @param	c 	New background color.
 		 */
-		public get CssValue() : string { return this.cssValue; } 
-		
-		
-		/**
-		 * Color prototypes
-		 */
-		 		
-		private static backgroundPrototype: Color = new Color("Dark gray", "#111");
 		public static set BackgroundColor(c: Color) { this.backgroundPrototype = c; }
-		public static get BackgroundColor() : Color {
-			return new Color(this.backgroundPrototype.Name, this.backgroundPrototype.CssValue);
+		/**
+		 * Access current background color.
+		 * @return 	Current background color.
+		 */
+		public static get BackgroundColor(): Color {
+			return new Color(this.backgroundPrototype.CssValue);
 		}
 		
-		private static foregroundPrototype: Color = new Color("White", "#fff");
+		/** Current foreground color */
+		private static foregroundPrototype: Color = new Color("#fff"); // white
+		/**
+		 * Set different foreground color.
+		 * @param	c	New foreground color
+		 */
 		public static set ForegroundColor(c: Color) { this.foregroundPrototype = c; }
-		public static get ForegroundColor() : Color {
-			return new Color(this.foregroundPrototype.Name, this.foregroundPrototype.CssValue);
+		/**
+		 * Get current foreground color.
+		 */
+		public static get ForegroundColor(): Color {
+			return new Color(this.foregroundPrototype.CssValue);
 		}
-		 
+
 	}
-	
+
 }

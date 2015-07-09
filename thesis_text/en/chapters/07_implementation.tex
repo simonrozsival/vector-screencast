@@ -1,6 +1,6 @@
 \chapter{Implementation}
 
-Many different technologies and APIs are used in this project. 
+
 
 
 
@@ -9,16 +9,16 @@ ECMAScript \footnote{http://www.ecmascript.org/} is a standardized scripting lan
 
 JavaScript is a dynamic programming language \footnote{http://en.wikipedia.org/wiki/Dynamic\_programming\_language}, which combines multiple aspects of imperative, functional, and object-oriented programming.
 
-Functions are so called first-class citizens. This means they can be stored in variables, passed as function parameters, returned as results of functions, and included in data structures \cite{}\footnote{http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-12.html\#call\_footnote\_Temp\_121}.
+Functions are so called first-class citizens. This means they can be stored in variables, passed as function parameters, returned as results of functions, and included in data structures.
 
-Object oriented programming (OOP) \footnote{http://en.wikipedia.org/wiki/Object-oriented\_programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, objective oriented programming is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. This way a prototype chain is created. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in it's own properties. If it is not found, then it is searched in it's prototype's properties and so on until the end of the prototype chain is reached \cite{}\footnote{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance\_and\_the\_prototype\_chain}.
+Object oriented programming (OOP) \footnote{http://en.wikipedia.org/wiki/Object-oriented\_programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, objective oriented programming is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. This way a prototype chain is created. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in it's own properties. If it is not found, then it is searched in it's prototype's properties and so on until the end of the prototype chain is reached \cite{mdn_prototype_chain}.
 
 JavaScript doesn't provide any mean of static type checking. All types are created during runtime and they are also checked only during runtime. This lack of static checking during compilation might lead to rarely occurring errors and it is important to take this in mind while writing JavaScript code. A good practice is to write documentation comments\footnote{Commonly used syntax in JavaScript projects is JSDoc (http://usejsdoc.org/)}, where the types are stated.
 
-JavaScript is an interpreted language, some implementations also use a Just-in-time compilation (JIT) \footnote{For example Google V8 engine used in Google Chrome. See https://code.google.com/p/v8/} for better performance.  Another very important aspect of ECMAScript which affects it's performace is the absence of direct control over memory usage -- memory is released when it is not needed any more. This mechanism is called \textit{Garbate collection}. As of 2012, all modern browsers use mark-and-sweep garbage-collector \cite{}\footnote{https://developer.mozilla.org/cs/docs/Web/JavaScript/Memory\_Management}.
+JavaScript is an interpreted language, some implementations also use a Just-in-time compilation (JIT) \footnote{For example Google V8 engine used in Google Chrome. See https://code.google.com/p/v8/} for better performance.  Another very important aspect of ECMAScript which affects it's performace is the absence of direct control over memory usage -- memory is released when it is not needed any more. This mechanism is called \textit{Garbate collection}. As of 2012, all modern browsers use mark-and-sweep garbage-collector \cite{mdn_memmory_management}.
 
 \subsection{TypeScript}
-TypeScript is a typed superset of JavaScript that compiles to plain JavaScript\cite{} \footnote{http://www.typescriptlang.org/}. It is an open-source project developed by Microsoft. It is, as it's name suggests, is a strongly typed programming language compatible with JavaScript.
+TypeScript is a typed superset of JavaScript that compiles to plain JavaScript\cite{typescript}. It is an open-source project developed by Microsoft. It is, as it's name suggests, is a strongly typed programming language compatible with JavaScript.
 
 TypeScript extends capabilities of JavaScript by static type checking in the time of compilation, which helps finding errors in source code, and speeds up the process of coding. TypeScript also introduces class-based object oriented programming to JavaScript. It includes concepts of interfaces and polymorphism, which makes programs written in TypeScript more understandable to programmers familiar with other object-oriented programming languages like Java, C\# or C++.
 
@@ -33,10 +33,10 @@ TypeScript uses several features of ECMAScript 6, but is transcompiled into ECMA
 
 \section{HTML5}
 
-HTML5 is used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed for semantic description of documents \cite{}\footnote{https://html.spec.whatwg.org/\#is-this-html5}. HTML5 extends this semantics with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, that allow web developers to create much richer and universal websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
+HTML5 is used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed for semantic description of documents \cite{html5}. HTML5 extends this semantics with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, that allow web developers to create much richer and universal websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
 
 \paragraph{Working with XML data}
-AIn JavaScript, working with XML data is very similar to working with regular website DOM\footnote{Document Object Model, http://www.w3.org/DOM/}. \verb|Document|\footnote{https://dom.spec.whatwg.org/\#interface-document} interface is used for traversing the XML tree, modifying it or for creating a new tree. In HTML5, XML files can be opened using a HTTP GET request using \verb|XMLHttpRequest|\footnote{https://xhr.spec.whatwg.org/} object, which returns \verb|Document| instance in it's \verb|responseXML| property, if the document meets specified criteria \cite{}\footnote{https://xhr.spec.whatwg.org/\#document-response}.
+AIn JavaScript, working with XML data is very similar to working with regular website DOM\footnote{Document Object Model, http://www.w3.org/DOM/}. \verb|Document|\footnote{https://dom.spec.whatwg.org/\#interface-document} interface is used for traversing the XML tree, modifying it or for creating a new tree. In HTML5, XML files can be opened using a HTTP GET request using \verb|XMLHttpRequest|\footnote{https://xhr.spec.whatwg.org/} object, which returns \verb|Document| instance in it's \verb|responseXML| property, if the document meets specified criteria \cite{xhr}.
 
 \paragraph{Web sockets}
 Web sockets allow applications to open bidirectional communication channels with server-side processes \cite{}\footnote{https://html.spec.whatwg.org/multipage/comms.html\#network}. Web sockets are built on top of \textit{TCP} (Transmission Control Protocol) connection. This means that the delivery of data is reliable and ordered \cite{}\footnote{https://tools.ietf.org/html/rfc6455}.
@@ -57,7 +57,7 @@ Displaying text and static visual content is the main purpose of HTML and Cascad
 The new HTML specification takes this in mind and brings ways of creating more rich and dynamic content within a web page. There are two technologies that should be taken into account - Canvas 2D Context and SVG.
 
 \paragraph{Canvas 2D Context}
-The Canvas element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly \cite{} \footnote{http://www.w3.org/TR/2010/WD-html5-20100624/the-canvas-element.html}. 
+The Canvas element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly \cite{html5_canvas}. 
 
 Using canvas seems appropriate for this project. Canvas could be created with respect to user's resolution and web browser window size. All elements can be scaled to fit this viewport. This will make them look sharp and there won't be any artifacts, noise and blur caused by interpolation which would be caused by scaling normal bitmap video.
 
@@ -85,6 +85,7 @@ The outcome of the rendering phase should be the same every time so the intentio
 Rendering at the time of playback gives us the opportunity to adjust the outcome to the environment of the end user. This means that the result can be sharp on every display resolution without the need of having many versions of the same video for each resolution.
 
 \subsection{DynaDraw algorithm}
+\label{sec:dynadraw}
 
 Paul Haeberli has created a simple algorithm called \textit{"DynaDraw"} in 1989, which is suitable for calligraphy. Brush is modeled as a physical object with it's mass, velocity and friction coefficient \footnote{DynaDraw: http://www.graficaobscura.com/dyna/index.html} \cite{}. Mouse movement is interpreted as a way of exerting force on the brush -- the faster you move the brush, the greater the force applied on the brush is. Acceleration is then calculated according to Newton's second law of motion considering brush's mass and velocity of the brush is derived with respect to the amount of brush's friction. This velocity is then applied and brush is moved. The trace brush should leave behind is then drawn onto the blackboard.
 

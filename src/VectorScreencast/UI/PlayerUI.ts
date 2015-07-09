@@ -105,12 +105,20 @@ module VectorScreencast.UI {
 			this.BindKeyboardShortcuts();			
 		}
 		
+		/**
+		 * Set the text of the "busy" state overlay screen.
+		 * @param	text	User information.
+		 */
 		public SetBusyText(text: string) {
 			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": text });
 		}
 		
 		/**
-		 * 
+		 * Handle key-up events to make player usage more intuitive.
+		 * Handled keys:
+		 * - spacebar: play/pause
+		 * - left arrow: skip 5 seconds backwards
+		 * - right arrow: skip 5 seconds forward
 		 */
 		private BindKeyboardShortcuts() : void {
 			const spacebar: number = 32;
@@ -226,13 +234,21 @@ module VectorScreencast.UI {
 			// do not update the status and timeline while paused
 			clearInterval(this.ticking);
 		}
-						
+		
+		/**
+		 * Create an instance of a timeline.
+		 * @return		Timeline instance.
+		 */				
 		private CreateTimeLine() : TimeLine {
 			return new TimeLine(`${this.id}-timeline`);
 		}
 		
+		/** Element with the ifnromation about the total duration of the video. */
 		private totalTime: IElement;
 		
+		/**
+		 * Creates a panel with the information about the progress of the video.
+		 */
 		private CreateTimeStatus() : IElement {			
 			this.currentTime = new SimpleElement("span", "0:00");
 			this.totalTime = new SimpleElement("span", "0:00");
@@ -278,14 +294,16 @@ module VectorScreencast.UI {
 		}
 		
 		/**
-		 * Busy/Ready states
-		 */
-		 
+		 * Show information, that the player is currently busy and waits for something.
+		 */		 
 		public Busy(): void {
 			this.AddClass("busy");
 			this.isBusy = true;
 		}
 		
+		/**
+		 * Remove the "busy state" information.
+		 */
 		public Ready(): void {
 			this.RemoveClass("busy");
 			this.isBusy = false;
@@ -295,10 +313,19 @@ module VectorScreencast.UI {
 		 * Volume controls
 		 */
 		
+		/** Decrease volume button. */
 		private volumeDownBtn: IconOnlyButton;
+		
+		/** Increase volume button. */
 		private volumeUpBtn: IconOnlyButton;
+		
+		/** Mute/unmute audio button. */
 		private volumeOffBtn: IconOnlyButton;
 		 
+		/**
+		 * Creates a panel with volume up, down and mute buttons.
+		 * @return		Panel with audio control buttons.
+		 */
 		protected CreateAudioControls(): IElement {
 			return new Panel("div", `${this.id}-audio`)
 				.AddChildren(
@@ -314,15 +341,29 @@ module VectorScreencast.UI {
 				.AddClasses("ui-controls-panel", "vector-video-audio-controls");
 		}
 		
+		/**
+		 * Increase volume
+		 * @triggeres-event	VolumeUp
+		 */
 		protected VolumeUp(): void {
 			VideoEvents.trigger(VideoEventType.VolumeUp);
 		}
 		
+		/**
+		 * Decrease volume.
+		 * @triggers-event	VolumeDown
+		 */
 		protected VolumeDown(): void {
 			VideoEvents.trigger(VideoEventType.VolumeDown);
 		}		 
 		 
+		/** Is the audio muted at the moment? */
 		private isMuted: boolean = false;
+		
+		/**
+		 * Mute/unmute the audio and adjust the button look appropriatelly
+		 * @triggers-event	Mute
+		 */
 		protected Mute(): void {
 			if(!this.isMuted) {
 				Helpers.HTML.SetAttributes(this.volumeDownBtn.GetHTML(), { disabled: "disabled" });
@@ -339,9 +380,8 @@ module VectorScreencast.UI {
 		}
 		
 		/**
-		 * Autohiding the toolbar
-		 */
-		
+		 * Turns autohiding of the toolbar on/off.
+		 */		
 		protected ToggleAutohiding(): void {
 			if(this.controls.HasClass("autohide")) {
 				this.controls.RemoveClass("autohide");

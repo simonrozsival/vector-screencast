@@ -1,3 +1,4 @@
+/// <reference path="Mouse" />
 /// <reference path="../VectorScreencast" />
 
 module VectorScreencast.VideoData {
@@ -36,8 +37,8 @@ module VectorScreencast.VideoData {
 	 */
 	export class WacomTablet extends Mouse {
 		
-		constructor(board: HTMLElement, private penApi: IWacomApi) {
-			super(board); // obligatory parent constructor call
+		constructor(board: HTMLElement, timer: Helpers.VideoTimer, private penApi: IWacomApi) {
+			super(board, timer);
 		}
 		
 		/**

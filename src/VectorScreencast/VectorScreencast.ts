@@ -1,14 +1,14 @@
-/// <reference path="Player" />
-/// <reference path="Recorder" />
-
 /// <reference path="AudioData" />
 /// <reference path="Drawing" />
 /// <reference path="Helpers" />
 /// <reference path="Localization" />
 /// <reference path="Settings" />
 /// <reference path="UI" />
-/// <reference path="VideoData" />
 /// <reference path="VideoFormat" />
+/// <reference path="VideoData" />
+
+/// <reference path="Player" />
+/// <reference path="Recorder" />
 
 /**
  * Vector Screencast is a project developed as a bachelors thesis by Šimon Rozsíval at Mathematical and Physical faculty
