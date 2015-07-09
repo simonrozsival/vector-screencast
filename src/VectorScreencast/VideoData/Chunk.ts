@@ -161,7 +161,7 @@ module VectorScreencast.VideoData {
 	/**
 	 * Remove everything from the canvas and replace it with a single color + afterwards movement of the cursor.
 	 */
-	export class EraseChunk extends VoidChunk {
+	export class EraseChunk extends Chunk {
 		/** Get the new background color. */
 		get Color(): UI.Color { return this.color; }
 		
@@ -170,9 +170,7 @@ module VectorScreencast.VideoData {
 		 */
 		ExecuteInitCommands(): void {
 			// the clear canvas command is not stored anywhere, create it ad hoc:
-			var e = new ClearCanvas(this.Color, this.time);
-			e.Execute();
-			e = null;
+			this.Render();
 			
 			// now the rest
 			super.ExecuteInitCommands();
