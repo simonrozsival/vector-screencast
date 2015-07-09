@@ -166,6 +166,19 @@ module VectorScreencast.VideoData {
 		get Color(): UI.Color { return this.color; }
 		
 		/**
+		 * Run the implicit erase command.
+		 */
+		ExecuteInitCommands(): void {
+			// the clear canvas command is not stored anywhere, create it ad hoc:
+			var e = new ClearCanvas(this.Color, this.time);
+			e.Execute();
+			e = null;
+			
+			// now the rest
+			super.ExecuteInitCommands();
+		}
+		
+		/**
 		 * Clear the whole canvas with a single color.
 		 * @triggers-event	ClearCanvas
 		 */
