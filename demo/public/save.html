@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" value="noindex, nofollow"> <!-- this is just a demo app, no indexing by search engines please -->
+        <title>Play a vector video</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" media="screen,projection,tv" href="/css/demo-skin.css">
+        <link rel="stylesheet" media="screen,projection,tv" href="/css/themes/default.min.css">
+        <link rel="shortcut icon" href="/favicon.png">
+    </head>
+    <body>
+        <!--
+            Save recorded video.
+            Demo by Šimon Rozsíval.
+        -->
+		
+		<h1>Save recorded screencast</h1>
+		<form method="post" action="/save">
+			<p>
+				<label for="author">Author's name:</label>
+				<input tpye="text" name="author">
+			</p>			
+			<p>
+				<label for="title">Screencast title:</label>
+				<input tpye="text" name="title">
+			</p>			
+			<p>
+				<label for="tags">Tags:</label>
+				<input tpye="text" name="tags">
+			</p>
+			<p>
+				<small>Please separate tags with commas.</small>
+			</p>
+			<input type="hidden" name="source" value="">
+			
+			<p>
+				<input type="submit" value="Save recording">
+			</p>
+		</form>
+        
+		<script>
+        // load the name of the source file from the URL
+        var urlQuery = parseUrl();
+        var sourceFile = urlQuery["source"];
+		var value = document.createAttribute("value");
+		value.textContent = encodeURIComponent(sourceFile);
+		document.getElementsByName("source").item(0).attributes.setNamedItem(value);
+        
+        /**
+         * This helper function parses current url and creates an object containing key-value pairs from the url.
+         * @return {object} Key-Value pairs extracted from the URL
+         */
+        function parseUrl() {
+            var urlQuery = {};
+            window.location.search.substr(1).split("&").map(function(queryPart) {
+                var pair = queryPart.split("=");
+                if(pair.length === 2) urlQuery[pair[0]] = pair[1];
+            });
+            return urlQuery;
+        }
+        </script>
+    </body>
+</html>

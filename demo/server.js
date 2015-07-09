@@ -18,6 +18,7 @@ var express = require("express"),
 	dataRoot = "/recordings"; // the directory, where the recordings are stored
 
 app.post("/upload/result", UploadResult);
+app.post("/save", SaveRecording);
 
 app.use(compression());
 app.use(methodOverride());
@@ -66,10 +67,7 @@ function getPort() {
  * @param res	HTTP response object
  */
 function UploadResult(req, res) {
-    var name = GenerateRandomFileName("json");
-    var fileName = publicDir + dataRoot + "/" + name; // real path of the file on the disk
-	
-	var form = new formidable.IncomingForm();
+    var form = new formidable.IncomingForm();
 	form.uploadDir = publicDir + dataRoot;
 	form.parse(req, function(err, fields, files) {
 		if(!!err) {
@@ -77,14 +75,51 @@ function UploadResult(req, res) {
 			return;
 		}
 		
-		var ext = fields.extension;
+		var ext = encodeURIComponent(fields.extension);
 		var tmpName = files.file.path;
 		var newName = dataRoot + "/" + GenerateRandomFileName(ext);
 		fs.renameSync(tmpName, publicDir + newName);
 		res.status(200).json({
 			success: true,
-			redirect: "/play.html?source=" + newName			
+			redirect: "/save.html?source=" + newName			
 		})
+	});
+}
+
+var dbFile = "./public/recordings-list.json";
+function SaveRecording(req, res) {		
+	
+    var form = new formidable.IncomingForm();
+	form.parse(req, function(err, fields, files) {		
+		var recording = {
+			src:	encodeURIComponent(fields.source),
+			author:	encodeURIComponent(fields.author),
+			title: 	encodeURIComponent(fields.title),
+			tags:	fields.tags.split(",").map(function(tag) { return encodeURIComponent(tag.trim()); })
+		};
+		
+		fs.readFile(dbFile, "utf8", function(err, data) {
+			if(!!err) {			
+				res.status(500).json({ success: false, msg: "can't  open the DB" });
+				return;
+			}
+			var db = JSON.parse(data);
+			if(!db || !db.hasOwnProperty("recordings") || !Array.isArray(db.recordings)) {
+				res.status(500).json({ success: false, msg: "DB is corrupted" });
+				return;
+			}
+			
+			db.recordings.push(recording);
+			fs.writeFile(dbFile, JSON.stringify(db), function(err) {
+				if(!!err) {					
+					res.status(500).json({ success: false, msg: "Can't write to the DB" });
+					return;
+				}			
+				
+				res.redirect("/play.html?source=" + decodeURIComponent(recording.src));
+				return;
+			});
+		});
 	});
 }
 

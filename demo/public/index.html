@@ -6,19 +6,21 @@
         <title>List of all available videos</title>
 
         <!-- CSS -->
-        <link rel="stylesheet" media="screen,projection,tv" href="/css/default.css">
+        <link rel="stylesheet" media="screen,projection,tv" href="/css/demo-skin.css">
         <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
 		<h1>Watch one of our videos</h1>
-		<blockquote>This is a Vector Video project DEMO by Šimon Rozsíval.</blockquote>
+		<p>This is a Vector Video project DEMO by Šimon Rozsíval.</p>
+        <p><a href="record.html">Record new video</a></p>
             
 		<table>
 			<thead>
-				
+                <tr>
+				    <th>Title</th><th>Author</th><th>Tags</th><th></th>
+                </tr>
 			</thead>
-			<tbody>
-				
+			<tbody id="data">				
 			</tbody>
 		</table>
 			
@@ -26,16 +28,53 @@
         <script>
         // wait until the DOM is loaded and ready
         window.onload = function() {
-            // create the recorder
-            var recorder = new VectorVideo.Recorder("recorder", {
-                // for more information about configuration see documentation (https://github.com/rozsival/vector-video)
-                UploadURL: "/upload/result",
-                Audio: {
-                    host: "localhost",
-                    port: 4000,
-                    path: "/upload/audio"
+            var req = new XMLHttpRequest();
+            req.open("get", "/recordings-list.json", true);
+            req.onreadystatechange = function(data) {
+                if(req.status === 200 && req.readyState === 4) {
+                    var db = JSON.parse(req.response);
+                    if(!db || !db.hasOwnProperty("recordings") || !Array.isArray(db.recordings)) {
+                        alert("Database is corrupted.");
+                    } else {
+                        for(var i = 0; i < db.recordings.length; ++i) {
+                            addRecordingRow(db.recordings[i]);
+                        }                        
+                    }
                 }
-            });
+            }
+            req.send();
+            
+            var data = document.getElementById("data");
+            function addRecordingRow(rec) {
+                var row = document.createElement("tr");
+                
+                var td = document.createElement("td");
+                td.textContent = decodeURIComponent(rec.author);
+                row.appendChild(td);
+                                
+                td = document.createElement("td");
+                td.textContent = decodeURIComponent(rec.title);
+                row.appendChild(td);
+                
+                td = document.createElement("td");
+                for(var i = 0; i < rec.tags.length; ++i) {
+                    var tag = rec.tags[i];
+                    var a = document.createElement("a");
+                    a.href = "#" + tag;
+                    a.textContent = decodeURIComponent(tag);
+                    td.appendChild(a);
+                }                
+                row.appendChild(td);
+                
+                td = document.createElement("td");
+                var a = document.createElement("a");
+                a.href = "play.html?source=" + decodeURIComponent(rec.src);
+                a.textContent = "Play screencast";
+                td.appendChild(a);
+                row.appendChild(td);
+                
+                data.appendChild(row);
+            }
         };
         </script>
     </body>
