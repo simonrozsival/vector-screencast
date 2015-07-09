@@ -194,4 +194,4 @@ gulp.task("doc", function() {
 });
 
 // default: compile both the JS library and the server
-gulp.task("default", ["release", "demo"]);
+gulp.task("default", ["release", "demo", "doc"]);
