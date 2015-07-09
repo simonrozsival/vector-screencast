@@ -34,6 +34,7 @@ module AudioRecording {
         path?: string;
         outputDir?: string;
         formats?: Array<string>;
+        deleteWav?: boolean;
     } 
     
     export class Server {
@@ -80,7 +81,7 @@ module AudioRecording {
                             fileWriter = this.InitRecording(name, msg);                        
                         } else if (!!msg && msg.type === "end") {
                             recordingEndedProperly = true;
-                            this.FinishRecording(this.cfg.hostName, name, fileWriter, socket);
+                            this.FinishRecording(this.cfg.hostName, name, fileWriter, socket, this.cfg.deleteWav);
                         } else {
                             // error - unsupported message
                             console.log(colors.red("Unsupported message"), message);                        
@@ -131,12 +132,12 @@ module AudioRecording {
             return fileWriter;
         }
                 
-        private FinishRecording(hostName: string, name: string, fileWriter: any, socket: any): void {
+        private FinishRecording(hostName: string, name: string, fileWriter: any, socket: any, deleteWav: boolean): void {
             // write the Wav into the file
             fileWriter.end();
             fileWriter = null;
     
-            this.TryConvertTo(name, function(results) {
+            this.TryConvertTo(name, deleteWav, function(results) {
                 // inform the client about the result
                 if(!!socket) {
                     for (var i = 0; i < results.length; i++) {
@@ -165,7 +166,7 @@ module AudioRecording {
             return `${dir}/${uuid.v4()}${ext}`;
         }
     
-        private TryConvertTo(input: string, success: (files: Array<IAudio>) => void) {
+        private TryConvertTo(input: string, deleteWav: boolean, success: (files: Array<IAudio>) => void) {
             convert({
                 input: input,
                 formats: this.cfg.formats,
@@ -180,17 +181,20 @@ module AudioRecording {
                             type:   "audio/wav"
                         }];
                     if(files.length > 0) {
-                        // I don't need the Wav any more
-                        fs.unlink(input, function(err) {
-                            if(err) {
-                                console.log(colors.red(`Can't delete tmp wav file ${input}`));
-                                return;
-                            }
-    
-                            console.log(colors.green(`Tmp file ${input} was deleted`));
-                        });
-    
-                        resultFileNames = files;
+                        if(deleteWav) {
+                            // I don't need the Wav any more
+                            fs.unlink(input, function(err) {
+                                if(err) {
+                                    console.log(colors.red(`Can't delete tmp wav file ${input}`));
+                                    return;
+                                }
+        
+                                console.log(colors.green(`Tmp file ${input} was deleted`));
+                            });                            
+                            resultFileNames = files;
+                        } else {
+                            resultFileNames = resultFileNames.concat(files);   
+                        }    
                     }
     
                     if(success) {

@@ -17,7 +17,8 @@ if(process.argv.length <= 2) {
 	    port: port,
 	    path: "/upload/audio",
 	    outputDir: "./public/recordings",
-	    format: [ "mp3", "ogg" ]
+	    format: [ "mp3", "ogg" ],
+		deleteWav: false
 	});	
 	// that's it
 }
