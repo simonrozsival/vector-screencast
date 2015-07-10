@@ -188,7 +188,8 @@ module VectorScreencast.Drawing {
 		
 		private Tick(time: number) {
 			if(!!this.path) {
-				if(this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
+				//if(this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
+				if(this.cursor.ApplyForce(this.position, 1) > 0) {
 					this.cursor.Draw(this.path, this.pressure);
 				} else {
 					if(!this.position) { // mouse is released
@@ -200,6 +201,7 @@ module VectorScreencast.Drawing {
 			// do the next tick
 			this.lastAnimationTime = time;
 			requestAnimationFrame((time: number) => this.Tick(time)); // ~ 60 FPS
+			//setTimeout(() => this.Tick(time + 200), 1000 / 60); // 5 FPS
 		}
 	}	
 	
@@ -214,13 +216,16 @@ module VectorScreencast.Drawing {
 		constructor(private mass: number, private friction: number, private size: number) { }
 	}
 	
+	/**
+	 * Thresholds of physical values.
+	 */
 	const enum Threshold {
+		/** Unless the velocity is more than one unit per frame, it is ingored. */
 		Velocity = 1
 	}
 	
 	/**
-	 * Brush with all it's physical properties
-	 * - implementation of the "filter" in the original algorithm
+	 * Brush with all it's physical properties. Implementation of the "filter" in the original algorithm.
 	 */
 	class BrushTip {
 				
@@ -256,8 +261,9 @@ module VectorScreencast.Drawing {
 		constructor(private calculateSpeed: boolean, private timer: VideoTimer) { }
 		
 		/**
-		 * @param	{Vector2}		position	The starting point of the cursor.
-		 * @param	{BrushInstance} brush  		Physical properties of the brush.
+		 * Prepare the brush tip for drawing another line.
+		 * @param	position	The starting point of the cursor.
+		 * @param	brush  		Physical properties of the brush.
 		 */			
 		public Reset(position: Vector2, brush: BrushInstance): void {
 			this.brush = brush;
@@ -273,17 +279,17 @@ module VectorScreencast.Drawing {
 			
 		/**
 		 * Apply force created by mouse movement
-		 * @param 	{Vector2}	mouse 			Mouse position
-		 * @param	{number}	elapsedFrames	The number of frames elapsed since last movement
-		 * @return	{number}					Brush movement distance squared 
+		 * @param 	mouse 			Mouse position
+		 * @param	elapsedFrames	The number of frames elapsed since last movement
+		 * @return					Brush movement distance squared 
 		 */
-		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {
+		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {			
 			if(mouse !== null) { // if there is an impulse from the mouse
 				// calculate the force
 				var force: Vector2 = mouse.clone().subtract(this.position);	
 				// calculate acceleration and velocity
 				this.acceleration = force.clone().scale(1/this.brush.Mass); // derived from the definition of force: (->)a = (->)f / m
-				this.velocity.add(this.acceleration);		
+				this.velocity.add(this.acceleration);
 		 		this.mousePosition = mouse;		
 			}
 			

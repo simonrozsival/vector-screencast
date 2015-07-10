@@ -211,7 +211,7 @@ module VectorScreencast {
 			
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
-			if (window.hasOwnProperty("PointerEvent")) {
+			if (window.hasOwnProperty("PointerEvent") && false) {
 				var pointer = new PointerEventsAPI(container, this.timer);
 				pointer.InitControlsAvoiding();
 				console.log("Pointer Events API is used");
