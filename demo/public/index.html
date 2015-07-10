@@ -24,6 +24,9 @@
                     </tr>
     			</thead>
     			<tbody id="data">				
+                    <tr>
+                        <td>(data is being loaded)</td>
+                    </tr>
     			</tbody>
     		</table>
         </div>
@@ -53,6 +56,10 @@
             req.send();
             
             var data = document.getElementById("data");
+            while (!!data.firstChild) {
+                data.remove(data.firstChild);
+            }
+            
             function addRecordingRow(rec) {
                 var row = document.createElement("tr");
                 
