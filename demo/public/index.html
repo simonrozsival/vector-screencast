@@ -10,19 +10,27 @@
         <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
-		<h1>Watch one of our videos</h1>
-		<p>This is a Vector Video project DEMO by Šimon Rozsíval.</p>
-        <p><a href="record.html">Record new video</a></p>
-            
-		<table>
-			<thead>
-                <tr>
-				    <th>Title</th><th>Author</th><th>Tags</th><th></th>
-                </tr>
-			</thead>
-			<tbody id="data">				
-			</tbody>
-		</table>
+        <header id="header">
+    		<h1>Vector Screencast Project</h1>
+    		<p>This is a Vector Video project DEMO by Šimon Rozsíval.</p>
+            <p><a href="record.html" class="btn">Record new video</a></p>
+        </header>
+        
+        <div id="page-body">
+    		<table>
+    			<thead>
+                    <tr>
+    				    <th>Title</th><th>Author</th><th>Tags</th><th></th>
+                    </tr>
+    			</thead>
+    			<tbody id="data">				
+    			</tbody>
+    		</table>
+        </div>
+        
+        <footer id="footer">
+            <p><a href="http://github.com/simonrozsival/vectorvideo">View on GitHub</a></p>
+        </footer>
 			
         <!-- initialisation script -->
         <script>
@@ -57,6 +65,7 @@
                 row.appendChild(td);
                 
                 td = document.createElement("td");
+                td.classList.add("tags");
                 for(var i = 0; i < rec.tags.length; ++i) {
                     var tag = rec.tags[i];
                     var a = document.createElement("a");
@@ -69,6 +78,7 @@
                 td = document.createElement("td");
                 var a = document.createElement("a");
                 a.href = "play.html?source=" + decodeURIComponent(rec.src);
+                a.classList.add("btn");
                 a.textContent = "Play screencast";
                 td.appendChild(a);
                 row.appendChild(td);

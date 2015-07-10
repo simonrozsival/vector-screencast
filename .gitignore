@@ -4,3 +4,4 @@ docs/*
 demo/public/recordings/*
 demo/public/js/*
 demo/AudioServer*
+demo/public/recording-list.json
