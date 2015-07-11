@@ -86,14 +86,13 @@
                 var a = document.createElement("a");
                 a.href = "play.html?source=" + decodeURIComponent(rec.src);
                 a.classList.add("btn");
-                a.textContent = "Play screencast - Canvas rendering";
+                a.textContent = "Play screencast";
                 td.appendChild(a);
                 row.appendChild(td);
                 
 		a = document.createElement("a");
-		a.href = "play.html?source=" + decodeURIComponent(rec.src) + "&method=svg";
+		a.href = "play.html?source=" + decodeURIComponent(rec.src) + "&method√=svg";
 		a.textContent = "Play screencast - SVG rendering";
-		a.classList.add("btn");
 		td.appendChild(a);
 
                 data.appendChild(row);
