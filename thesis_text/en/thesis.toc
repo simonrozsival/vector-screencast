@@ -6,33 +6,32 @@
 \contentsline {subsection}{\numberline {1.1.3}Moodle}{5}{subsection.1.1.3}
 \contentsline {subsection}{\numberline {1.1.4}Educreations and ShowMe}{5}{subsection.1.1.4}
 \contentsline {subsection}{\numberline {1.1.5}Khan Academy}{6}{subsection.1.1.5}
-\contentsline {chapter}{\numberline {2}The Vector Video project}{7}{chapter.2}
-\contentsline {section}{\numberline {2.1}Video recording tool requirements}{7}{section.2.1}
-\contentsline {section}{\numberline {2.2}Video player requirements}{7}{section.2.2}
+\contentsline {chapter}{\numberline {2}The Vector Screencast project}{7}{chapter.2}
+\contentsline {section}{\numberline {2.1}Screencast recording tool requirements}{7}{section.2.1}
+\contentsline {section}{\numberline {2.2}Screencast player requirements}{7}{section.2.2}
 \contentsline {section}{\numberline {2.3}Goal of this thesis}{8}{section.2.3}
 \contentsline {chapter}{\numberline {3}Analysis}{9}{chapter.3}
-\contentsline {section}{\numberline {3.1}Technical requirements}{9}{section.3.1}
-\contentsline {section}{\numberline {3.2}Available techonologies}{9}{section.3.2}
-\contentsline {subsection}{\numberline {3.2.1}Java applets}{9}{subsection.3.2.1}
-\contentsline {subsection}{\numberline {3.2.2}Adobe Flash}{9}{subsection.3.2.2}
-\contentsline {subsection}{\numberline {3.2.3}Microsoft Silverlight}{10}{subsection.3.2.3}
-\contentsline {subsection}{\numberline {3.2.4}HTML5}{10}{subsection.3.2.4}
+\contentsline {section}{\numberline {3.1}Available techonologies}{9}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}Java applets}{9}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2}Adobe Flash}{9}{subsection.3.1.2}
+\contentsline {subsection}{\numberline {3.1.3}Microsoft Silverlight}{10}{subsection.3.1.3}
+\contentsline {subsection}{\numberline {3.1.4}HTML5}{10}{subsection.3.1.4}
 \contentsline {paragraph}{SVG}{11}{section*.7}
 \contentsline {paragraph}{SMIL}{11}{section*.8}
-\contentsline {subsection}{\numberline {3.2.5}Conclusion}{11}{subsection.3.2.5}
-\contentsline {subsection}{\numberline {3.2.6}Possible issues and known limitations}{12}{subsection.3.2.6}
-\contentsline {section}{\numberline {3.3}Drawing algorighm}{12}{section.3.3}
-\contentsline {section}{\numberline {3.4}Audio recording}{12}{section.3.4}
-\contentsline {paragraph}{Buffering recorded data}{13}{section*.10}
-\contentsline {paragraph}{Compression of data in browser}{13}{section*.11}
-\contentsline {paragraph}{Streaming data in background}{13}{section*.12}
-\contentsline {subsection}{\numberline {3.4.1}Conclusion}{13}{subsection.3.4.1}
-\contentsline {section}{\numberline {3.5}File format}{13}{section.3.5}
+\contentsline {subsection}{\numberline {3.1.5}Conclusion}{11}{subsection.3.1.5}
+\contentsline {subsection}{\numberline {3.1.6}Possible issues and known limitations}{12}{subsection.3.1.6}
+\contentsline {section}{\numberline {3.2}Drawing algorithm}{12}{section.3.2}
+\contentsline {section}{\numberline {3.3}Audio recording}{13}{section.3.3}
+\contentsline {paragraph}{Buffering microphone input}{13}{section*.10}
+\contentsline {paragraph}{Compression of buffered data in the browser}{13}{section*.11}
+\contentsline {paragraph}{Streaming microphone data to the server in background}{13}{section*.12}
+\contentsline {subsection}{\numberline {3.3.1}Conclusion}{13}{subsection.3.3.1}
+\contentsline {section}{\numberline {3.4}File format}{14}{section.3.4}
 \contentsline {paragraph}{EVA}{14}{section*.13}
 \contentsline {paragraph}{SWF}{14}{section*.14}
 \contentsline {paragraph}{SVG}{14}{section*.15}
 \contentsline {paragraph}{Custom extension of SVG}{14}{section*.16}
-\contentsline {subsection}{\numberline {3.5.1}Conclusion}{14}{subsection.3.5.1}
+\contentsline {subsection}{\numberline {3.4.1}Conclusion}{14}{subsection.3.4.1}
 \contentsline {chapter}{\numberline {4}Vector Screencast file format}{15}{chapter.4}
 \contentsline {section}{\numberline {4.1}Video Metadata}{15}{section.4.1}
 \contentsline {paragraph}{\texttt {\textless a:width\textgreater }}{15}{section*.17}
