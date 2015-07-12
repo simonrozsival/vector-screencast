@@ -78,8 +78,10 @@ module AudioRecording {
                     if(!flags.binary) {
                         var msg: any = JSON.parse(message);
                         if (!!msg && msg.type === "start") {
+                            console.log("START message received.");
                             fileWriter = this.InitRecording(name, msg);                        
                         } else if (!!msg && msg.type === "end") {
+                            console.log("END message received.");
                             recordingEndedProperly = true;
                             this.FinishRecording(this.cfg.hostName, name, fileWriter, socket, this.cfg.deleteWav);
                         } else {

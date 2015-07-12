@@ -9,7 +9,7 @@
 \contentsline {chapter}{\numberline {2}The Vector Screencast project}{7}{chapter.2}
 \contentsline {section}{\numberline {2.1}Screencast recording tool requirements}{7}{section.2.1}
 \contentsline {section}{\numberline {2.2}Screencast player requirements}{7}{section.2.2}
-\contentsline {section}{\numberline {2.3}Goal of this thesis}{8}{section.2.3}
+\contentsline {section}{\numberline {2.3}Goal of the thesis}{8}{section.2.3}
 \contentsline {chapter}{\numberline {3}Analysis}{9}{chapter.3}
 \contentsline {section}{\numberline {3.1}Available techonologies}{9}{section.3.1}
 \contentsline {subsection}{\numberline {3.1.1}Java applets}{9}{subsection.3.1.1}
@@ -34,29 +34,29 @@
 \contentsline {subsection}{\numberline {3.4.1}Conclusion}{14}{subsection.3.4.1}
 \contentsline {chapter}{\numberline {4}Vector Screencast file format}{15}{chapter.4}
 \contentsline {section}{\numberline {4.1}Video Metadata}{15}{section.4.1}
-\contentsline {paragraph}{\texttt {\textless a:width\textgreater }}{15}{section*.17}
-\contentsline {paragraph}{\texttt {\textless a:height\textgreater }}{15}{section*.18}
-\contentsline {paragraph}{\texttt {\textless a:length\textgreater }}{16}{section*.19}
-\contentsline {paragraph}{\texttt {\textless a:audio\textgreater }}{16}{section*.20}
-\contentsline {subparagraph}{\texttt {\textless a:source \textgreater }}{16}{section*.21}
+\contentsline {paragraph}{\texttt {\textless a:width\textgreater } and \texttt {\textless a:height\textgreater }}{15}{section*.17}
+\contentsline {paragraph}{\texttt {\textless a:length\textgreater }}{15}{section*.18}
+\contentsline {paragraph}{\texttt {\textless a:audio\textgreater }}{15}{section*.19}
+\contentsline {subparagraph}{\texttt {\textless a:source\textgreater }}{16}{section*.20}
 \contentsline {section}{\numberline {4.2}Video Chunks}{16}{section.4.2}
-\contentsline {paragraph}{``Path''}{16}{section*.22}
-\contentsline {paragraph}{``Erase''}{16}{section*.23}
-\contentsline {paragraph}{``Void''}{16}{section*.24}
+\contentsline {paragraph}{``Path''}{16}{section*.21}
+\contentsline {paragraph}{``Erase''}{16}{section*.22}
+\contentsline {paragraph}{``Void''}{16}{section*.23}
 \contentsline {section}{\numberline {4.3}Animation Commands}{16}{section.4.3}
-\contentsline {paragraph}{\texttt {\textless m\textgreater }}{17}{section*.25}
-\contentsline {paragraph}{\texttt {\textless c\textgreater }}{17}{section*.26}
-\contentsline {paragraph}{\texttt {\textless s\textgreater }}{17}{section*.27}
-\contentsline {paragraph}{\texttt {\textless d\textgreater }}{17}{section*.28}
+\contentsline {paragraph}{\texttt {\textless a:m\textgreater }}{17}{section*.24}
+\contentsline {paragraph}{\texttt {\textless a:c\textgreater }}{17}{section*.25}
+\contentsline {paragraph}{\texttt {\textless a:s\textgreater }}{17}{section*.26}
+\contentsline {paragraph}{\texttt {\textless a:d\textgreater }}{17}{section*.27}
 \contentsline {chapter}{\numberline {5}Implementation}{18}{chapter.5}
 \contentsline {section}{\numberline {5.1}ECMAScript and JavaScript}{18}{section.5.1}
 \contentsline {subsection}{\numberline {5.1.1}TypeScript}{18}{subsection.5.1.1}
 \contentsline {section}{\numberline {5.2}HTML5}{19}{section.5.2}
-\contentsline {paragraph}{Working with XML data}{19}{section*.29}
-\contentsline {paragraph}{Web sockets}{19}{section*.30}
-\contentsline {paragraph}{Web Workers}{19}{section*.31}
-\contentsline {subsubsection}{Rendering graphics using HTML5}{20}{section*.32}
-\contentsline {paragraph}{Canvas 2D Context}{20}{section*.33}
+\contentsline {paragraph}{Working with XML documents}{19}{section*.28}
+\contentsline {paragraph}{Web sockets}{19}{section*.29}
+\contentsline {paragraph}{Web Workers}{19}{section*.30}
+\contentsline {subsubsection}{Rendering graphics using HTML5}{20}{section*.31}
+\contentsline {paragraph}{Canvas 2D Context}{20}{section*.32}
+\contentsline {paragraph}{SVG}{20}{section*.33}
 \contentsline {section}{\numberline {5.3}Drawing lines}{20}{section.5.3}
 \contentsline {subsection}{\numberline {5.3.1}DynaDraw algorithm}{21}{subsection.5.3.1}
 \contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{25}{chapter.6}

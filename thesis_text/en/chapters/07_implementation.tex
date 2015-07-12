@@ -11,18 +11,18 @@ JavaScript is a dynamic programming language \footnote{http://en.wikipedia.org/w
 
 Functions are so called first-class citizens. This means they can be stored in variables, passed as function parameters, returned as results of functions, and included in data structures.
 
-Object oriented programming (OOP) \footnote{http://en.wikipedia.org/wiki/Object-oriented\_programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, objective oriented programming is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. This way a prototype chain is created. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in it's own properties. If it is not found, then it is searched in it's prototype's properties and so on until the end of the prototype chain is reached \cite{mdn_prototype_chain}.
-
 JavaScript doesn't provide any mean of static type checking. All types are created during runtime and they are also checked only during runtime. This lack of static checking during compilation might lead to rarely occurring errors and it is important to take this in mind while writing JavaScript code. A good practice is to write documentation comments\footnote{Commonly used syntax in JavaScript projects is JSDoc (http://usejsdoc.org/)}, where the types are stated.
 
 JavaScript is an interpreted language, some implementations also use a Just-in-time compilation (JIT) \footnote{For example Google V8 engine used in Google Chrome. See https://code.google.com/p/v8/} for better performance.  Another very important aspect of ECMAScript which affects it's performace is the absence of direct control over memory usage -- memory is released when it is not needed any more. This mechanism is called \textit{Garbate collection}. As of 2012, all modern browsers use mark-and-sweep garbage-collector \cite{mdn_memmory_management}.
 
+\textit{Object oriented programming} (OOP) \footnote{http://en.wikipedia.org/wiki/Object-oriented\_programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, OOP is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. This way a prototype chain is created. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in it's own properties. If it is not found, then it is searched in it's prototype's properties and so on until the end of the prototype chain is reached \cite{mdn_prototype_chain}.
+
 \subsection{TypeScript}
 TypeScript is a typed superset of JavaScript that compiles to plain JavaScript\cite{typescript}. It is an open-source project developed by Microsoft. It is, as it's name suggests, is a strongly typed programming language compatible with JavaScript.
 
-TypeScript extends capabilities of JavaScript by static type checking in the time of compilation, which helps finding errors in source code, and speeds up the process of coding. TypeScript also introduces class-based object oriented programming to JavaScript. It includes concepts of interfaces and polymorphism, which makes programs written in TypeScript more understandable to programmers familiar with other object-oriented programming languages like Java, C\# or C++.
+TypeScript extends capabilities of JavaScript by static type checking in the time of compilation, which helps the programmer to find errors in source code sooner, and speeds up the process of coding. TypeScript also introduces \textit{class} semantics. These classes are transpiled into JavaScript prototypes. TypeScript also includes concepts of interfaces and polymorphism, which makes programs written in TypeScript more understandable to programmers familiar with other object-oriented programming languages like Java, C\# or C++.
 
-TypeScript uses several features of ECMAScript 6, but is transcompiled into ECMAScript 5, and therefore doesn't bring any new functionality. The reason for choosing TypeScript is the clarity of code and more convenient development process for the programmer.
+TypeScript uses several features of ECMAScript 6, but is transcompiled into ECMAScript 5.1, and therefore doesn't bring any new functionality. The reason for choosing TypeScript is the clarity of code and more convenient development process for the programmer.
 
 
 
@@ -33,18 +33,18 @@ TypeScript uses several features of ECMAScript 6, but is transcompiled into ECMA
 
 \section{HTML5}
 
-HTML5 is used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed for semantic description of documents \cite{html5}. HTML5 extends this semantics with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, that allow web developers to create much richer and universal websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
+HTML5 a term used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed for describin semantics of documents \cite{html5}. HTML5 extends the semantics of HTML 4 with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, which allow web developers to create much richer websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
 
-\paragraph{Working with XML data}
-AIn JavaScript, working with XML data is very similar to working with regular website DOM\footnote{Document Object Model, http://www.w3.org/DOM/}. \verb|Document|\footnote{https://dom.spec.whatwg.org/\#interface-document} interface is used for traversing the XML tree, modifying it or for creating a new tree. In HTML5, XML files can be opened using a HTTP GET request using \verb|XMLHttpRequest|\footnote{https://xhr.spec.whatwg.org/} object, which returns \verb|Document| instance in it's \verb|responseXML| property, if the document meets specified criteria \cite{xhr}.
+\paragraph{Working with XML documents}
+Working with XML data is very similar to working with regular website DOM\footnote{Document Object Model, http://www.w3.org/DOM/} in JavaScript. \verb|Document|\footnote{https://dom.spec.whatwg.org/\#interface-document} interface is used for traversing the XML tree, modifying it or for creating new one. In HTML5, XML files can be opened using a HTTP GET request using an \verb|XMLHttpRequest|\footnote{https://xhr.spec.whatwg.org/} object, which parses the data and returns a \verb|Document| instance in it's \verb|responseXML| property, if the document meets specified criteria \cite{xhr}.
 
 \paragraph{Web sockets}
-Web sockets allow applications to open bidirectional communication channels with server-side processes \cite{}\footnote{https://html.spec.whatwg.org/multipage/comms.html\#network}. Web sockets are built on top of \textit{TCP} (Transmission Control Protocol) connection. This means that the delivery of data is reliable and ordered \cite{}\footnote{https://tools.ietf.org/html/rfc6455}.
+Web sockets allow applications to open bidirectional communication channels with server-side processes \cite{}\footnote{https://html.spec.whatwg.org/multipage/comms.html\#network}. Web sockets are built on top of \textit{Transmission Control Protocol} (TCP) connection. This means that the delivery of data is reliable and ordered \cite{}\footnote{https://tools.ietf.org/html/rfc6455}.
 
 \paragraph{Web Workers}
-JavaScript code of a website normaly runs in a single thread. It is common to run asynchronous functions as callbacks and event handlers, but these are still executed in a one thread. Web workers are a means of running heavy tasks without affecting the user interface in background. A new web worker is creating as an instance of \verb|Worker| object with an URI of the script with it's source. A real OS-level thread is spawn for each worker.
+JavaScript code of a website normaly runs in a single thread. It is common to run asynchronous functions as callbacks and event handlers, but these are still executed in a one thread. Web workers are a means of running heavy tasks in background without affecting the user interface. A real OS-level thread is spawn for each \verb|Worker| object instance.
 
-WebWorkers have several limitations. They can't change the DOM and have direct links to objects in the main thread. WebWorkers receive messages from the JavaScript source that created them through \verb|onmessage| event and can send a response via the \verb|postMessage| function. These messages contain serialized JavaScript objects, which cannot contain any references. As a result, concurrency problems are not typically a problem. WebWorkers can perform a HTTP requests using the \verb|XMLHttpRequest| object, but the content is not parsed, if it is an XML file. For more details see the specification \cite{} \footnote{https://html.spec.whatwg.org/multipage/workers.html\#worker}
+Web workers have several limitations. They can't change the DOM and have direct links to objects in the main thread. Web workers receive messages from the JavaScript source which created them through an \verb|onmessage| event and can send a response via the \verb|postMessage| function. These messages contain serialized JavaScript objects, which cannot contain any references. As a result, concurrency problems are not typically a problem. Web workers can perform a HTTP requests using the \verb|XMLHttpRequest| object, but the content is not parsed, if the target is an XML file. For more details see the specification of the Worker object\cite{} \footnote{https://html.spec.whatwg.org/multipage/workers.html\#worker}
 
 
 
@@ -52,17 +52,18 @@ WebWorkers have several limitations. They can't change the DOM and have direct l
 
 \subsubsection{Rendering graphics using HTML5}
 
-Displaying text and static visual content is the main purpose of HTML and Cascade Style Sheets (CSS) and it is widely used this way across the web. Creating a complex polygon or curve would be very hard and would involve various tricks \footnote{http://nicolasgallagher.com/pure-css-gui-icons/} or would be even impossible. 
+Displaying text and static visual content is the main purpose of HTML and \textit{Cascade Style Sheets} (CSS). Creating complex polygons or curves would be very hard and would involve various tricks \footnote{http://nicolasgallagher.com/pure-css-gui-icons/} or would be even impossible. 
 
-The new HTML specification takes this in mind and brings ways of creating more rich and dynamic content within a web page. There are two technologies that should be taken into account - Canvas 2D Context and SVG.
+The new HTML specification takes this in mind and brings ways of creating more rich and dynamic content within a web page. There are two technologies that should be taken into account - \textit{Canvas 2D Context} and \textit{SVG}.
 
 \paragraph{Canvas 2D Context}
-The Canvas element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly \cite{html5_canvas}. 
+The \verb|<canvas>| element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly \cite{html5_canvas}. 
 
-Using canvas seems appropriate for this project. Canvas could be created with respect to user's resolution and web browser window size. All elements can be scaled to fit this viewport. This will make them look sharp and there won't be any artifacts, noise and blur caused by interpolation which would be caused by scaling normal bitmap video.
+Using canvas seems appropriate for this project. Canvas could be created with respect to user's resolution and web browser window size. All elements can be scaled to fit this viewport. This will make them look sharp and there won't be any artefacts, noise and blur caused by interpolation used for scaling regular bitmap video content.
 
-The problem with Canvas might occur when user resizes his window or enters full-screen after the canvas is initialized. Canvas contains a bitmap image consisting of graphical primitives drawn onto it. All content must be redrawn so it remains sharp.
+When the dimensions of the \verb|<canvas>| element change, the image is scaled, but the output won't be very sharp. Canvas contains a bitmap image, onto which the graphical primitives are drawn. All these primitives must be redrawn by the programmer to achieve smooth scaling.
 
+\paragraph{SVG} @todo
 
 
 
