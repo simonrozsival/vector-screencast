@@ -98,7 +98,7 @@ module AudioRecording {
                             socket.close();
                         }
                     }
-                });
+                }); 
         
                 // stream was closed
                 socket.on("close", () => {

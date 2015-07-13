@@ -52,13 +52,13 @@
 \contentsline {subsection}{\numberline {5.1.1}TypeScript}{18}{subsection.5.1.1}
 \contentsline {section}{\numberline {5.2}HTML5}{19}{section.5.2}
 \contentsline {paragraph}{Working with XML documents}{19}{section*.28}
-\contentsline {paragraph}{Web sockets}{19}{section*.29}
+\contentsline {paragraph}{WebSockets}{19}{section*.29}
 \contentsline {paragraph}{Web Workers}{19}{section*.30}
 \contentsline {subsubsection}{Rendering graphics using HTML5}{20}{section*.31}
 \contentsline {paragraph}{Canvas 2D Context}{20}{section*.32}
 \contentsline {paragraph}{SVG}{20}{section*.33}
 \contentsline {section}{\numberline {5.3}Drawing lines}{20}{section.5.3}
-\contentsline {subsection}{\numberline {5.3.1}DynaDraw algorithm}{21}{subsection.5.3.1}
+\contentsline {subsection}{\numberline {5.3.1}Dynadraw algorithm}{21}{subsection.5.3.1}
 \contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{25}{chapter.6}
 \contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{25}{section.6.1}
 \contentsline {section}{\numberline {6.2}Vector Screencast Player}{26}{section.6.2}
