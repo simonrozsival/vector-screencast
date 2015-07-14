@@ -38,12 +38,12 @@ Contains the list of audio sources as child elements.
 Defines one audio source. It has two attributes: \verb|a:src| -- containing the URL of the audio source, and \verb|a:type| -- containing the MIME type of the audio source.
 
 \section{Video Chunks}
-A video is divided into smaller consequent parts, called \textit{chunks}. Chunks have variable time duration based on user's behaviour. These chunks are logical units of the video, each of them can be rendered at once as one graphics primitive. This helps optimize skipping parts of the video. Some chunks can be skipped entirely as the canvas will be cleared at some point after the very chunk is rendered, but before the target time point is reached.
+Video is divided into smaller consequent parts, called \textit{chunks}. Chunks have variable time duration based on user's behaviour. These chunks are logical units of the video, each of them can be rendered at once as one graphics primitive. This helps optimize skipping parts of the video. Some chunks can be skipped entirely as the canvas will be cleared at some point after the very chunk is rendered, but before the target time point is reached.
 
-There are three types of chunks: \textit{path}, \textit{erase}, and \textit{void} cuhnk. Each chunk is stored as one SVG group elment with a specific \verb|a:type| attribute (\textit{path}, \textit{erase}, \textit{void}) and an \verb|a:t| attribute, which is the time, when this chunk starts to be processed, in miliseconds. Chunks contain the prerendered graphics primitive and a list of animation commands.
+There are three types of chunks: \textit{path}, \textit{erase}, and \textit{void} cuhnk. Each chunk is stored as one SVG group element with a specific \verb|a:type| attribute (\textit{path}, \textit{erase}, \textit{void}) and an \verb|a:t| attribute, which is the time, when this chunk starts to be processed, in miliseconds. Chunks contain the prerendered graphics primitive and a list of animation commands.
 
 \paragraph{``Path''}
-This type of chunk represents one line the user draws. The first child element is an SVG \verb|<path>| element. The \verb|fill| attribute should correspond to the real color of the path, but is not neccesary for later screencast playing. The data attribute \verb|d| includes serialized information about the segments of the path in the form of valid SVG path instructions\footnote{http://www.w3.org/TR/SVG/paths.html\#PathData}. For more details about the serialization and deserialization of this data, see section @todo on page @todo. One or more child elements might follow after the \verb|<path>|, all of which must be animation command elements.
+This type of chunk represents one line the user draws. The first child element is an SVG \verb|<path>| element. The \verb|fill| attribute should correspond to the real color of the path, but is not neccessary for later screencast playing. The data attribute \verb|d| includes serialized information about the segments of the path in the form of valid SVG path instructions\footnote{http://www.w3.org/TR/SVG/paths.html\#PathData}. For more details about the serialization and deserialization of this data, see section @todo on page @todo. One or more child elements might follow after the \verb|<path>|, all of which must be animation command elements.
 
 \paragraph{``Erase''}
 This type of chunk represents clearing the whole canvas with one color. The first child element is an SVG \verb|<rect>| element. The \verb|fill| attribute should correspond to the real color of the new background. One or more child elements might follow after the \verb|<rect>|, all of which must be animation command elements.
@@ -54,16 +54,16 @@ This type of chunk does not render anything on the canvas. It might contain one 
 \section{Animation Commands}
 Animation commands are necessary for correct actions' timing during the video. Chunks contain the information of how the resulting primitive looks like, commands contain user's gradual forming of these primitives.
 
-Animation command must be a child element of a chunk element. Every chunk must have a \verb|a:t| attribute with the time of the action in miliseconds. The value of the time attribute of an element must be greater or equal to the values of preceding sibling action elements.
+Animation command must be a child element of a chunk element. Every command must have an \verb|a:t| attribute with the time of the action in miliseconds. The value of the time attribute of an element must be greater or equal to the values of preceding sibling action elements.
 
 \paragraph{\texttt{\textless a:m\textgreater}}
 \textit{Move cursor} command tells the player to move cursor to a specific position defined by attributes \verb|a:x| and \verb|a:y|.
 
 \paragraph{\texttt{\textless a:c\textgreater}}
-\textit{Change color} command tells the player to switch current brush color according to the value of \verb|a:c|. Value of the attribute must be valid CSS color value\footnote{http://www.w3.org/TR/CSS2/syndata.html\#value-def-color}.
+\textit{Change color} command tells the player to switch current brush color according to the value of \verb|a:c| attribute. Value of the attribute must be a valid CSS color value\footnote{http://www.w3.org/TR/CSS2/syndata.html\#value-def-color}.
 
 \paragraph{\texttt{\textless a:s\textgreater}}
-\textit{Change brush size} command tells the player to change current brush size to the value of \verb|a:w| attribute. The units of this value are pixels and the size must be corrected according to the width and height stated in the \textit{metadata}.
+\textit{Change brush size} command tells the player to change current brush size to the value of \verb|a:w| attribute. The units of this value are pixels and the size must be corrected according to the width and height stated in \textit{metadata}.
 
 \paragraph{\texttt{\textless a:d\textgreater}}
-\textit{Draw next segment} will render the next segment of the current path with current brush color and size. This command doesn't carry any additional information, all the information about the segment is carried by the \textit{path} chunk. \textit{Draw next segment} commands can be present only in an \textit{path} chunk. There must not be any \textit{change color} or \textit{change brush size} command between the first \textit{draw next segment} command and the last one inside one \textit{path} chunk -- color or size can't be changed in the middle of a path.
+\textit{Draw next segment} will render the next segment of the current path with current brush color and size. This command doesn't carry any additional information, all the information about the segment is carried by the \textit{path} chunk. \textit{Draw next segment} commands can be present only in a \textit{path} chunk. There must not be any \textit{change color} or \textit{change brush size} command between the first \textit{draw next segment} command and the last one inside one \textit{path} chunk -- color or size cannot be changed in the middle of a line.

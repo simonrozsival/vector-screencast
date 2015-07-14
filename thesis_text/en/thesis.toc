@@ -19,55 +19,67 @@
 \contentsline {paragraph}{SVG}{11}{section*.7}
 \contentsline {paragraph}{SMIL}{11}{section*.8}
 \contentsline {subsection}{\numberline {3.1.5}Conclusion}{11}{subsection.3.1.5}
-\contentsline {subsection}{\numberline {3.1.6}Possible issues and known limitations}{12}{subsection.3.1.6}
-\contentsline {section}{\numberline {3.2}Drawing algorithm}{12}{section.3.2}
+\contentsline {subsection}{\numberline {3.1.6}Possible issues and known limitations}{11}{subsection.3.1.6}
+\contentsline {section}{\numberline {3.2}Drawing algorithm}{13}{section.3.2}
 \contentsline {section}{\numberline {3.3}Audio recording}{13}{section.3.3}
 \contentsline {paragraph}{Buffering microphone input}{13}{section*.10}
 \contentsline {paragraph}{Compression of buffered data in the browser}{13}{section*.11}
-\contentsline {paragraph}{Streaming microphone data to the server in background}{13}{section*.12}
-\contentsline {subsection}{\numberline {3.3.1}Conclusion}{13}{subsection.3.3.1}
+\contentsline {paragraph}{Streaming microphone data to the server in background}{14}{section*.12}
+\contentsline {subsection}{\numberline {3.3.1}Conclusion}{14}{subsection.3.3.1}
 \contentsline {section}{\numberline {3.4}File format}{14}{section.3.4}
 \contentsline {paragraph}{EVA}{14}{section*.13}
 \contentsline {paragraph}{SWF}{14}{section*.14}
 \contentsline {paragraph}{SVG}{14}{section*.15}
 \contentsline {paragraph}{Custom extension of SVG}{14}{section*.16}
-\contentsline {subsection}{\numberline {3.4.1}Conclusion}{14}{subsection.3.4.1}
-\contentsline {chapter}{\numberline {4}Vector Screencast file format}{15}{chapter.4}
-\contentsline {section}{\numberline {4.1}Video Metadata}{15}{section.4.1}
-\contentsline {paragraph}{\texttt {\textless a:width\textgreater } and \texttt {\textless a:height\textgreater }}{15}{section*.17}
-\contentsline {paragraph}{\texttt {\textless a:length\textgreater }}{15}{section*.18}
-\contentsline {paragraph}{\texttt {\textless a:audio\textgreater }}{15}{section*.19}
-\contentsline {subparagraph}{\texttt {\textless a:source\textgreater }}{16}{section*.20}
-\contentsline {section}{\numberline {4.2}Video Chunks}{16}{section.4.2}
-\contentsline {paragraph}{``Path''}{16}{section*.21}
-\contentsline {paragraph}{``Erase''}{16}{section*.22}
-\contentsline {paragraph}{``Void''}{16}{section*.23}
-\contentsline {section}{\numberline {4.3}Animation Commands}{16}{section.4.3}
-\contentsline {paragraph}{\texttt {\textless a:m\textgreater }}{17}{section*.24}
-\contentsline {paragraph}{\texttt {\textless a:c\textgreater }}{17}{section*.25}
-\contentsline {paragraph}{\texttt {\textless a:s\textgreater }}{17}{section*.26}
-\contentsline {paragraph}{\texttt {\textless a:d\textgreater }}{17}{section*.27}
-\contentsline {chapter}{\numberline {5}Implementation}{18}{chapter.5}
-\contentsline {section}{\numberline {5.1}ECMAScript and JavaScript}{18}{section.5.1}
-\contentsline {subsection}{\numberline {5.1.1}TypeScript}{18}{subsection.5.1.1}
-\contentsline {section}{\numberline {5.2}HTML5}{19}{section.5.2}
-\contentsline {paragraph}{Working with XML documents}{19}{section*.28}
-\contentsline {paragraph}{Web sockets}{19}{section*.29}
-\contentsline {paragraph}{Web Workers}{19}{section*.30}
-\contentsline {subsubsection}{Rendering graphics using HTML5}{20}{section*.31}
-\contentsline {paragraph}{Canvas 2D Context}{20}{section*.32}
-\contentsline {paragraph}{SVG}{20}{section*.33}
-\contentsline {section}{\numberline {5.3}Drawing lines}{20}{section.5.3}
-\contentsline {subsection}{\numberline {5.3.1}DynaDraw algorithm}{21}{subsection.5.3.1}
-\contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{25}{chapter.6}
-\contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{25}{section.6.1}
-\contentsline {section}{\numberline {6.2}Vector Screencast Player}{26}{section.6.2}
-\contentsline {section}{\numberline {6.3}Vector Screencast Recorder}{26}{section.6.3}
-\contentsline {section}{\numberline {6.4}Embedding Vector Screencast Player}{26}{section.6.4}
-\contentsline {section}{\numberline {6.5}Custom theme}{26}{section.6.5}
-\contentsline {chapter}{\numberline {7}Users' documentation}{27}{chapter.7}
-\contentsline {chapter}{Conclusion}{28}{chapter*.36}
-\contentsline {chapter}{Bibliography}{29}{chapter*.37}
-\contentsline {chapter}{List of Tables}{32}{chapter*.38}
-\contentsline {chapter}{List of Abbreviations}{33}{chapter*.39}
-\contentsline {chapter}{Attachments}{34}{chapter*.40}
+\contentsline {subsection}{\numberline {3.4.1}Conclusion}{15}{subsection.3.4.1}
+\contentsline {section}{\numberline {3.5}Backend}{15}{section.3.5}
+\contentsline {subsection}{\numberline {3.5.1}HTTP Web Server}{15}{subsection.3.5.1}
+\contentsline {paragraph}{Serving static files}{15}{section*.17}
+\contentsline {paragraph}{Handling upload of the created SVG file}{15}{section*.18}
+\contentsline {subsection}{\numberline {3.5.2}Audio Recording Server}{15}{subsection.3.5.2}
+\contentsline {subsection}{\numberline {3.5.3}Conclusion}{16}{subsection.3.5.3}
+\contentsline {chapter}{\numberline {4}Vector Screencast file format}{17}{chapter.4}
+\contentsline {section}{\numberline {4.1}Video Metadata}{17}{section.4.1}
+\contentsline {paragraph}{\texttt {\textless a:width\textgreater } and \texttt {\textless a:height\textgreater }}{17}{section*.19}
+\contentsline {paragraph}{\texttt {\textless a:length\textgreater }}{17}{section*.20}
+\contentsline {paragraph}{\texttt {\textless a:audio\textgreater }}{17}{section*.21}
+\contentsline {subparagraph}{\texttt {\textless a:source\textgreater }}{18}{section*.22}
+\contentsline {section}{\numberline {4.2}Video Chunks}{18}{section.4.2}
+\contentsline {paragraph}{``Path''}{18}{section*.23}
+\contentsline {paragraph}{``Erase''}{18}{section*.24}
+\contentsline {paragraph}{``Void''}{18}{section*.25}
+\contentsline {section}{\numberline {4.3}Animation Commands}{18}{section.4.3}
+\contentsline {paragraph}{\texttt {\textless a:m\textgreater }}{19}{section*.26}
+\contentsline {paragraph}{\texttt {\textless a:c\textgreater }}{19}{section*.27}
+\contentsline {paragraph}{\texttt {\textless a:s\textgreater }}{19}{section*.28}
+\contentsline {paragraph}{\texttt {\textless a:d\textgreater }}{19}{section*.29}
+\contentsline {chapter}{\numberline {5}Implementation}{20}{chapter.5}
+\contentsline {section}{\numberline {5.1}ECMAScript and JavaScript}{20}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}TypeScript}{20}{subsection.5.1.1}
+\contentsline {section}{\numberline {5.2}HTML5}{21}{section.5.2}
+\contentsline {paragraph}{Working with XML documents}{21}{section*.30}
+\contentsline {paragraph}{WebSockets}{21}{section*.31}
+\contentsline {paragraph}{Web Workers}{21}{section*.32}
+\contentsline {subsubsection}{Rendering graphics using HTML5}{22}{section*.33}
+\contentsline {paragraph}{Canvas 2D Context}{22}{section*.34}
+\contentsline {paragraph}{SVG}{22}{section*.35}
+\contentsline {section}{\numberline {5.3}Drawing lines}{22}{section.5.3}
+\contentsline {subsection}{\numberline {5.3.1}Dynadraw algorithm}{23}{subsection.5.3.1}
+\contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{27}{chapter.6}
+\contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{27}{section.6.1}
+\contentsline {section}{\numberline {6.2}Vector Screencast Player}{28}{section.6.2}
+\contentsline {section}{\numberline {6.3}Vector Screencast Recorder}{28}{section.6.3}
+\contentsline {section}{\numberline {6.4}Embedding Vector Screencast Player}{28}{section.6.4}
+\contentsline {section}{\numberline {6.5}Custom theme}{28}{section.6.5}
+\contentsline {chapter}{\numberline {7}Users' documentation}{29}{chapter.7}
+\contentsline {chapter}{Conclusion}{30}{chapter*.38}
+\contentsline {paragraph}{File format}{30}{section*.39}
+\contentsline {subparagraph}{File size}{30}{section*.40}
+\contentsline {section}{\numberline {7.1}Future work}{30}{section.7.1}
+\contentsline {paragraph}{Binary file format}{30}{section*.41}
+\contentsline {paragraph}{Audio recording}{31}{section*.43}
+\contentsline {paragraph}{Demo audio server}{31}{section*.44}
+\contentsline {chapter}{Bibliography}{32}{chapter*.45}
+\contentsline {chapter}{List of Tables}{36}{chapter*.46}
+\contentsline {chapter}{List of Abbreviations}{37}{chapter*.47}
+\contentsline {chapter}{Attachments}{38}{chapter*.48}

@@ -39,12 +39,11 @@ module VectorScreencast.VideoData {
 					return 0; // no envent, no pressure
 			}
 
-			// if(this.currentEvent.pointerType === "mouse"
-			// 	|| this.currentEvent.pointerType === "touch") {
-			// 		return 1; // button is pressed or touchscreen touched - maximum presure
-			// }
+			if(this.currentEvent.pointerType === "pen") {
+				return this.currentEvent.pressure; // this device knows, what is current applied pressure
+			}
 
-			return this.currentEvent.pressure; // this device knows, what is current pressure
+			return 1; // button is pressed or touchscreen touched - maximum presure
 		}
 		
 		/**

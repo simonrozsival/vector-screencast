@@ -48,6 +48,8 @@ module VectorScreencast.VideoData {
 		protected GetPressure() : number {
 			if(this.penApi && this.penApi.pointerType == WacomPointerType.Pen) {
 				return this.isInside === true ? this.penApi.pressure : 0; // pressure is from 0.0 (no pressure) to 1.0 (max pressure)
+			} else {
+				return super.GetPressure();
 			}
 		}
 		
@@ -57,7 +59,7 @@ module VectorScreencast.VideoData {
 		public static IsAvailable() : IWacomApi {			
 			// create the plugin according to the documentation
 			var plugin: IWacomPlugin = <IWacomPlugin> Helpers.HTML.CreateElement("object", { type:	"application/x-wacomtabletplugin" });
-			plugin.style.display = "none";
+			//plugin.style.display = "none";
 			document.body.appendChild(plugin);
 						
 			// does the plugin work?

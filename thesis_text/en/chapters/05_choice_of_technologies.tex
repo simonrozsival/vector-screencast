@@ -6,6 +6,17 @@ The recording tool will capture the movement of a virtual chalk and lines drawn 
 
 For the purposes of recording, the tool must be able to capture the input from a microphone, track mouse movement and left mouse button state, collect information from Wacom graphics tablet devices and draw lines on screen. What the creator sees should be the same as what the end user will watch later.
 
+
+
+
+
+
+
+
+
+
+
+
 \section{Available techonologies}
 Web is a huge and fast growing environment. In only a few years, it has become a universal place for presenting and exchanging information. This put web in the focus of many software companies and organizations and as a result, many different technologies for developing \textit{Rich Internet Applications} (RIA) have been created. Some of them have already faded into obscurity, other are just emerging. One of the main limitations in the selection of the right technology for developing web application is their compatibility with different operating systems and web browsers.
 
@@ -43,7 +54,7 @@ A very promising technology is the \textit{Web Animation API} \footnote{http://w
 Unfortunatelly, at the time of writing this thesis, is not supported by several major browsers\footnote{https://status.modern.ie/webanimationsjavascriptapi}\footnote{} and is only partially supported in the remaining few \footnote{http://caniuse.com/\#feat=web-animation}\footnote{https://birtles.github.io/areweanimatedyet/}.
 
 \subsection{Conclusion}
-The bottleneck of most of the technologies is their support in mobile devices. These devices don't allow some of the above mentioned technologies to run inside them. As the popularity and market share of mobile devices grow, supporting them is a high priority. HTML5 APIs features needed to create the screencast player are implemented all major web browsers, including browsers for mobile devices. Audio recording is not supported by all major browsers at the moment, but this will change with the release of Microsoft Edge \cite{}\footnote{http://blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/}. After considering these facts, HTML5 was selected to implement both the recording tool and the screencast player.
+When looking at table~\ref{tbl:comparsion_of_matechnologies}, the bottleneck of most of the technologies is their support in mobile devices. These devices don't allow some of the above mentioned technologies to run inside them. As the popularity and market share of mobile devices grow, supporting them is a high priority. HTML5 APIs features needed to create the screencast player are implemented all major web browsers, including browsers for mobile devices. Audio recording is not supported by all major browsers at the moment, but this will change with the release of Microsoft Edge \cite{edge_getusermedia}. After considering these facts, HTML5 was selected to implement both the recording tool and the screencast player.
 
 \subsection{Possible issues and known limitations}
 As mentioned earlier, not all browsers implement all features described in the HTML5 specification in their latest versions. But the trend is to implement as many technologies as possible to bring better browsing experience to users to gain bigger market share, so this situation will get better soon.
@@ -52,7 +63,54 @@ Another fact, that might cause trouble, is that many users still use an old vers
 
 So far, there hasn't been consensus on formats and codecs support in HTML5 \textit{WebAudio API}. The most supported format across web browsers is MP3. This format isn't supported by some browsers on some platforms due to licence reasons. An up-to-date table with media formats' support can be found at \textit{Mozzila Developer Network} (MDN) website  \cite{} \footnote{https://developer.mozilla.org/en-US/docs/Web/HTML/Supported\_media\_formats}. This inconvenience can be easily solved by providing several \verb|<source>| elements to the \verb|<audio>| element with different formats. Browser will then select the format it supports and it will download and play this audio track. The flaw is the need of having the data stored in several formats on the server and the video as a whole takes more disk capacity.
 
+\vfill
 
+\begin{savenotes}
+	\begin{table}[ht]
+
+		\begin{tabular}{L{3.7cm}C{2.3cm}C{2.3cm}C{2.3cm}c}
+
+		\hline
+		& \textbf{Adobe Flash} 		& \textbf{Java applets} 			& \textbf{Microsoft Silverlight} 				& \textbf{HTML5}  \\ \hline
+
+
+		drawing vector primitives			
+			& Yes	& Yes	& Yes	& Yes	 \\ \hline
+		microphone input capturing			
+			& Yes	& Yes	& Yes	& Yes	 \\ \hline
+		reading and creating XML documents	
+			& Yes	& Yes	& Yes	& Yes	 \\ \hline
+		Wacom tablet						
+			& Yes	& Yes	& Yes	& Some\footnote{Browsers supporting \textit{Wacom WebPAPI} or \textit{Pointer Events API}} \\ \hline
+		
+		player features supported by desktop browsers	
+			& Yes
+			& Some\footnoteremember{java-footnote}{Java is disabled by default in Google Chrome}
+			& Some\footnoteremember{silverlight-note}{Only some browsers and operating systems are supported.}
+			& Yes \\ \hline
+		player features supported by mobile browsers
+			& None
+			& None
+			& None
+			& Yes \\ \hline
+		recorder features supported by desktop browsers	
+			& Yes
+			& Some\footnoterecall{java-footnote}
+			& Some\footnoterecall{silverlight-note}
+			& Some\footnote{MS Edge will support \textit{getUserMedia}, Safari does not support \textit{getUserMedia} yet} \\ \hline
+		recorder features supported by mobile browsers	
+			& None
+			& None
+			& None
+			& Some\footnote{\textit{getUserMedia} is implemented only in Google Chrome for Android} \\ \hline
+
+		\hline
+
+		\end{tabular}
+		\caption{Comparison of available technologies}
+		\label{tbl:comparsion_of_matechnologies}
+	\end{table}
+\end{savenotes}
 
 
 
@@ -64,6 +122,11 @@ After a research, the algorithm called ``Dynadraw'' by Paul Haeberli \cite{dyna_
 This algorithm models the tip of the brush as a physical object and simulates its movement. User applies force on the brush by moving the mouse or any other pointing device. The original algorithm is designed for calligraphic strokes and uses mouse speed to calculate dynamic line widths. This technique makes lines drawn by a mouse or other pressure-insensitive device more interesting and can be combined with pressure level of pressure-sensitive device.
 
 For details of the implementation see section~\ref{sec:dynadraw} on page \pageref{sec:dynadraw}.
+
+
+
+
+
 
 
 
@@ -81,6 +144,14 @@ Streaming the recorded audio data in background over a WebSocket seems to be con
 
 Server must implement WebSocket connections and serve clients. Server might also use a native program, like the open-source FFmpeg\footnote{https://www.ffmpeg.org} to compress the audio and convert it to different file formats.
 
+
+
+
+
+
+
+
+
 \section{File format}
 All the information of the cursor movement and the pre-drawn lines must be stored on the server, including the time at which every single segment of every line is drawn. For this purpose an appropriate file format must be used. There are a few existing formats, which were designed for vector graphics and animation.
 
@@ -96,3 +167,31 @@ All the information of the cursor movement and the pre-drawn lines must be store
 After considering available options, creating a custom format based on SVG seems like the best option for its human-readability, simplicity, versatility, ease of manipulation using JavaScript, and the possibility of previewing static scenes of the animation in existing software. This format will serve well as a proof-of-concept and can be replaced with a more sophisticated format in the future and the format must not be therefore hard-coded into the library.
 
 For the specification of this new format, see chapter~\ref{c:the-format} on page~\pageref{c:the-format}.
+
+
+
+
+
+
+
+
+
+\section{Backend}
+An important part of every website is its backend. Implementation of the backend is not a part of the Vector Screencast library, but this library needs to have compatible processes running on the web server -- an \textit{HTTP web server} and \textit{Audio Recording Server}.
+
+\subsection{HTTP Web Server}
+An \textit{HTTP web server} is a server process listens for incomming HTTP requests on well-known port 80 or 443 in case of secured connection. The library should be easily integratable into any web server as it has only a few requirements.
+
+\paragraph{Serving static files}
+The server should respond to HTTP GET requests, whose URL corresponds to a file location in the public section of the file system, by serving this file. To enable replaying and skipping parts of audio files, this server must understand the \textit{Content-Range} header of HTTP requests \cite{content_range}. This is a basic feature of common web servers like \textit{Apache}, \textit{IIS} or \textit{Express.js}. Any of the mentioned servers or a similar one might be used.
+
+\paragraph{Handling upload of the created SVG file}
+When the recording is finsihed, the result needs to be stored on the server. The web server must therefore be able to handle HTTP POST request with the uploaded file and information about its type on a specific URL. It is usually possible to define this behavior in some scripting language supported by the server. Handling file uploads is a typical task in web applications and the process should be well documented.
+
+\subsection{Audio Recording Server}
+The Vector Screencast library will try to upload as much audio data it receives from the microphone to the server as possible to fasten the process of uploading at the end of recording. A compatible server process must receive this stream of PCM data and store them into an uncompressed WAV file.
+
+WebSocket specification is relatively new and there might not yet be existing libraries for all programming languages. Audio recording server can be a separate process running on the server and listening on a different port. This program can be written for example in JavaScript and run on multiplatform \textit{Node.js}. There are several WebSocket packages available for Node.js.
+
+\subsection{Conclusion}
+Creating a backend for Vector Screencast is very easy and it can be integrated basically into every existing web application. Administrators of this website must be able to create and run a WebSocket server for audio recording, which will run on their platform.

@@ -132,10 +132,10 @@ module VectorScreencast.UI {
 						this.PlayPause();
 						break;			
 					case leftArrow:
-						this.timeline.SkipTo(this.Timer.CurrentTime() - skipTime);
+						this.timeline.SkipTo(Math.max(0, this.Timer.CurrentTime() - skipTime));
 						break;
 					case rightArrow:
-						this.timeline.SkipTo(this.Timer.CurrentTime() + skipTime);
+						this.timeline.SkipTo(Math.min(this.Timer.CurrentTime() + skipTime, this.videoDuration));
 						break;		
 				}
 			};
