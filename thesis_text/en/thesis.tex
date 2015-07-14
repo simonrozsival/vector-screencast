@@ -74,6 +74,21 @@
 
 %\include{macros/htmlcssjs_syntax}
 
+\usepackage{footnote}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright}m{#1}}
+\newcolumntype{C}[1]{>{\centering}m{#1}}
+
+\newcommand{\footnoteremember}[2]{
+\footnote{#2}
+\newcounter{#1}
+\setcounter{#1}{\value{footnote}}
+}
+\newcommand{\footnoterecall}[1]{
+\footnotemark[\value{#1}]
+}
+
+
 \begin{document}
 
 % Trochu volnější nastavení dělení slov, než je default.

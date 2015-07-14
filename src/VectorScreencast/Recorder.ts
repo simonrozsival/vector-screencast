@@ -211,14 +211,14 @@ module VectorScreencast {
 			
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
-			if (window.hasOwnProperty("PointerEvent") && false) {
+			if (wacomApi !== null) { // Wacom plugin is prefered
+				var tablet = new WacomTablet(container, this.timer, wacomApi);
+				console.log("Wacom WebPAPI is used");
+			} else if (window.hasOwnProperty("PointerEvent")) { // pointer events implement pressure-sensitivity
 				var pointer = new PointerEventsAPI(container, this.timer);
 				pointer.InitControlsAvoiding();
 				console.log("Pointer Events API is used");
-			} else if (wacomApi !== null) {
-				var tablet = new WacomTablet(container, this.timer, wacomApi);
-				console.log("Wacom WebPAPI is used");
-			} else {
+			} else { // fallback to mouse + touch events
 				var mouse = new Mouse(container, this.timer);
 				mouse.InitControlsAvoiding();
 				var touch = new TouchEventsAPI(container, this.timer);

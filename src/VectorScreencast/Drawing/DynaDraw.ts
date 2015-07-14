@@ -98,7 +98,7 @@ module VectorScreencast.Drawing {
          * Process next state and 
          */
         public ObserveCursorMovement(cursor: CursorState): void {
-            try {
+			try {
                 var nextPoint = new Vector2(cursor.X, cursor.Y);
                 if (cursor.Pressure > 0) {
                     if (!this.lastState || this.lastState.Pressure === 0) {
@@ -122,8 +122,8 @@ module VectorScreencast.Drawing {
 		
 		/**
 		 * Start drawing a new path with a given color and brush size.
-		 * @param	{Vector2}		position	Cursor state information
-		 * @param	{number}		pressure	Cursor pressure
+		 * @param	position	Cursor state information
+		 * @param	pressure	Cursor pressure
 		 */
 		public StartPath(position: Vector2, pressure: number) {
 			this.cursor.Reset(position, this.GetBrush(this.currentBrushSize.Size));
@@ -134,8 +134,8 @@ module VectorScreencast.Drawing {
 		
 		/**
 		 * Animate cursor movement
-		 * @param	{Vector2}		position	Cursor state information
-		 * @param	{number}		pressure	Cursor pressure
+		 * @param	position	Cursor state information
+		 * @param	pressure	Cursor pressure
 		 */
 		public NextPoint(position: Vector2, pressure: number) {
 			this.position = position;
@@ -144,12 +144,11 @@ module VectorScreencast.Drawing {
 		
 		/**
 		 * Stop drawing the line when the mouse or digital pen is released.
-		 * @param	{Vector2}		position	Cursor state information
-		 * @param	{number}		pressure	Cursor pressure
+		 * @param	position	Cursor state information
+		 * @param	pressure	Cursor pressure
 		 */
 		public EndPath(position: Vector2, pressure: number) {
-			//this.position = position;
-			this.position = null;			
+			this.position = position;			
 		}
 				
 		/**
@@ -343,9 +342,9 @@ module VectorScreencast.Drawing {
 			if(this.previousPressure < 0) this.previousPressure = pressure;
 			var interpolatedPressure: number = this.interpolatePressure(pressure);
 			var radius: number = this.speedFactor(speed) * this.brush.Size * interpolatedPressure / 2;
-			
+						
 			// save for next time
-			this.previousPosition = this.position;
+			this.previousPosition = this.position.clone();
 			this.previousPressure = interpolatedPressure;
 			return radius;
 		}
@@ -359,7 +358,7 @@ module VectorScreencast.Drawing {
 			if(d1 === 0 && d2 === 0) {
 				return mousePressure; // I don't have to interpolate
 			}
-									
+					
 			return (d1/(d1 + d2))*(mousePressure - this.previousPressure) + this.previousPressure;
 		}
 		
