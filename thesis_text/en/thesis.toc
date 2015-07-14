@@ -65,7 +65,7 @@
 \contentsline {paragraph}{SVG}{22}{section*.35}
 \contentsline {section}{\numberline {5.3}Drawing lines}{22}{section.5.3}
 \contentsline {subsection}{\numberline {5.3.1}Dynadraw algorithm}{23}{subsection.5.3.1}
-\contentsline {chapter}{\numberline {6}Integration of the library in a HTML web page}{27}{chapter.6}
+\contentsline {chapter}{\numberline {6}Integration of the library in an HTML web page}{27}{chapter.6}
 \contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{27}{section.6.1}
 \contentsline {section}{\numberline {6.2}Vector Screencast Player}{28}{section.6.2}
 \contentsline {section}{\numberline {6.3}Vector Screencast Recorder}{28}{section.6.3}
