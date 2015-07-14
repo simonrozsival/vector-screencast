@@ -29,7 +29,7 @@ The idea behind event driven programming is to break direct references between o
 
 Each object handles only it's own task without knowing anything about the other objects it's collaborating with. When an object completes it's task, it publishes the result with a specific event. Objects subscribed for this event are notified and are given the outcomes of the previous task.
 
-This mechanism is sometimes called the \textit{Event Aggregator} design pattern. It is implemented through the \verb{VideoEvents}\footnote{Implementation can be found in \textit{/public/js/app/Helpers/VideoEvents.ts} file} static class, which makes it a simple singleton object. This class provides an interface for registering and triggering callbacks for specified events. Callbacks executed by a triggered event are called asynchronously. It is worth mentioning that web browsers execute all scripts in a single thread.
+This mechanism is sometimes called the \textit{Event Aggregator} design pattern. It is implemented through the \verb|VideoEvents|\footnote{Implementation can be found in \textit{/public/js/app/Helpers/VideoEvents.ts} file} static class, which makes it a simple singleton object. This class provides an interface for registering and triggering callbacks for specified events. Callbacks executed by a triggered event are called asynchronously. It is worth mentioning that web browsers execute all scripts in a single thread.
 
 \begin{lstlisting}
 VideoEvents.on(VideoEventType.Message, function(message) {
@@ -219,7 +219,7 @@ HTML5 provides only one way to access microphone data at the moment and it is th
 
 If user's device has a connected microphone and user gives his permission to use his audio input, then a \textit{MediaStream} \footnote{MediaStream: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStream} object is provided by the browser and from this time on audio can be processed. Error callback with \textit{MediaStreamError}\footnote{MediaStreamError: http://www.w3.org/TR/mediacapture-streams/\#idl-def-MediaStreamError} instance as a parameter is called otherwise.
 
-Current browsers implement \textit{ScriptProcessorNode} according to the W3C Working Draft from 10 October 2013 of \textit{Web Audio API}. Unfortunately, the \textit{ScriptProcessorNode} interface is deprecated in newer drafts of the specification and should be replaced with \textit{AudioWorkerNote} in the future\cite{mic_deprecated}. This new approach is not yet standardised, implemented and documented in web browsers. Both of these methods provide access to \textit{AudioBuffer} instance, which contains \tetxit{linear pulse-code modulation} (LPCM)\cite{wiki_pcm} sampled data from the microphone \cite{mic_pcm}.
+Current browsers implement \textit{ScriptProcessorNode} according to the W3C Working Draft from 10 October 2013 of \textit{Web Audio API}. Unfortunately, the \textit{ScriptProcessorNode} interface is deprecated in newer drafts of the specification and should be replaced with \textit{AudioWorkerNote} in the future\cite{mic_deprecated}. This new approach is not yet standardised, implemented and documented in web browsers. Both of these methods provide access to \textit{AudioBuffer} instance, which contains \textit{linear pulse-code modulation} (LPCM)\cite{wiki_pcm} sampled data from the microphone \cite{mic_pcm}.
 
 This data is then sent to the server using a WebSocket. 
 
@@ -227,7 +227,7 @@ This data is then sent to the server using a WebSocket.
 \subsubsection{High Resolution Timer}
 To make the video look as good as possible, we need to store as precise data as possible. The \textit{Date.now()} function\footnote{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global\_Objects/Date/now} returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC. The millisecond accuracy might seem enough, but modern browsers provide even more accurate data via the \textit{High Resolution Time} \footnote{https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HighResolutionTime/Overview.html} via the \textit{window.performance.now()} function\footnote{https://developer.mozilla.org/en-US/docs/Web/API/Performance/now} \footnote{http://updates.html5rocks.com/2012/08/When-milliseconds-are-not-enough-performance-now} with the accuracy of microseconds. The \textit{window.performance.now()} function doesn't provide data related to current time, but the milliseconds elapsed since page was loaded as a floating point number. This makes it more suitable for animation purposes.
 
-Timing functionality is wrapped in \textit{VideoTimer} class in the Helpers module\footnote{implementation can be found in \textit{/src/VectorVideo/Helpers/VideoTimer.ts} file with a method for getting the number of milliseconds elapsed since last timer reset with the best precision provided by the web browser.
+Timing functionality is wrapped in \textit{VideoTimer} class in the Helpers module\footnote{implementation can be found in \textit{/src/VectorVideo/Helpers/VideoTimer.ts} file} with a method for getting the number of milliseconds elapsed since last timer reset with the best precision provided by the web browser.
 
 
 
@@ -238,7 +238,7 @@ Detecting mouse movement and the state of it's buttons is a very common task in 
 Unfortunately, the situation among other pointing devices other than computer mice is much less uniform. With the boom of smartphones and tablets, touchscreens are very common. Also computer graphics tablets are used by artists and many people use them when creating a Khan Academy style video.
 
 \paragraph{Mouse input}
-Event handler is passed the \textit{MouseEvent} object\footnote{http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-MouseEvent}. The relevat information are the \textit{clientX} and \textit{clientY} properties, stating current mouse posititon relative to the position of the element it is attached to. 
+Event handler is passed the \textit{MouseEvent} object\footnote{http://www.w3.org/TR/DOM-Level-2-Events/events.html\#Events-MouseEvent}. The relevat information are the \textit{clientX} and \textit{clientY} properties, stating current mouse posititon relative to the position of the element it is attached to. 
 
 \paragraph{Wacom Webplugin pen API}
 The Wacom Webplugin pen API (WebPAPI) is a browser plugin interface for pen data access from all Wacom consumer and professional tablets \cite{}\footnote{http://www.wacomeng.com/web/WebPluginReleaseNotes.htm}.
