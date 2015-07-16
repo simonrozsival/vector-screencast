@@ -72,7 +72,8 @@ module AudioRecording {
                 
                 // generate random unique file
                 var name: string = this.GetTempFileName(this.cfg.outputDir, ".wav");   
-                var recordingEndedProperly: boolean = false;          
+                var recordingEndedProperly: boolean = false;
+                var receivedBinaryMessages: number = 0;
         
                 socket.on("message", (message, flags) => {                
                     if(!flags.binary) {
@@ -81,6 +82,7 @@ module AudioRecording {
                             console.log("START message received.");
                             fileWriter = this.InitRecording(name, msg);                        
                         } else if (!!msg && msg.type === "end") {
+                            console.log("Finished receiving binary messages. Total of messages: ", receivedBinaryMessages);
                             console.log("END message received.");
                             recordingEndedProperly = true;
                             this.FinishRecording(this.cfg.hostName, name, fileWriter, socket, this.cfg.deleteWav);
@@ -91,6 +93,7 @@ module AudioRecording {
                         }                        
                     } else {
                         if(!!fileWriter) {
+                            receivedBinaryMessages++;
                             fileWriter.file.write(message);
                         } else {
                             // error - not initialised properly

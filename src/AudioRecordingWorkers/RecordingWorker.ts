@@ -26,39 +26,43 @@ this.onmessage = function(e) {
         console.log("Recording Worker error: message does not contain 'cmd' property.");
     }
 
-    switch(msg.cmd) {
-        // start new upload
-        case CMD_INIT:
-            audioProcessor = new BinaryAudioStreamingProcessor({
-                host: msg.host,
-                port: msg.port,
-                path: msg.path,
-                secured: false,
-                opened: () => console.log("Streaming was initialised successfully."),
-                finished: (files) => this.postMessage({ type: "finished", files: files }),
-                error: () => error("Can't init audio processor")
-            });
-            break;
-            
-        // next block of data is available
-        case CMD_PUSH_DATA:
-            if(!audioProcessor.PushData(msg.data)) {
-                this.postMessage({ type: "network-error" });
-            }
-            break;
-            
-        // user stopped the recording
-        case CMD_FINISH:
-            audioProcessor.Finish({
-                success: (data) => this.postMessage({ error: false, files: data.files }),
-                error: error
-            });
-            break;
-            
-        // ?? - error
-        default:
-            error("Unknown cmd " + msg.cmd);
-            break;
+    try {        
+        switch(msg.cmd) {
+            // start new upload
+            case CMD_INIT:
+                audioProcessor = new BinaryAudioStreamingProcessor({
+                    host: msg.host,
+                    port: msg.port,
+                    path: msg.path,
+                    secured: false,
+                    opened: () => console.log("Streaming was initialised successfully."),
+                    finished: (files) => this.postMessage({ type: "finished", files: files }),
+                    error: () => error("Can't init audio processor")
+                });
+                break;
+                
+            // next block of data is available
+            case CMD_PUSH_DATA:
+                if(!audioProcessor.PushData(msg.data)) {
+                    this.postMessage({ type: "network-error" });
+                }
+                break;
+                
+            // user stopped the recording
+            case CMD_FINISH:
+                audioProcessor.Finish({
+                    success: (data) => this.postMessage({ error: false, files: data.files }),
+                    error: error
+                });
+                break;
+                
+            // ?? - error
+            default:
+                error("Unknown cmd " + msg.cmd);
+                break;
+        }
+    } catch (e) {
+        console.log("Streaming Worker ERROR!", e);
     }
 };
 
@@ -100,11 +104,15 @@ class BinaryAudioStreamingProcessor {
     
     /** Remote server URL */
     private url: string;
+    
+    /** Number of total binary messages sent to the server. */
+    private numberOfSentBinaryMessages: number;
 
     /**
      * Creates a WebSocket and tries to connect.
      */
     constructor(private cfg: IBinaryAudioStreamingProcessorConfig) {
+        this.numberOfSentBinaryMessages = 0;
         try {                        
             // the socket is a WebSocket - protocol "ws://" - "wss://" is secured
             var protocol = cfg.secured ? "wss://" : "ws://";
@@ -158,6 +166,7 @@ class BinaryAudioStreamingProcessor {
                 this.socket = null;
                 return false;
             } else {
+                this.numberOfSentBinaryMessages++;
                 this.socket.send(this.ConvertTo16BitInt(data).buffer);
                 return true;
             }
