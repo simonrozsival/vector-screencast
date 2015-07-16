@@ -2,9 +2,10 @@
     "compilerOptions": {
         "target": "ES5",
         "noImplicitAny": true,
-        "removeComments": false,
+        "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
         "out": "vector-screencast.js"
+
     }
 }

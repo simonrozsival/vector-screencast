@@ -8,7 +8,7 @@ var CMD_FINISH = "finish";
  * Report error to the user.
  * @param {String} msg
  */
-function error(msg) : void {
+function err(msg) : void {
     console.log("Recording Worker error: " + msg);
     this.postMessage({ type: "error", msg: msg }); // report error
 }
@@ -41,13 +41,13 @@ this.onmessage = function(e) {
         case CMD_FINISH:
             audioProcessor.Finish({
                 success: (data) => this.postMessage({ error: false, files: data.files }),
-                error: error
+                error: err
             });
             break;
             
         // ?? - error
         default:
-            error("Unknown cmd " + msg.cmd);
+            err("Unknown cmd " + msg.cmd);
             break;
     }
 };

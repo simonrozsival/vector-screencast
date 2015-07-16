@@ -110,10 +110,17 @@ var libProject = require("./src/VectorScreencast/tsconfig.json", { sourceMap: fa
 //
  
 gulp.task("vector-screencast-release", function() {
-	return gulp.src("./src/VectorScreencast/lib.ts")
+	return gulp.src("./src/VectorScreencast/VectorScreencast.ts")
 			.pipe(tsc(libProject.compilerOptions))
 			.pipe(ignore.exclude([ "**/*.map" ])) // do not uglify .map files
-			.pipe(uglify())
+			.pipe(uglify({
+				sequences: true,
+				dead_code: true,
+				conditionals: true,
+				unused: true,
+				join_vars: true,
+				properties: true				
+			}))
 			.pipe(gulp.dest("./release/vector-screencast-lib"));
 });
 
