@@ -20,6 +20,9 @@ module VectorScreencast.AudioData {
 		/** Is the audio being captured? */
 		private recording: boolean = false;
 		
+		/** Reference to the processing node - it must not be garbage collected! */
+		private scriptProcessorNode: ScriptProcessorNode;
+		
 		/** The background worker */
 		private recordingWorker: Worker;
 	
@@ -100,10 +103,10 @@ module VectorScreencast.AudioData {
 								
 							// create processing node
 							var bufferSize = 2048;
-							var recorder = context.createScriptProcessor(bufferSize, 1, 1);
-							recorder.onaudioprocess = (data: AudioProcessingEvent) => this.processData(data);
-							this.input.connect(recorder);
-							recorder.connect(context.destination);
+							this.scriptProcessorNode = context.createScriptProcessor(bufferSize, 1, 1);
+							this.scriptProcessorNode.onaudioprocess = (data: AudioProcessingEvent) => this.processData(data);
+							this.input.connect(this.scriptProcessorNode);
+							this.scriptProcessorNode.connect(context.destination);
 							this.initSuccessful = true;
 	
 							// create web worker audio processor
