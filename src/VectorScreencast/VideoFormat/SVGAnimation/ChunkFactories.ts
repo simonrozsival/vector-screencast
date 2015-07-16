@@ -12,7 +12,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	import PathChunk = VideoData.PathChunk;
 	import EraseChunk = VideoData.EraseChunk;
 	
-	/** Time is in miliseconds */
+	/** Time is in milliseconds */
 	const TIME_PRECISION = 2;
 		
 	/**
@@ -71,9 +71,9 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * Convert commands to SVG nodes.
 		 */
 		
-		protected CommandsToSVG(node: Node, cmds: Array<Command>, cmdFactory: CommandFactory): Node {
+		protected CommandsToSVG(node: Node, cmds: Array<Command>, cmdFactory: CommandFactory, chunkStart: number): Node {
 			for (var i = 0; i < cmds.length; i++) {
-				node.appendChild(cmdFactory.ToSVG(cmds[i]));
+				node.appendChild(cmdFactory.ToSVG(cmds[i], chunkStart));
 			}
 
 			return node;
@@ -86,12 +86,12 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/**  */
 		private static initCmds: InitCommands = [null, null, null];
 		
-		protected static GetCommands(cmd: Element, cmdFactory: CommandFactory): CommandsPair {
+		protected static GetCommands(cmd: Element, cmdFactory: CommandFactory, chunkStart: number): CommandsPair {
 			var initCommands = this.initCmds.filter(v => v !== null).map(v => v.Clone());
 			var cmds: Array<Command> = []; // loaded commands
 						
 			while (!!cmd) {
-				var loadedCmd = cmdFactory.FromSVG(cmd);
+				var loadedCmd = cmdFactory.FromSVG(cmd, chunkStart);
 				cmds.push(loadedCmd);
 				cmd = cmd.nextElementSibling;
 				
@@ -124,7 +124,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		FromSVG(node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === VoidChunkFactory.NodeName) {
 				var chunk: VoidChunk = new VoidChunk(SVGA.numAttr(node, "t"), 0); // 0 will be changed later in the IO class
-				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(node.firstElementChild, cmdFactory);
+				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(node.firstElementChild, cmdFactory, chunk.StartTime);
 				return chunk;
 			}
 
@@ -143,7 +143,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 					"type": VoidChunkFactory.NodeName,
 					"t": chunk.StartTime.toFixed(TIME_PRECISION)
 				});
-				this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+				this.CommandsToSVG(node, chunk.Commands, cmdFactory, chunk.StartTime);
 
 				return node;
 			}
@@ -314,7 +314,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				
 				// now the chunk instance can be created
 				var chunk: PathChunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), 0); // 0 will be changed to last erase later
-				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(pathNode.nextElementSibling, cmdFactory);				
+				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(pathNode.nextElementSibling, cmdFactory, chunk.StartTime);				
 
 				return chunk;
 			}
@@ -340,7 +340,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				// [1] path
 				node.appendChild(this.PathToSVGNode(chunk.Path));
 				// [2] all the commands
-				this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+				this.CommandsToSVG(node, chunk.Commands, cmdFactory, chunk.StartTime);
 
 				return node;
 			}
@@ -509,7 +509,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				}
 				
 				var chunk: EraseChunk = new EraseChunk(new UI.Color(SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), 0); // last erase will be added later
-				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(rectNode.nextElementSibling, cmdFactory);
+				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(rectNode.nextElementSibling, cmdFactory, chunk.StartTime);
 
 				return chunk;
 			}
@@ -533,7 +533,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				// [1] rect
 				node.appendChild(SVG.CreateElement("rect", { "fill": chunk.Color.CssValue, width: this.Width, height: this.Height }));
 				// [2] all the commands
-				this.CommandsToSVG(node, chunk.Commands, cmdFactory);
+				this.CommandsToSVG(node, chunk.Commands, cmdFactory, chunk.StartTime);
 
 				return node;
 			}

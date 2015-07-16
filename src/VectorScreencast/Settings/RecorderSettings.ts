@@ -14,14 +14,16 @@ module VectorScreencast.Settings {
 		Audio?: 			AudioRecorderSettings;
 		/** Localization object literal. Default language is English. */
 		Localization?: 		Localization.RecorderLocalization;
-		/** Array of colors for the color palete. */
-		ColorPallete?: 		Array<UI.Color>;
 		/** Default brush color */
 		DefaultBrushColor?:	UI.Color;
 		/** Default board background color */
 		DefaultBackgroundColor?: UI.Color;
 		/** Array of brush size options. */
 		BrushSizes?: 		Array<UI.BrushSize>;
+		/** Array of colors for the color palete. */
+		ColorPallete?: 		Array<UI.Color>;
+		/** Enable or disable dynamic line width depending on brush's speed. */
+		DisableDynamicLineWidth?:	boolean;
 		/** Object instance defining the HTML structure of the recorder. */		
 		UI?:				UI.RecorderUI;	
 		/**

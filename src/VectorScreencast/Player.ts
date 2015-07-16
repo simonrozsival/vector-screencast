@@ -56,6 +56,12 @@ module VectorScreencast {
             if(!container) {
 				Helpers.Errors.Report(Helpers.ErrorType.Fatal, `Container #${id} doesn't exist. Video Player couldn't be initialised.`);
             }
+            
+            // reset the contents of the container
+            while(!!container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+            
             // when the container is resized, stretch the canvas apropriately
             window.onresize = () => this.MonitorResize(container);            
             

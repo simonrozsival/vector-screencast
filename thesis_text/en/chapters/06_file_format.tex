@@ -3,7 +3,7 @@
 
 SVG format is common and is implemented in web browsers and in many programs. These programs can open an SVG image and draw its contents. The idea is to create an SVG file, which contains all the information needed using custom namespace attributes and elements and shows the state of the blackboard at the end of recording.
 
-A valid SVG document must have an \textit{svg} root element with specific namespace attributes and specified \textit{width} and \textit{height} attributes. For the purpose of extending the document, a new namespace \textit{http://www.rozsival.com/2015/vector-screencast} is added with the prefix \textit{a}. An example of an empty SVG document with this namespace looks as follows:
+A valid SVG document must have an \textit{svg} root element with specific namespace attributes and specified \textit{width} and \textit{height} attributes. For the purpose of extending the document, a new namespace \textit{http://www.rozsival.com/2015/vector-screencast} is added with the prefix \textit{``a''}. An example of an empty SVG document with this namespace looks as follows:
 
 \begin{lstlisting}
 <?xml version="1.0"?>
@@ -18,9 +18,9 @@ A valid SVG document must have an \textit{svg} root element with specific namesp
 
 SVG specification allows inclusion of elements and attributes from foreign namespaces anywhere with the SVG context. Attributes from foreign namespaces might be attached to any element. Both elements and attributes will be included in the DOM by the SVG user agent, but will be ignored otherwise \cite{svg_exteding}.
 
-Vector Screencast \verb|<svg>| root element must have two child elements: \verb|<metadata></metadata>| and \verb|<g a:type="chunks"></g>|
+Vector Screencast \verb|<svg>| root element must have two child elements: \verb|<metadata />| and \verb|<g a:type="chunks" />|
 
-SVG \verb|<g>| element\footnote{http://www.w3.org/TR/SVG/struct.html\#GElement} is intended for grouping related graphics elements. These groups might be also nested.
+SVG \verb|<g>| element is intended for grouping related graphics elements. These groups might be also nested.
 
 \section{Video Metadata}
 The first child element of the \verb|<svg>| element must be a \verb|<metadata>| element. This element must contain these child elements:
@@ -29,7 +29,7 @@ The first child element of the \verb|<svg>| element must be a \verb|<metadata>| 
 The content is the original width and height of the blackboard. These numbers will be used to correct coordinates when playing the video with different resolution. The \verb|width| and \verb|height| attributes of the \verb|<svg>| element may contain different values.
 
 \paragraph{\texttt{\textless a:length\textgreater}}
-The content is the duration of the video in miliseconds.
+The content is the duration of the video in milliseconds.
 
 \paragraph{\texttt{\textless a:audio\textgreater}}
 Contains the list of audio sources as child elements.
@@ -40,10 +40,10 @@ Defines one audio source. It has two attributes: \verb|a:src| -- containing the 
 \section{Video Chunks}
 Video is divided into smaller consequent parts, called \textit{chunks}. Chunks have variable time duration based on user's behaviour. These chunks are logical units of the video, each of them can be rendered at once as one graphics primitive. This helps optimize skipping parts of the video. Some chunks can be skipped entirely as the canvas will be cleared at some point after the very chunk is rendered, but before the target time point is reached.
 
-There are three types of chunks: \textit{path}, \textit{erase}, and \textit{void} cuhnk. Each chunk is stored as one SVG group element with a specific \verb|a:type| attribute (\textit{path}, \textit{erase}, \textit{void}) and an \verb|a:t| attribute, which is the time, when this chunk starts to be processed, in miliseconds. Chunks contain the prerendered graphics primitive and a list of animation commands.
+There are three types of chunks: \textit{path}, \textit{erase}, and \textit{void} cuhnk. Each chunk is stored as one SVG group element with a specific \verb|a:type| attribute (\textit{path}, \textit{erase}, \textit{void}) and an \verb|a:t| attribute, which is the time, when this chunk starts to be processed, in milliseconds. Chunks contain the prerendered graphics primitive and a list of animation commands.
 
 \paragraph{``Path''}
-This type of chunk represents one line the user draws. The first child element is an SVG \verb|<path>| element. The \verb|fill| attribute should correspond to the real color of the path, but is not neccessary for later screencast playing. The data attribute \verb|d| includes serialized information about the segments of the path in the form of valid SVG path instructions\footnote{http://www.w3.org/TR/SVG/paths.html\#PathData}. For more details about the serialization and deserialization of this data, see section @todo on page @todo. One or more child elements might follow after the \verb|<path>|, all of which must be animation command elements.
+This type of chunk represents one line the user draws. The first child element is an SVG \verb|<path>| element. The \verb|fill| attribute should correspond to the real color of the path, but is not neccessary for later screencast playing. The data attribute \verb|d| includes serialized information about the segments of the path in the form of valid SVG path instructions. For more details about the serialization and deserialization of this data, see section~\ref{sec:path_serialization} on page~\pageref{sec:path_serialization}. One or more child elements might follow after the \verb|<path>|, all of which must be animation command elements.
 
 \paragraph{``Erase''}
 This type of chunk represents clearing the whole canvas with one color. The first child element is an SVG \verb|<rect>| element. The \verb|fill| attribute should correspond to the real color of the new background. One or more child elements might follow after the \verb|<rect>|, all of which must be animation command elements.
@@ -54,7 +54,7 @@ This type of chunk does not render anything on the canvas. It might contain one 
 \section{Animation Commands}
 Animation commands are necessary for correct actions' timing during the video. Chunks contain the information of how the resulting primitive looks like, commands contain user's gradual forming of these primitives.
 
-Animation command must be a child element of a chunk element. Every command must have an \verb|a:t| attribute with the time of the action in miliseconds. The value of the time attribute of an element must be greater or equal to the values of preceding sibling action elements.
+Animation command must be a child element of a chunk element. Every command has an \verb|a:t| attribute with a timestamp of the action in milliseconds. Time value is relative to the time value of its parent chunk -- this decreases the number of digits of each time value and thus the number of bytes needed for textual representation of the value. The value of the time attribute of an element must be greater or equal to the values of preceding sibling action elements. If command does not have this attribute, it is assumed that it has zero value -- this decreases the size of commands created while the recording is paused.
 
 \paragraph{\texttt{\textless a:m\textgreater}}
 \textit{Move cursor} command tells the player to move cursor to a specific position defined by attributes \verb|a:x| and \verb|a:y|.

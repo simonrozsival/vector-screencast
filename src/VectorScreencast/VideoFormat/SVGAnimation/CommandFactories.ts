@@ -30,16 +30,21 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		
 		/**
 		 * Convert SVG to a command.
-		 * @param	node	SVG element
-		 * @return			The command
-		 * @throws			Error
+		 * @param	node		SVG element
+		 * @param	chunkStart	Time of parent chunk start.
+		 * @return				The command
+		 * @throws				Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(!!this.next) {
-				return this.next.FromSVG(node);
+				return this.next.FromSVG(node, chunkStart);
 			}
 			
 			throw new Error(`Command loading failed: Unsupported node ${node.nodeName}.`) 
+		}
+		
+		protected getCmdTime(el: Node, chunkStart: number): number {
+			return SVGA.numAttr(el, "t", 0) + chunkStart;
 		}
 				
 		/**
@@ -48,12 +53,21 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			SVG element
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(!!this.next) {
-				return this.next.ToSVG(cmd);
+				return this.next.ToSVG(cmd, chunkStart);
 			}
 			
 			throw new Error(`Command export failed: Unsupported command ${typeof cmd}.`);
+		}
+		
+		/**
+		 * 
+		 */
+		protected storeTime(el: Node, time: number) {
+			if(time > 0) {
+				SVGA.SetAttributes(el, {  "t": precise(time, TIME_PRECISION) });	
+			}
 		}
 	}
 	
@@ -70,13 +84,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			The command
 		 * @throws			Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === MoveCursorFactory.NodeName) {
-				return new MoveCursor(SVGA.numAttr(node, "x"), SVGA.numAttr(node, "y"), SVGA.numAttr(node, "p", 0), SVGA.numAttr(node, "t"));
+				return new MoveCursor(SVGA.numAttr(node, "x"), SVGA.numAttr(node, "y"), SVGA.numAttr(node, "p", 0), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
-			return super.FromSVG(node);
+			return super.FromSVG(node, chunkStart);
 		}		
 		
 		/**
@@ -85,22 +99,23 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			SVG element
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(cmd instanceof MoveCursor) {
 				var options: any = {
 					"x": precise(cmd.X),
-					"y": precise(cmd.Y),
-					"t": precise(cmd.Time, TIME_PRECISION)
+					"y": precise(cmd.Y)
 				};
 				if(cmd.P > 0) {
 					options["p"] = precise(cmd.P, PRESSURE_PRECISION);
 				}
 				
-				return SVGA.CreateElement(MoveCursorFactory.NodeName, options);
+				var cmdEl = SVGA.CreateElement(MoveCursorFactory.NodeName, options);					
+				super.storeTime(cmdEl, cmd.Time - chunkStart);
+				return cmdEl;
 			}
 			
 			// else pass through the chain of responsibility
-			return super.ToSVG(cmd);
+			return super.ToSVG(cmd, chunkStart);
 		}
 	}
 		
@@ -118,13 +133,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			The command
 		 * @throws			Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === DrawSegmentFactory.NodeName) {
-				return new DrawNextSegment(SVGA.numAttr(node, "t"));
+				return new DrawNextSegment(super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
-			return super.FromSVG(node);
+			return super.FromSVG(node, chunkStart);
 		}
 		
 		/**
@@ -133,15 +148,15 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			SVG element
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(cmd instanceof DrawNextSegment) {
-				return SVGA.CreateElement(DrawSegmentFactory.NodeName, {
-					"t": precise(cmd.Time, TIME_PRECISION)
-				});
+				var cmdEl = SVGA.CreateElement(DrawSegmentFactory.NodeName);					
+				super.storeTime(cmdEl, cmd.Time - chunkStart);
+				return cmdEl;
 			}
 			
 			// else pass through the chain of responsibility
-			return super.ToSVG(cmd);
+			return super.ToSVG(cmd, chunkStart);
 		}
 	}
 	
@@ -159,31 +174,33 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			The command
 		 * @throws			Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ChangeBrushColorFactory.NodeName) {
-				return new ChangeBrushColor(new UI.Color(SVGA.attr(node, "c")), SVGA.numAttr(node, "t"));
+				return new ChangeBrushColor(new UI.Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
-			return super.FromSVG(node);
+			return super.FromSVG(node, chunkStart);
 		}
 		
 		/**
 		 * Convert command to SVG element.
 		 * @param	cmd		The command
-		 * @return			SVG element
+		 * @return			SVG element 
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(cmd instanceof ChangeBrushColor) {
-				return SVGA.CreateElement(ChangeBrushColorFactory.NodeName, {
-					"c": cmd.Color.CssValue,
-					"t": precise(cmd.Time, TIME_PRECISION)
+				var cmdEl = SVGA.CreateElement(ChangeBrushColorFactory.NodeName, {
+					"c": cmd.Color.CssValue
 				});
+					
+				super.storeTime(cmdEl, cmd.Time - chunkStart);
+				return cmdEl;
 			}
 			
 			// else pass through the chain of responsibility
-			return super.ToSVG(cmd);
+			return super.ToSVG(cmd, chunkStart);
 		}
 	}
 	
@@ -202,13 +219,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			The command
 		 * @throws			Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ChangeBrushSizeFactory.NodeName) {
-				return new ChangeBrushSize(new UI.BrushSize(SVGA.numAttr(node, "w")), SVGA.numAttr(node, "t"));
+				return new ChangeBrushSize(new UI.BrushSize(SVGA.numAttr(node, "w")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
-			return super.FromSVG(node);
+			return super.FromSVG(node, chunkStart);
 		}
 		
 		/**
@@ -217,16 +234,17 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			SVG element
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(cmd instanceof ChangeBrushSize) {
-				return SVGA.CreateElement(ChangeBrushSizeFactory.NodeName, {
-					"w": cmd.Size.Size,
-					"t": precise(cmd.Time, TIME_PRECISION)
-				});
+				var cmdEl = SVGA.CreateElement(ChangeBrushSizeFactory.NodeName, {
+					"w": cmd.Size.Size
+				});				
+				super.storeTime(cmdEl, cmd.Time - chunkStart);
+				return cmdEl;
 			}
 			
 			// else pass through the chain of responsibility
-			return super.ToSVG(cmd);
+			return super.ToSVG(cmd, chunkStart);
 		}
 	}
 	
@@ -245,13 +263,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			The command
 		 * @throws			Error
 		 */		
-		FromSVG(node: Node): Command {
+		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ClearCanvasFactory.NodeName) {
-				return new ClearCanvas(new UI.Color(SVGA.attr(node, "c")), SVGA.numAttr(node, "t"));
+				return new ClearCanvas(new UI.Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
-			return super.FromSVG(node);
+			return super.FromSVG(node, chunkStart);
 		}
 		
 		/**
@@ -260,16 +278,17 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return			SVG element
 		 * @throws			Error
 		 */		
-		ToSVG(cmd: Command): Node {
+		ToSVG(cmd: Command, chunkStart: number): Node {
 			if(cmd instanceof ClearCanvas) {
-				return SVGA.CreateElement(ClearCanvasFactory.NodeName, {
-					"t": precise(cmd.Time, TIME_PRECISION),
+				var cmdEl = SVGA.CreateElement(ClearCanvasFactory.NodeName, {
 					"c": cmd.Color.CssValue
 				});
+				super.storeTime(cmdEl, cmd.Time - chunkStart);
+				return cmdEl;
 			}
 			
 			// else pass through the chain of responsibility
-			return super.ToSVG(cmd);
+			return super.ToSVG(cmd, chunkStart);
 		}
 	}
 }

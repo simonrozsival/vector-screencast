@@ -110,6 +110,11 @@ module VectorScreencast {
 				Errors.Report(ErrorType.Fatal, `Container #${id} doesn't exist. Video Recorder couldn't be initialised.`);
 				return; // do not start
 			}
+			
+            // reset the contents of the container
+            while(!!container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
 
 			if (!settings.ColorPallete || settings.ColorPallete.length === 0) {
 				// default color pallete
@@ -158,7 +163,7 @@ module VectorScreencast {
 					EraseAll: "Erase everything",
 					WaitingText: "Please be patient. Uploading video usually takes some times - up to a few minutes if your video is over ten minutes long. Do not close this tab or browser window.",
 					UploadWasSuccessful: "Upload was successful",
-					RedirectPrompt: "Upload was successful - do you want to view your just recorded video?",
+					RedirectPrompt: "Upload was successful - press OK to continue",
 					UploadFailure: "Upload failed.",
 					FailureApology: "We are sorry, but upload failed. Do you want to download your data to your computer instead?",
 					AudioRecording: "Audio recording",
@@ -195,7 +200,7 @@ module VectorScreencast {
 			// the most important part - the rendering and drawing strategy
 			// - default drawing strategy is using SVG
 			this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
-			this.dynaDraw = new Drawing.DynaDraw(() => this.drawer.CreatePath(), true, min, max, this.timer);
+			this.dynaDraw = new Drawing.DynaDraw(() => this.drawer.CreatePath(), !settings.DisableDynamicLineWidth, min, max, this.timer);
 			
 			// create UI			
 			this.ui = !!settings.UI ? settings.UI : new UI.RecorderUI(id);

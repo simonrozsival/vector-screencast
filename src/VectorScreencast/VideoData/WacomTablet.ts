@@ -46,6 +46,11 @@ module VectorScreencast.VideoData {
 		 * @return {number}	The pressure from 0.0 to 1.0
 		 */
 		protected GetPressure() : number {
+			// avoid unnecessary lines outside of the canvas
+			if(this.isDown === false || this.isInside === false) {
+				return 0;
+			}
+			
 			if(this.penApi && this.penApi.pointerType == WacomPointerType.Pen) {
 				return this.isInside === true ? this.penApi.pressure : 0; // pressure is from 0.0 (no pressure) to 1.0 (max pressure)
 			} else {

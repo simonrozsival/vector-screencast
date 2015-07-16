@@ -20,7 +20,7 @@
     		<table>
     			<thead>
                     <tr>
-    				    <th>Title</th><th>Author</th><th>Tags</th><th></th>
+    				    <th>Title</th><th>Author</th><th>Tags</th><th>Embed</th><th></th>
                     </tr>
     			</thead>
     			<tbody id="data">				
@@ -47,6 +47,7 @@
                     if(!db || !db.hasOwnProperty("recordings") || !Array.isArray(db.recordings)) {
                         alert("Database is corrupted.");
                     } else {
+                        // read all the records from the DB and add them to the table
                         for(var i = 0; i < db.recordings.length; ++i) {
                             addRecordingRow(db.recordings[i]);
                         }                        
@@ -60,6 +61,10 @@
                 data.removeChild(data.firstChild);
             }
             
+            /**
+             * Turn a DB record into a row of the table.
+             * @param {Object}  rec     Recording record from the DB.
+             */
             function addRecordingRow(rec) {
                 var row = document.createElement("tr");
                 
@@ -82,20 +87,28 @@
                 }                
                 row.appendChild(td);
                 
+                //
+                // The EMBED HTML snippet
+                //
+                td = document.createElement("td");
+                var input = document.createElement("input");
+                input.type = "text";
+                input.value = '<iframe src="' + document.location.origin + '/play.html?source=' + decodeURIComponent(rec.src) + '" width="600" height="400"></iframe>';
+                td.appendChild(input);
+                row.appendChild(td);
+                
+                //
+                // Link - Play the screencast
+                //
                 td = document.createElement("td");
                 var a = document.createElement("a");
                 a.href = "play.html?source=" + decodeURIComponent(rec.src);
                 a.classList.add("btn");
-                a.textContent = "Play screencast - Canvas rendering";
+                a.textContent = "Play screencast";
                 td.appendChild(a);
                 row.appendChild(td);
                 
-		a = document.createElement("a");
-		a.href = "play.html?source=" + decodeURIComponent(rec.src) + "&method=svg";
-		a.textContent = "Play screencast - SVG rendering";
-		a.classList.add("btn");
-		td.appendChild(a);
-
+                
                 data.appendChild(row);
             }
         };

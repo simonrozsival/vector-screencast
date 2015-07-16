@@ -39,13 +39,8 @@
 \usepackage{float}
 \floatstyle{ruled} \newfloat{pseudocode}{thp}{lop} \floatname{pseudocode}{Pseudocode}
 \include{macros/htmlcssjs_syntax}
-
-%% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
-%% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
-%% POZOR, nezapomeňte vyplnit jméno práce a autora.
-\usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
-\hypersetup{pdftitle=Vector Screencast}
-\hypersetup{pdfauthor=Šimon Rozsíval}
+\usepackage{caption}
+\captionsetup[lstlisting]{position=bottom}
 
 %%% Drobné úpravy stylu
 
@@ -87,6 +82,34 @@
 \newcommand{\footnoterecall}[1]{
 \footnotemark[\value{#1}]
 }
+
+
+\usepackage[refpage]{nomencl}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\thenomenclature}%
+  {\chapter*{\nomname}}%
+  {\section*{\nomname}}%
+  {}{\message{^^Jthenomenclature patching failed (1)^^J}}
+\patchcmd{\thenomenclature}%
+  {\if@intoc\addcontentsline{toc}{chapter}{\nomname}\fi}%
+  {\if@intoc\addcontentsline{toc}{section}{\nomname}\fi}%
+  {}{\message{^^Jthenomenclature patching failed (2)^^J}}
+\makeatother
+\makenomenclature
+\renewcommand{\nomname}{} % empty name
+
+\usepackage{pdfpages}
+
+
+
+%% Balíček hyperref, kterým jdou vyrábět klikací odkazy v PDF,
+%% ale hlavně ho používáme k uložení metadat do PDF (včetně obsahu).
+%% POZOR, nezapomeňte vyplnit jméno práce a autora.
+\usepackage[ps2pdf,unicode]{hyperref}   % Musí být za všemi ostatními balíčky
+%\usepackage[unicode]{hyperref}   % Musí být za všemi ostatními balíčky
+\hypersetup{pdftitle=Vector Screencast}
+\hypersetup{pdfauthor=Šimon Rozsíval}
 
 
 \begin{document}
@@ -161,7 +184,11 @@ Prague 2015
 \openright
 
 \noindent
-Dedication.
+I would like to thank my supervisor, Martin Děcký, for his valuable pieces of advice, and Otakar Jícha from \textit{Khanova Škola}, for the idea of this project and for lending me a graphics tablet for testing.
+
+I would also like to thank my family and friends for supporting me during my studies.
+
+
 
 \newpage
 
@@ -276,16 +303,16 @@ screencast, vector, video, on-line
 %%% Seznam použité literatury
 \include{bibliography}
 
-%%% Tabulky v bakalářské práci, existují-li.
-\chapwithtoc{List of Tables}
-
 %%% Použité zkratky v bakalářské práci, existují-li, včetně jejich vysvětlení.
 \chapwithtoc{List of Abbreviations}
+\printnomenclature
+
+
 
 %%% Přílohy k bakalářské práci, existují-li (různé dodatky jako výpisy programů,
 %%% diagramy apod.). Každá příloha musí být alespoň jednou odkazována z vlastního
 %%% textu práce. Přílohy se číslují.
-\chapwithtoc{Attachments}
+%\chapwithtoc{Attachments}
 
 \openright
 \end{document}

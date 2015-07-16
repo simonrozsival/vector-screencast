@@ -66,8 +66,8 @@ module VectorScreencast.UI {
 		/**
 		 * Position the element
 		 */
-		private UpdateCursorPosition(state: Helpers.CursorState): void {			
-			this.cursor.MoveTo(state.X, state.Y); // @todo: correct the position
+		private UpdateCursorPosition(state: Helpers.CursorState): void {	
+			this.cursor.MoveTo(state.X, state.Y);
 		}
 		
 		/**

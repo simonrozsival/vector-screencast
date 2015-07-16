@@ -117,8 +117,6 @@ gulp.task("vector-screencast-release", function() {
 			.pipe(gulp.dest("./release/vector-screencast-lib"));
 });
 
-gulp.task("lib-release", ["vector-screencast-release"]);
-
 //
 // B) for the demo
 //
@@ -135,8 +133,6 @@ gulp.task("vector-screencast-demo", ["copy-source-for-sourcemaps"], function() {
 			.pipe(sourcemaps.write("./demo/public/js/libs"))
 			.pipe(gulp.dest("./demo/public/js/libs"));
 });
-
-gulp.task("lib-demo", ["vector-screencast-demo"]);
 
 
 /**
@@ -179,8 +175,8 @@ gulp.task("audio-server-demo", function(cb) {
  * Main tasks:
  */
 
-gulp.task("demo", ["clean-demo", "audio-server-demo", "lib-demo", "themes-demo", "workers-demo"]);
-gulp.task("release", ["clean-release", "audio-server", "lib-release", "themes"]);
+gulp.task("demo", ["clean-demo", "audio-server-demo", "vector-screencast-demo", "themes-demo", "workers-demo"]);
+gulp.task("release", ["clean-release", "audio-server", "vector-screencast-release", "themes", "workers"]);
 gulp.task("doc", function() {
 	return gulp.src("./src/VectorScreencast/**/*.ts")
 					.pipe(typedoc({

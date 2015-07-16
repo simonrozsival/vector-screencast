@@ -12,8 +12,9 @@ thesis.ps: thesis.dvi
 
 # LaTeX je potreba spustit dvakrat, aby spravne spocital odkazy
 thesis.dvi: thesis.tex $(wildcard *.tex)
-	cslatex $<
-	cslatex $<
+	latex $<
+	makeindex thesis.nlo -s nomencl.ist -o thesis.nls
+	latex $<
 
 clean:
-	rm -f *.{log,dvi,aux,toc,lof,out} thesis.ps thesis.pdf
+	rm -f *.{log,dvi,aux,toc,lof,out,nlo,ist,nls} thesis.ps thesis.pdf
