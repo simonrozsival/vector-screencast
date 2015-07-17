@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=latex 2015.1.20)  16 JUL 2015 14:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=latex 2015.1.20)  17 JUL 2015 18:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -922,11 +922,22 @@ Overfull \hbox (9.84315pt too wide) in paragraph at lines 17--18
 
  (./chapters/05_choice_of_technologies.tex
 Chapter 3.
+
+Overfull \hbox (3.0849pt too wide) in paragraph at lines 19--20
+\OT1/cmr/m/n/12 Java ap-plets are used for cre-at-ing in-ter-ac-tive ap-pli-ca-
+tions with-in web browsers [[]].
+ []
+
 [9
 
 
 
-] [10] [11]
+] [10]
+
+LaTeX Warning: Citation `anim_api_partial2' on page 11 undefined on input line 
+50.
+
+[11]
 \c@java-footnote=\count138
 \c@silverlight-note=\count139
  [12] [13] [14] [15]) [16]
@@ -976,7 +987,7 @@ File: ../img/draw-segment-quadrilateral.eps Graphic file (type eps)
 File: ../img/bezier_curves.eps Graphic file (type eps)
 
 <../img/bezier_curves.eps> [26] [27]
-Overfull \hbox (1.63788pt too wide) in paragraph at lines 232--233
+Overfull \hbox (1.63788pt too wide) in paragraph at lines 229--230
 \OT1/cmr/m/n/12 ing cu-bic B^^Sezier con-trol points $\OT1/cmr/bx/n/12 P[]\OML/
 cmtt/bx/n/12 ; \OT1/cmr/bx/n/12 P[]\OML/cmtt/bx/n/12 ; \OT1/cmr/bx/n/12 P[]\OML
 /cmtt/bx/n/12 ; \OT1/cmr/bx/n/12 P[]$\OT1/cmr/m/n/12 , from the points $\OT1/cm
@@ -986,7 +997,7 @@ mr/bx/n/12 X[]\OML/cmtt/bx/n/12 ; \OT1/cmr/bx/n/12 X[]$
 
 File: ../img/path_serialization.eps Graphic file (type eps)
 <../img/path_serialization.eps> [28] [29]
-Overfull \hbox (24.90504pt too wide) in paragraph at lines 294--295
+Overfull \hbox (24.90504pt too wide) in paragraph at lines 290--291
 []\OT1/cmr/m/n/12 UI ob-ject in-stance must map HTML elele-ments' events to the
  in-ter-nal []\OT1/cmtt/m/n/12 VideoEvents
  []
@@ -1024,318 +1035,375 @@ Overfull \hbox (52.96815pt too wide) in paragraph at lines 42--43
 creencast.Localization.PlayerLocalization
  []
 
+[34]
+Overfull \hbox (4.84453pt too wide) in paragraph at lines 62--62
+[]|[]\OT1/cmtt/m/n/12 sampleRate|  
+ []
 
-Overfull \hbox (37.47221pt too wide) in paragraph at lines 54--55
+
+Overfull \hbox (5.32085pt too wide) in paragraph at lines 57--66
+ [][] 
+ []
+
+
+Overfull \hbox (5.32085pt too wide) in paragraph at lines 78--85
+[][] 
+ []
+
+
+Overfull \hbox (5.32085pt too wide) in paragraph at lines 91--98
+ [][] 
+ []
+
+[35]
+Overfull \hbox (37.47221pt too wide) in paragraph at lines 115--116
 \OT1/cmr/m/n/12 mod-i-fy-ing val-ues of vari-ables in the []\OT1/cmtt/m/n/12 /s
 rc/Themes/default/variables/variables.less
  []
 
-[34]) [35]
+[36]) [37]
 \openout2 = `chapters/10_user_documentation.aux'.
 
  (./chapters/10_user_documentation.tex
 Chapter 7.
-
-Package caption Warning: \label without proper \caption on input line 10.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig:player' on page 36 undefined on input line 5.
-
 File: ../img/player_screenshot.eps Graphic file (type eps)
 <../img/player_screenshot.eps>
-Overfull \hbox (14.22638pt too wide) in paragraph at lines 9--11
+Overfull \hbox (14.22638pt too wide) in paragraph at lines 9--10
  [][] 
  []
 
-[36
+[38
 
 
 
 ]
-
-Package caption Warning: \label without proper \caption on input line 41.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig:recorder' on page 37 undefined on input line 36.
-
 File: ../img/recorder_screenshot.eps Graphic file (type eps)
-<../img/recorder_screenshot.eps>
-Overfull \hbox (14.22638pt too wide) in paragraph at lines 40--42
+ <../img/recorder_screenshot.eps>
+Overfull \hbox (14.22638pt too wide) in paragraph at lines 39--40
  [][] 
  []
 
-[37]) [38]
+[39]) [40]
 \openout2 = `epilog.aux'.
 
- (./epilog.tex [39
+ (./epilog.tex [41
 
 
 
-]) [40]
+]) [42]
 \openout2 = `bibliography.aux'.
 
  (./bibliography.tex
-Underfull \hbox (badness 2285) in paragraph at lines 11--13
-[]\OT1/cmr/m/n/12 Khanova []Skola, Khano-va ^^Tskola, o.s. viewed Ju-ly 16, 201
-5 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 26--27
+[]\OT1/cmr/m/n/12 Last Week Tonight with John Oliv-er: Stu-dent Debt (HBO).
  []
 
 
-Underfull \hbox (badness 3168) in paragraph at lines 28--29
-[]\OT1/cmr/m/n/12 John Oliv-er: Stu-dent Debt, HBO [on-line] 9/7/2015, avail-ab
-le at
+Underfull \hbox (badness 10000) in paragraph at lines 26--27
+\OT1/cmr/m/it/12 YouTube \OT1/cmr/m/n/12 [on-line]. 7.9.2014, [cit. 2015-07-09]
+. Avail-able from:
  []
 
 
-Underfull \hbox (badness 2961) in paragraph at lines 30--31
-[]\OT1/cmr/m/n/12 Bill Gates: On-line, All Stu-dents Sit in the Front Row [on-l
-ine],
+Underfull \hbox (badness 3118) in paragraph at lines 28--29
+[]\OT1/cmr/m/n/12 Online, All Stu-dents Sit in the Front Row. GATES, Bill. \OT1
+/cmr/m/it/12 gates-
  []
 
 
-Underfull \hbox (badness 4660) in paragraph at lines 30--31
-\OT1/cmr/m/n/12 post-ed on Novem-ber 18, 2014, seen on 3/12/2015, avail-able at
-
+Underfull \hbox (badness 1371) in paragraph at lines 28--29
+\OT1/cmr/m/it/12 notes \OT1/cmr/m/n/12 [on-line]. Novem-ber 18, 2014, [cit. 201
+5-12-03]. Avail-able from:
  []
 
 
-Overfull \hbox (3.6335pt too wide) in paragraph at lines 56--57
-[]\OT1/cmr/m/n/12 Numberphile Youtube chan-nel, https://www.youtube.com/user/nu
-mberphile 
+Underfull \hbox (badness 1117) in paragraph at lines 30--31
+\OT1/cmr/m/n/12 from: http://www.technologyreview.com/news/512256/in-the-develo
+ping-
  []
 
 
-Overfull \hbox (21.25415pt too wide) in paragraph at lines 60--61
-[]\OT1/cmr/m/n/12 Khan Acade-my Youtube chan-nel, https://www.youtube.com/user/
-khanacademy 
+Underfull \hbox (badness 4967) in paragraph at lines 33--34
+[]\OT1/cmr/m/it/12 Kepler ki-gali \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © 
+\OT1/cmr/m/n/12 2015, [cit. 2015-07-16]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 73--75
-[]\OT1/cmr/m/n/12 Khan Acade-my, viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 36--37
+[]\OT1/cmr/m/it/12 Generation Rwan-da \OT1/cmr/m/n/12 [on-line]. [cit. 2015-07-
+16]. Avail-able from:
  []
 
-[41
+
+Underfull \hbox (badness 10000) in paragraph at lines 46--47
+[]\OT1/cmr/m/it/12 Coursera \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \OT1/c
+mr/m/n/12 2015, [cit. 2015-03-03]. Avail-able from:
+ []
+
+
+Underfull \hbox (badness 6125) in paragraph at lines 48--49
+[]\OT1/cmr/m/it/12 YouTube.com \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \OT
+1/cmr/m/n/12 2015, [cit. 2015-07-16]. Avail-able from:
+ []
+
+
+Underfull \hbox (badness 6927) in paragraph at lines 61--62
+[]\OT1/cmr/m/it/12 Educreations \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \O
+T1/cmr/m/n/12 2015, [cit. 2015-07-15]. Avail-able from:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 64--65
+[]\OT1/cmr/m/it/12 ShowMe \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \OT1/cmr
+/m/n/12 2015, [cit. 2015-07-15]. Avail-able from:
+ []
+
+[43
 
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 104--106
-[]\OT1/cmr/m/n/12 Adobe Blog, An Up-date on Flash Play-er and An-droid,
+Underfull \hbox (badness 2452) in paragraph at lines 68--69
+[]\OT1/cmr/m/it/12 Khan Acade-my \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \
+OT1/cmr/m/n/12 2015, [cit. 2015-07-08]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--106
-\OT1/cmr/m/n/12 pub-lished June 28, 2012, viewed April 16, 2015 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 71--72
+[]\OT1/cmr/m/it/12 Khanova ^^Tskola \OT1/cmr/m/n/12 [on-line]. [cit. 2015-07-16
+]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--106
-\OT1/cmr/m/n/12 http://blogs.adobe.com/flashplayer/2012/06/flash-player-and-and
-roid-
+Underfull \hbox (badness 10000) in paragraph at lines 81--82
+[]\OT1/cmr/m/n/12 Java ap-plet. \OT1/cmr/m/it/12 Wikipedia, the free en-cy-clo-
+pe-dia \OT1/cmr/m/n/12 [on-line]. Last
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 108--110
-[]\OT1/cmr/m/n/12 SWF and AMF Tech-nol-o-gy Cen-ter, Adobe.com, SWF and
+Underfull \hbox (badness 10000) in paragraph at lines 81--82
+\OT1/cmr/m/n/12 mod-i-fied on 4 Ju-ly 2015, [cit. 2015-07-08]. Avail-able from:
+
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 108--110
-\OT1/cmr/m/n/12 AMF Tech-nol-o-gy Cen-ter, viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
+[]\OT1/cmr/m/n/12 Adobe Flash Play-er/Fea-tures. \OT1/cmr/m/it/12 Adobe.com \OT
+1/cmr/m/n/12 [on-
  []
 
 
-Underfull \hbox (badness 4341) in paragraph at lines 112--114
-[]\OT1/cmr/m/n/12 Bosomworth Danyl, SmartIn-sights.com, Mo-bile Mar-ket-ing Sta
-tis-tics
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
+\OT1/cmr/m/n/12 line]. \TS1/cmr/m/n/12 © \OT1/cmr/m/n/12 2015, [cit. 2015-07-08
+]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 2529) in paragraph at lines 112--114
-\OT1/cmr/m/n/12 2015, pub-lished Jan-uary 15, 2015, viewed April 16, 2015 [on-l
-ine]
+Underfull \hbox (badness 1024) in paragraph at lines 99--100
+[]\OT1/cmr/m/n/12 Mobile Mar-ket-ing Statis-tics 2015. BO-SOM-WORTH Danyl. \OT1
+/cmr/m/it/12 Smart In-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 112--114
+Underfull \hbox (badness 2452) in paragraph at lines 99--100
+\OT1/cmr/m/it/12 sights \OT1/cmr/m/n/12 [on-line]. Jan-uary 15, 2015, [cit. 201
+5-04-16]. Avail-able from:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 \OT1/cmr/m/n/12 http://www.smartinsights.com/mobile-marketing/mobile-marketing-
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--125
-[]\OT1/cmr/m/n/12 http://blogs.windows.com/msedgedev/2015/05/13/announcing-medi
-a-
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
+[]\OT1/cmr/m/n/12 Moving to HTML5 Pre-mi-um Me-dia. \OT1/cmr/m/it/12 Mi-crosoft
+ Edge Dev
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 127--129
-\OT1/cmr/m/n/12 Ax-el Rauschmay-er, dzone.com, viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
+\OT1/cmr/m/it/12 Blog \OT1/cmr/m/n/12 [on-line]. Ju-ly 2, 2015, [cit. 2015-07-0
+8]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 2941) in paragraph at lines 131--133
-[]\OT1/cmr/m/n/12 Scalable Vec-tor Graph-ics (SVG) 1.1 (Sec-ond Edi-tion), The 
-World
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
+\OT1/cmr/m/n/12 http://blogs.windows.com/msedgedev/2015/07/02/moving-to-html5-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 131--133
-\OT1/cmr/m/n/12 Wide Web Con-sor-tium (W3C), viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 1043) in paragraph at lines 108--109
+[]\OT1/cmr/m/n/12 Announcing me-dia cap-ture func-tion-al-i-ty in Mi-crosoft Ed
+ge. \OT1/cmr/m/it/12 Mi-crosoft
  []
 
 
-Overfull \hbox (33.5918pt too wide) in paragraph at lines 153--154
-[]\OT1/cmr/m/n/12 https://developer.mozilla.org/en-US/docs/Web/HTML/Supported[]
-media[]formats 
+Underfull \hbox (badness 5288) in paragraph at lines 108--109
+\OT1/cmr/m/it/12 Edge Dev Blog \OT1/cmr/m/n/12 [on-line]. May 13, 2015, [cit. 2
+015-07-16]. Avail-
  []
 
-[42]
-Underfull \hbox (badness 1975) in paragraph at lines 160--162
-[]\OT1/cmr/m/n/12 Document Ob-ject Mod-el (DOM) Lev-el 2 Events Spec-i-fi-ca-ti
-on, The
- []
-
-
-Underfull \hbox (badness 1688) in paragraph at lines 160--162
-\OT1/cmr/m/n/12 World Wide Web Con-sor-tium (W3C), viewed Ju-ly 8, 2015 [on-lin
-e]
+[44]
+Underfull \hbox (badness 10000) in paragraph at lines 117--118
+[]\OT1/cmr/m/n/12 Web Plat-form Fea-tures: Dep-re-cate SMIL. \OT1/cmr/m/it/12 C
+hromi-
  []
 
 
-Underfull \hbox (badness 6125) in paragraph at lines 177--179
-[]\OT1/cmr/m/n/12 Inheritance and the pro-to-type chain, Mozil-la De-vel-op-er 
-Net-work
+Underfull \hbox (badness 10000) in paragraph at lines 117--118
+\OT1/cmr/m/it/12 um Dash-board \OT1/cmr/m/n/12 [on-line]. [cit. 2015-07-16]. Av
+ail-able from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 181--183
-[]\OT1/cmr/m/n/12 Memory Man-age-ment, Mozil-la De-vel-op-er Net-
+Underfull \hbox (badness 1742) in paragraph at lines 132--133
+[]\OT1/cmr/m/n/12 Media for-mats sup-port-ed by the HTML au-dio and video el-e-
+ments.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 181--183
-\OT1/cmr/m/n/12 work (MDN), viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 3646) in paragraph at lines 135--136
+[]\OT1/cmr/m/n/12 Document Ob-ject Mod-el. \OT1/cmr/m/it/12 Wikipedia, the free
+ en-cy-clo-pe-dia \OT1/cmr/m/n/12 [on-line].
  []
 
 
-Overfull \hbox (12.06758pt too wide) in paragraph at lines 181--183
+Underfull \hbox (badness 2913) in paragraph at lines 135--136
+\OT1/cmr/m/n/12 Last mod-i-fied on 12 June 2015, [cit. 2015-07-08]. Avail-able 
+from:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+[]\OT1/cmr/m/n/12 Inheritance and the pro-to-type chain. \OT1/cmr/m/it/12 Mozil
+-la De-vel-op-er Net-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+\OT1/cmr/m/it/12 work (MDN) \OT1/cmr/m/n/12 [on-line]. Last up-dat-ed on April 
+2, 2015, [cit.
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+\OT1/cmr/m/n/12 2015-07-08]. Avail-able from: https://developer.mozilla.org/en-
+
+ []
+
+
+Underfull \hbox (badness 6063) in paragraph at lines 156--157
+[]\OT1/cmr/m/n/12 Memory Man-age-ment. \OT1/cmr/m/it/12 Mozil-la De-vel-op-er N
+et-work (MDN) \OT1/cmr/m/n/12 [on-line].
+ []
+
+
+Underfull \hbox (badness 5667) in paragraph at lines 156--157
+\OT1/cmr/m/n/12 Last up-dat-ed on 11. 4. 2015, [cit. 2015-07-08]. Avail-able fr
+om:
+ []
+
+
+Overfull \hbox (12.06758pt too wide) in paragraph at lines 156--157
 \OT1/cmr/m/n/12 https://developer.mozilla.org/cs/docs/Web/JavaScript/Memory[]Ma
 nagement 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 190--192
-[]\OT1/cmr/m/n/12 Coupling (com-put-er pro-gram-ming), Wikipedia, the
+Underfull \hbox (badness 2582) in paragraph at lines 159--160
+[]\OT1/cmr/m/it/12 TypeScript \OT1/cmr/m/n/12 [on-line]. \TS1/cmr/m/n/12 © \OT1
+/cmr/m/n/12 2012-2015, [cit. 2015-07-08]. Avail-able from:
+ []
+
+[45]
+Underfull \hbox (badness 5741) in paragraph at lines 176--177
+\OT1/cmr/m/it/12 CAOb-scu-ra \OT1/cmr/m/n/12 [on-line]. June 1989, [cit. 2015-0
+7-08]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 190--192
-\OT1/cmr/m/n/12 free en-cy-clo-pe-dia, viewed Ju-ly 14, 2015 [on-line]
+Underfull \hbox (badness 10000) in paragraph at lines 179--180
+[]\OT1/cmr/m/n/12 Inkscape [on-line]. [cit. 2015-07-16]. Avail-able from:
  []
 
 
-Underfull \hbox (badness 2990) in paragraph at lines 194--196
-[]\OT1/cmr/m/n/12 HTML Liv-ing Stan-dard, The Web Hy-per-text Ap-pli-ca-tion Te
-ch-nol-
+Overfull \hbox (112.52403pt too wide) in paragraph at lines 179--180
+\OT1/cmr/m/n/12 http://bazaar.launchpad.net/ inkscape.dev/inkscape/trunk/view/h
+ead:/src/ui/tools/calligraphic-
  []
 
 
-Underfull \hbox (badness 6792) in paragraph at lines 194--196
-\OT1/cmr/m/n/12 o-gy Work-ing Group (WHATWG), viewed Ju-ly 8, 2015 [on-line]
+Underfull \hbox (badness 5817) in paragraph at lines 201--202
+[]\OT1/cmr/m/n/12 Media Cap-ture and Streams. \OT1/cmr/m/it/12 The World Wide W
+eb Con-sor-tium
  []
 
 
-Underfull \hbox (badness 3364) in paragraph at lines 207--209
-[]\OT1/cmr/m/n/12 Dynadraw al-go-rithm, Paul Hae-ber-li, viewed Ju-ly 8, 2015 [
-on-line]
+Underfull \hbox (badness 5064) in paragraph at lines 201--202
+\OT1/cmr/m/it/12 (W3C) \OT1/cmr/m/n/12 [on-line]. 14 April 2015, [cit. 2015-07-
+09]. Avail-able from:
  []
 
 
-Overfull \hbox (112.52403pt too wide) in paragraph at lines 211--212
-[]\OT1/cmr/m/n/12 http://bazaar.launchpad.net/ inkscape.dev/inkscape/trunk/view
-/head:/src/ui/tools/calligraphic-
+Underfull \hbox (badness 10000) in paragraph at lines 201--202
+\OT1/cmr/m/n/12 http://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 214--216
-[]\OT1/cmr/m/n/12 EVA an-i-mater plaza, SHARP, viewed Ju-ly 8, 2015 [on-line]
- []
-
-[43]
-Underfull \hbox (badness 1946) in paragraph at lines 234--236
-[]\OT1/cmr/m/n/12 ECMAScript Pro-gram-ming Lan-guage, viewed Ju-ly 15, 2015 [on
--line]
+Underfull \hbox (badness 10000) in paragraph at lines 204--205
+[]\OT1/cmr/m/n/12 Web Au-dio API. \OT1/cmr/m/it/12 The World Wide Web Con-sor-t
+ium (W3C)
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 242--244
-[]\OT1/cmr/m/n/12 The Script-Pro-ces-sorN-ode In-ter-face, Web Au-dio API, W3C
+Underfull \hbox (badness 10000) in paragraph at lines 204--205
+\OT1/cmr/m/n/12 [on-line]. 10 Oc-to-ber 2013, [cit. 2015-07-09]. Avail-able fro
+m:
+ []
+
+[46]
+Underfull \hbox (badness 10000) in paragraph at lines 213--214
+[]\OT1/cmr/m/n/12 Web Au-dio API. \OT1/cmr/m/it/12 The World Wide Web Con-sor-t
+ium (W3C)
  []
 
 
-Underfull \hbox (badness 6741) in paragraph at lines 242--244
-\OT1/cmr/m/n/12 Work-ing Draft 10 Oc-to-ber 2013, viewed Ju-ly 9, 2015 [on-line
-]
+Underfull \hbox (badness 10000) in paragraph at lines 213--214
+\OT1/cmr/m/n/12 [on-line]. 10 Oc-to-ber 2013, [cit. 2015-07-09]. Avail-able fro
+m:
  []
 
 
-Underfull \hbox (badness 6526) in paragraph at lines 246--248
-\OT1/cmr/m/n/12 W3C Ed-i-tor's Draft 21 June 2015, viewed Ju-ly 9, 2015 [on-
+Underfull \hbox (badness 10000) in paragraph at lines 216--217
+[]\OT1/cmr/m/n/12 Pulse-code mod-u-la-tion. \OT1/cmr/m/it/12 Wikipedia, the fre
+e en-cy-clo-pe-dia \OT1/cmr/m/n/12 [on-line].
  []
 
 
-Underfull \hbox (badness 4429) in paragraph at lines 246--248
-\OT1/cmr/m/n/12 line] https://webaudio.github.io/web-audio-api/#the-scriptproce
-ssornode-
+Underfull \hbox (badness 4391) in paragraph at lines 216--217
+\OT1/cmr/m/n/12 Last mod-i-fied on 5 Ju-ly 2015, [cit. 2015-07-09]. Avail-able 
+from:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 254--256
-[]\OT1/cmr/m/n/12 The Au-dioBuffer In-ter-face, Web Au-dio API, W3C Work-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 254--256
-\OT1/cmr/m/n/12 ing Draft 10 Oc-to-ber 2013, viewed Ju-ly 9, 2015 [on-line]
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 266--268
-[]\OT1/cmr/m/n/12 The Web-Sock-et API, W3C Can-di-date Rec-om-men-da-tion 20
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 266--268
-\OT1/cmr/m/n/12 Septem-ber 2012, viewed Ju-ly 9, 2015 [on-line] http://www-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 270--272
+Underfull \hbox (badness 10000) in paragraph at lines 226--228
 []\OT1/cmr/m/n/12 An in-tro-duc-tion to splines for use in com-put-er graph-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 270--272
+Underfull \hbox (badness 10000) in paragraph at lines 226--228
 \OT1/cmr/m/n/12 ics and ge-o-met-ric mod-el-ing, Bar-tels, Richard H, p. 160
  []
 
 
-Underfull \hbox (badness 3701) in paragraph at lines 274--276
-[]\OT1/cmr/m/n/12 Spline Curves, Dr. Don-ald House, viewed 15 Ju-ly, 2015 [on-l
-ine]
+Underfull \hbox (badness 2073) in paragraph at lines 233--234
+[]\OT1/cmr/m/sc/12 Millington \OT1/cmr/m/n/12 Ian: Ma-tri-ces and Con-ver-sions
+ for Uni-form Para-met-
  []
 
-
-Underfull \hbox (badness 1478) in paragraph at lines 282--284
-[]\OT1/cmr/m/sc/12 Schuh \OT1/cmr/m/n/12 Justin: The Fi-nal Count-down for NPA-
-PI, Chromi-um Blog,
- []
-
-[44]) [45] (./thesis.nls) [46
+) [47] (./thesis.nls) [48
 
 
 ]
@@ -1349,7 +1417,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 318.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 318.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 318.
 Package rerunfilecheck Info: File `thesis.out' has not changed.
-(rerunfilecheck)             Checksum: E2561AC7639B9003DDCE24BB885A605D;9122.
+(rerunfilecheck)             Checksum: 52FF990F3A7C854412E5D32CF3337B90;9343.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
@@ -1362,12 +1430,12 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 14547 strings out of 493118
- 205611 string characters out of 6135459
- 317986 words of memory out of 5000000
- 17758 multiletter control sequences out of 15000+600000
+ 14553 strings out of 493118
+ 205704 string characters out of 6135459
+ 318502 words of memory out of 5000000
+ 17764 multiletter control sequences out of 15000+600000
  15359 words of font info for 55 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  37i,19n,60p,143767b,1453s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on thesis.dvi (50 pages, 290196 bytes).
+Output written on thesis.dvi (52 pages, 304020 bytes).

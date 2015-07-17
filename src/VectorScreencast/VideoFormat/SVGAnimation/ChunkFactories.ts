@@ -359,7 +359,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			var d: string = SVG.attr(node, "d");
 			node = null; // I don't need this reference any more
 			
-			var c: Array<string> = d.split(" ");
+			var c: Array<string> = d.split(" ").filter((val: string) => val.length > 0); // remove empty entries
 			var instructions: Array<Instruction> = [];			
 			
 			// create list of instructions
@@ -373,7 +373,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			// first segment - zero length segment
 			var l = instructions.length - 1;
 			if (instructions.length >= 2 && instructions[0].type === InstructionType.Move && instructions[l].type === InstructionType.Arc) {
-				path.Segments.push(new Drawing.ZeroLengthSegment(instructions[l].coords[2], instructions[0].coords[0]));
+				path.Segments.push(new Drawing.ZeroLengthSegment(instructions[l-1].coords[0], instructions[0].coords[0]));
 				instructions.pop(); // arc
 				instructions.pop(); // line
 				instructions.shift();
@@ -395,7 +395,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			
 			// left and right parts are at the same distance from the ends of the path
 			l = instructions.length - 1;
-			var prevSegment: Drawing.Segment = null;
+			var prevSegment: Drawing.Segment = path.Segments[0];
 
 			for (var i = 0; i < Math.floor(instructions.length / 2); i++) { // the item in the very middle is an Arc cap, I want to skip that instruction
 				if (instructions[i].type === InstructionType.Line) {
@@ -446,12 +446,15 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			var endDirection = seg.Right.clone().subtract(center);
 			var arc = SVG.ArcString(seg.Right, center.distanceTo(seg.Right), Drawing.Path.angle(startDirection));
 
-			var right: string = `${SVG.MoveToString(segments[0].Right) } `; // SPACE divider
-			var left: string = `${SVG.LineToString(segments[0].Left) } ${arc}`;
+			var right: string = ``; // start with an empty right part
+			var left: string = ` ${arc}`; // end the path with an arc
 
 			for (var i = 0; i < segments.length; i++) {
 				var seg = segments[i];
-				if (seg instanceof Drawing.CurvedSegment) {
+				if(seg instanceof Drawing.ZeroLengthSegment) {
+					right += `${SVG.MoveToString(seg.Right) } `; // SPACE divider
+					left = `${SVG.MoveToString(seg.Left) } ${left}`; // SPACE divider
+				} else if (seg instanceof Drawing.CurvedSegment) {
 					right += `${SVG.CurveToString(seg.RightBezier.StartCP, seg.RightBezier.EndCP, seg.RightBezier.End) } `; // SPACE divider
 					left = `${SVG.CurveToString(seg.LeftBezier.EndCP, seg.LeftBezier.StartCP, seg.LeftBezier.Start) } ${left}`; // SPACE divider
 				} else if (seg instanceof Drawing.QuadrilateralSegment) {

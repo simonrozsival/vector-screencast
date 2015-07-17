@@ -127,6 +127,11 @@ module VectorScreencast.Drawing {
 		 * @param	{Vector2}	left	"Left"	point of the segment.
 		 */
 		public ExtendPath(right: Vector2, left: Vector2): void {
+			var last = this.pathPoints[this.pathPoints.length - 1];
+			if(last.Left.isEqualTo(left) && last.Right.isEqualTo(right)) {
+				return; // the very same coordinates as the last time
+			}
+			
 			// draw the segment
 			var segment: Segment = this.CalculateSegment(right, left);
 			this.DrawSegment(segment);

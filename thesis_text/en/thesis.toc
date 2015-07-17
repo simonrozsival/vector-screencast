@@ -87,29 +87,34 @@
 \contentsline {section}{\numberline {6.1}Obtaining the Vector Screencast library}{33}{section.6.1}
 \contentsline {section}{\numberline {6.2}Vector Screencast Player}{34}{section.6.2}
 \contentsline {section}{\numberline {6.3}Vector Screencast Recorder}{34}{section.6.3}
-\contentsline {paragraph}{Audio recording server process}{34}{section*.56}
-\contentsline {section}{\numberline {6.4}Embedding Vector Screencast Player}{34}{section.6.4}
-\contentsline {section}{\numberline {6.5}Custom theme}{34}{section.6.5}
-\contentsline {section}{\numberline {6.6}Demo project}{35}{section.6.6}
-\contentsline {paragraph}{Online demo}{35}{section*.57}
-\contentsline {chapter}{\numberline {7}Users' documentation}{36}{chapter.7}
-\contentsline {section}{\numberline {7.1}Vector Screencast Player}{36}{section.7.1}
-\contentsline {paragraph}{Play/Pause/Replay}{36}{section*.59}
-\contentsline {paragraph}{Skipping parts of the screencast}{36}{section*.60}
-\contentsline {paragraph}{Control bar hiding}{36}{section*.61}
-\contentsline {paragraph}{Audio controls}{37}{section*.62}
-\contentsline {section}{\numberline {7.2}Vector Screencast Recorder}{37}{section.7.2}
-\contentsline {paragraph}{Microphone access and audio recording}{37}{section*.64}
-\contentsline {paragraph}{Drawing}{37}{section*.65}
-\contentsline {paragraph}{Erasing}{38}{section*.66}
-\contentsline {paragraph}{Saving the recording}{38}{section*.67}
-\contentsline {chapter}{Conclusion}{39}{chapter*.68}
-\contentsline {paragraph}{File format}{39}{section*.69}
-\contentsline {subparagraph}{File size}{39}{section*.70}
-\contentsline {section}{\numberline {7.3}Future work}{39}{section.7.3}
-\contentsline {paragraph}{Binary file format}{39}{section*.71}
-\contentsline {paragraph}{Library for native mobile applications}{40}{section*.72}
-\contentsline {paragraph}{Audio recording}{40}{section*.74}
-\contentsline {paragraph}{Demo audio server}{40}{section*.75}
-\contentsline {chapter}{Bibliography}{41}{chapter*.76}
-\contentsline {chapter}{List of Abbreviations}{46}{chapter*.77}
+\contentsline {subsection}{\numberline {6.3.1}Audio recording server process}{34}{subsection.6.3.1}
+\contentsline {paragraph}{New recording esabelishing}{34}{section*.56}
+\contentsline {paragraph}{Binary audio data}{35}{section*.58}
+\contentsline {paragraph}{End of recording}{35}{section*.59}
+\contentsline {paragraph}{Lost connections}{36}{section*.62}
+\contentsline {paragraph}{Example}{36}{section*.63}
+\contentsline {section}{\numberline {6.4}Embedding Vector Screencast Player}{36}{section.6.4}
+\contentsline {section}{\numberline {6.5}Custom theme}{36}{section.6.5}
+\contentsline {section}{\numberline {6.6}Demo project}{36}{section.6.6}
+\contentsline {paragraph}{Online demo}{37}{section*.64}
+\contentsline {chapter}{\numberline {7}Users' documentation}{38}{chapter.7}
+\contentsline {section}{\numberline {7.1}Vector Screencast Player}{38}{section.7.1}
+\contentsline {paragraph}{Play/Pause/Replay}{38}{section*.66}
+\contentsline {paragraph}{Skipping parts of the screencast}{38}{section*.67}
+\contentsline {paragraph}{Control bar hiding}{38}{section*.68}
+\contentsline {paragraph}{Audio controls}{39}{section*.69}
+\contentsline {section}{\numberline {7.2}Vector Screencast Recorder}{39}{section.7.2}
+\contentsline {paragraph}{Microphone access and audio recording}{39}{section*.71}
+\contentsline {paragraph}{Drawing}{39}{section*.72}
+\contentsline {paragraph}{Erasing}{40}{section*.73}
+\contentsline {paragraph}{Saving the recording}{40}{section*.74}
+\contentsline {chapter}{Conclusion}{41}{chapter*.75}
+\contentsline {paragraph}{File format}{41}{section*.76}
+\contentsline {subparagraph}{File size}{41}{section*.77}
+\contentsline {section}{\numberline {7.3}Future work}{41}{section.7.3}
+\contentsline {paragraph}{Binary file format}{41}{section*.78}
+\contentsline {paragraph}{Library for native mobile applications}{42}{section*.79}
+\contentsline {paragraph}{Audio recording}{42}{section*.81}
+\contentsline {paragraph}{Demo audio server}{42}{section*.82}
+\contentsline {chapter}{Bibliography}{43}{chapter*.83}
+\contentsline {chapter}{List of Abbreviations}{48}{chapter*.84}

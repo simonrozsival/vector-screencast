@@ -73,34 +73,30 @@ module AudioRecording {
                 // generate random unique file
                 var name: string = this.GetTempFileName(this.cfg.outputDir, ".wav");   
                 var recordingEndedProperly: boolean = false;
-                var receivedBinaryMessages: number = 0;
         
-                socket.on("message", (message, flags) => {                
-                    if(!flags.binary) {
-                        var msg: any = JSON.parse(message);
-                        if (!!msg && msg.type === "start") {
-                            console.log("START message received.");
-                            fileWriter = this.InitRecording(name, msg);                        
-                        } else if (!!msg && msg.type === "end") {
-                            console.log("Finished receiving binary messages. Total of messages: ", receivedBinaryMessages);
-                            console.log("END message received.");
-                            recordingEndedProperly = true;
-                            this.FinishRecording(this.cfg.hostName, name, fileWriter, socket, this.cfg.deleteWav);
+                socket.on("message", (message, flags) => {    
+                    if(recordingEndedProperly === false) {
+                        if(!flags.binary) {
+                            var msg: any = JSON.parse(message);
+                            if (!!msg && msg.type === "start") {
+                                fileWriter = this.InitRecording(name, msg);                        
+                            } else if (!!msg && msg.type === "end") {
+                                recordingEndedProperly = true;
+                                this.FinishRecording(this.cfg.hostName, name, fileWriter, socket, this.cfg.deleteWav);
+                            } else {
+                                // error - unsupported message
+                                console.log(colors.red("Unsupported message"), message);
+                            }                        
                         } else {
-                            // error - unsupported message
-                            console.log(colors.red("Unsupported message"), message);                        
-                            socket.close();
+                            if(!!fileWriter) {
+                                fileWriter.file.write(message);
+                            } else {
+                                // error - not initialised properly
+                                console.log(colors.red("Binary data can't be accepted - initialisation wasn't done properly."));
+                                socket.close();
+                            }
                         }                        
-                    } else {
-                        if(!!fileWriter) {
-                            receivedBinaryMessages++;
-                            fileWriter.file.write(message);
-                        } else {
-                            // error - not initialised properly
-                            console.log(colors.red("Binary data can't be accepted - initialisation wasn't done properly."));
-                            socket.close();
-                        }
-                    }
+                    }                                
                 }); 
         
                 // stream was closed

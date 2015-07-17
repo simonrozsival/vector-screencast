@@ -218,6 +218,7 @@ module VectorScreencast {
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
 			if (wacomApi !== null) { // Wacom plugin is prefered
 				var tablet = new WacomTablet(container, this.timer, wacomApi);
+				tablet.InitControlsAvoiding();
 				console.log("Wacom WebPAPI is used");
 			} else if (window.hasOwnProperty("PointerEvent")) { // pointer events implement pressure-sensitivity
 				var pointer = new PointerEventsAPI(container, this.timer);

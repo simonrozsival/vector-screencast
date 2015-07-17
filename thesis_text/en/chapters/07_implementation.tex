@@ -2,7 +2,7 @@
 This chapter covers the interesting parts of the implementation of the Vector Screencast project. The following text summarizes the ideas behind the concepts used in the project and problems, that had to be overcome.
 
 \section{ECMAScript and JavaScript}
-ECMAScript is a standardized scripting language widely used in website development \cite{ecmascript}. Latest approved edition of ECMAScript is \textit{ECMAScript 5.1}, which is implemented in most major web browsers. Implementations of ECMAScript in web browsers are commonly called JavaScript. 
+ECMAScript is a standardized scripting language widely used in website development~\cite{ecmascript}. Latest approved edition of ECMAScript is \textit{ECMAScript 5.1}, which is implemented in most major web browsers. Implementations of ECMAScript in web browsers are commonly called JavaScript. 
 
 JavaScript is a dynamic programming language, which combines multiple aspects of imperative, functional, and object-oriented programming.
 
@@ -10,9 +10,9 @@ Functions are so called first-class citizens. This means they can be stored in v
 
 JavaScript doesn't provide any means of static type checking. All types are created during runtime and they are also checked only during runtime. The lack of static type checking during compilation might lead to rarely occurring errors and it is important to take this in mind while writing JavaScript code. A good practice is to write documentation comments\footnote{Commonly used syntax in JavaScript projects is JSDoc (http://usejsdoc.org/)}, where the types are stated.
 
-JavaScript is an interpreted language, some implementations also use a \nomenclature{JIT}{Just-In-Time compilation} \textit{Just-In-Time} (JIT) compilation \footnote{For example Google V8 engine used in Google Chrome. See https://code.google.com/p/v8/} for better performance.  Another very important aspect of ECMAScript which affects its performance is the absence of direct control over memory usage -- memory is released when it is not needed any more. This mechanism is called \textit{Garbage collection}. As of 2012, all modern browsers use mark-and-sweep garbage-collector \cite{mdn_memory_management}.
+JavaScript is an interpreted language, some implementations also use a \nomenclature{JIT}{Just-In-Time compilation} \textit{Just-In-Time} (JIT) compilation \footnote{For example Google V8 engine used in Google Chrome. See https://code.google.com/p/v8/} for better performance.  Another very important aspect of ECMAScript which affects its performance is the absence of direct control over memory usage -- memory is released when it is not needed any more. This mechanism is called \textit{Garbage collection}. As of 2012, all modern browsers use mark-and-sweep garbage-collector~\cite{mdn_memory_management}.
 
-\textit{Object oriented programming} (OOP)\nomenclature{OOP}{Object oriented programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, OOP is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. A prototype chain is created this way. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in its own properties. If it is not found, then it is searched in its prototype's properties and so on until the end of the prototype chain is reached \cite{mdn_prototype_chain}.
+\textit{Object oriented programming} (OOP)\nomenclature{OOP}{Object oriented programming} in JavaScript differs from class-oriented OOP in the way inheritance is implemented. While in class-oriented languages, for example in C++ or C\#, inheritance is achieved by declaring classes of objects. In JavaScript, OOP is implemented through object prototypes. Prototype is just a link to another object, which has another prototype. A prototype chain is created this way. The last object in this chain has a \verb|null| prototype. When trying to access a property of an object, it is searched in its own properties. If it is not found, then it is searched in its prototype's properties and so on until the end of the prototype chain is reached~\cite{mdn_prototype_chain}.
 
 \subsection{TypeScript}
 \textit{TypeScript} is a typed superset of JavaScript that compiles to plain JavaScript\cite{typescript}. It is an open-source project developed by Microsoft. It is, as its name suggests, a strongly typed programming language compatible with JavaScript.
@@ -24,7 +24,7 @@ TypeScript uses several features of ECMAScript 6, but it is transpiled into ECMA
 
 
 \section{Event driven programming}
-The idea behind event driven programming is to break direct references between objects and to communicate with \textit{events} instead of calling object methods directly. The advantage of the this approach is the so called \textit{loose coupling} \cite{loose_coupling} -- features might be added or removed without breaking the core of the application.
+The idea behind event driven programming is to break direct references between objects and to communicate with \textit{events} instead of calling object methods directly. The advantage of the this approach is the so called \textit{loose coupling}~\cite{loose_coupling} -- features might be added or removed without breaking the core of the application.
 
 Each object handles only its own task without knowing anything about the other objects it is collaborating with. When an object completes its task, it publishes the result with a specific event. Objects subscribed for this event are notified and are given the outcomes of the previous task.
 
@@ -52,13 +52,13 @@ The list of all event types can be found in the enclosed API documentation of th
 
 \section{HTML5}
 
-HTML5 is a term used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed to describe semantics of structured docu ents \cite{html5}. HTML5 extends the semantics of HTML 4.1 with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, which allow web developers to create much richer websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
+HTML5 is a term used to refer to modern web technologies. The core is the \textit{HyperText Markup Language}, designed to describe semantics of structured docu ents~\cite{html5}. HTML5 extends the semantics of HTML 4.1 with new HTML tags such as \verb|<header>| or \verb|<footer>|, but also defines a huge set of new APIs, which allow web developers to create much richer websites and web applications. Some of these new technologies are needed by the Vector Screencasts project.
 
 \paragraph{Working with XML documents}
-Working with XML data is very similar to working with regular website DOM in JavaScript. \verb|Document| interface is used for traversing the XML tree, modifying it or for creating a new one. In HTML5, XML files can be opened using a HTTP GET request via \verb|XMLHttpRequest|\nomenclature{XHR}{XMLHttpRequest} object, which parses the data and returns a \verb|Document| instance in its \verb|responseXML| property, if the document meets specified criteria \cite{xhr}.
+Working with XML data is very similar to working with regular website DOM in JavaScript. \verb|Document| interface is used for traversing the XML tree, modifying it or for creating a new one. In HTML5, XML files can be opened using a HTTP GET request via \verb|XMLHttpRequest|\nomenclature{XHR}{XMLHttpRequest} object, which parses the data and returns a \verb|Document| instance in its \verb|responseXML| property, if the document meets specified criteria~\cite{xhr}.
 
 \paragraph{WebSockets}
-WebSockets allow applications to open bidirectional communication channels with server-side processes \cite{websocket}. WebSockets are built on top of the \textit{Transmission Control Protocol} (TCP)\nomenclature{TCP}{Transmission Control Protocol} connection. This means that the delivery of data is reliable and ordered.
+WebSockets allow applications to open bidirectional communication channels with server-side processes~\cite{websocket}. WebSockets are built on top of the \textit{Transmission Control Protocol} (TCP)\nomenclature{TCP}{Transmission Control Protocol} connection. This means that the delivery of data is reliable and ordered.
 
 \paragraph{Web Workers}
 JavaScript code of a website normaly runs in a single thread. It is common to run functions asynchronously, for example callback functions and event handlers, but all these functions still run in the same thread. Web Workers are a means of running heavy tasks in background without affecting the user interface. A real OS-level \nomenclature{OS}{Operating system} thread is spawn for each \verb|Worker| object instance.
@@ -100,7 +100,7 @@ Displaying text and static visual content is the main purpose of older versions 
 The new HTML specification takes this in mind and brings ways of creating more rich and dynamic content within a web page. There are two technologies that should be taken into account -- \textit{Canvas 2D Context} and \textit{SVG}.
 
 \paragraph{Canvas 2D Context}
-The \verb|<canvas>| element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly \cite{html5_canvas}. 
+The \verb|<canvas>| element provides scripts with a resolution-dependent bitmap canvas, which can be used for rendering graphs, game graphics, or other visual images on the fly~\cite{html5_canvas}. 
 
 Using canvas seems appropriate for this project. Canvas could be created with respect to user's resolution and web browser window size. All elements can be scaled to fit this viewport. This will make them look sharp and there will not be any artefacts, noise and blur caused by interpolation used for scaling regular bitmap video content.
 
@@ -124,7 +124,7 @@ Drawing strategy receives segments, which were generated by the Dynadraw algorit
 \subsection{Dynadraw algorithm}
 \label{sec:dynadraw}
 
-Paul Haeberli has created a simple algorithm called \textit{``Dynadraw''} in 1989, which is suitable for calligraphy. Brush is modeled as a physical object with its \textit{mass}, \textit{velocity} and \textit{friction coefficient} \cite{dynadraw}. Mouse movement is interpreted as a way of exerting force on the brush -- the faster you move the brush, the greater the force applied on the brush is. Acceleration is then calculated according to Newton's second law of motion considering brush's mass and velocity of the brush is derived with respect to the value of friction coefficient. This velocity is then applied and brush is moved. The trace brush should leave behind is then drawn onto the virtual canvas.
+Paul Haeberli has created a simple algorithm called \textit{``Dynadraw''} in 1989, which is suitable for calligraphy. Brush is modeled as a physical object with its \textit{mass}, \textit{velocity} and \textit{friction coefficient}~\cite{dynadraw}. Mouse movement is interpreted as a way of exerting force on the brush -- the faster you move the brush, the greater the force applied on the brush is. Acceleration is then calculated according to Newton's second law of motion considering brush's mass and velocity of the brush is derived with respect to the value of friction coefficient. This velocity is then applied and brush is moved. The trace brush should leave behind is then drawn onto the virtual canvas.
 
 The advantage of this algorithm is its simplicity and the possibilities of configuring the brush with different values of mass and friction (the author of the algorithm refers to this constant also as \textit{drag}, which better fits the purpose of slowing down the brush).
 
@@ -203,33 +203,30 @@ Line consists of many segments that are drawn after every simulation step, which
               \State $R' \gets R$
           \EndFunction
        \end{algorithmic}
-  	   \caption{Draw one segment of a line}
-      \label{alg:draw-segment-quadrilateral}
+  	   \caption{Draw one segment of a line\label{alg:draw-segment-quadrilateral}}      
    \end{pseudocode}
 
    
   \begin{figure}
   	\centering
       \includegraphics[height=50mm]{../img/draw-segment-quadrilateral.eps}
-      \caption{Drawn quadrilateral segment of a line}
-      \label{fig:draw-segment-quadrilateral}
+      \caption{Drawn quadrilateral segment of a line\label{fig:draw-segment-quadrilateral}}      
   \end{figure}
 
 
 \begin{figure}
 	\centering
   		\includegraphics[width=130mm]{../img/bezier_curves.eps}
-  		\caption{Bézier curve interpolation examples}
-  		\label{fig:bezier-curve}
+  		\caption{Bézier curve interpolation examples\label{fig:bezier-curve}}  		
 \end{figure}
 
-The curves drawn using quadrilaterals are not very smooth. For smoother curves, straight lines must be replaced with interpolation splines. Both SVG and Canvas 2D Context implement \textit{cubic Bézier curves}. Cubic Bézier curves are defined by four control points, $ \mathbf{P}_0, \mathbf{P}_1, \mathbf{P}_2, \mathbf{P}_3 $. Path starts in $ \mathbf{P}_0 $ and ends in $ \mathbf{P}_3 $, it does not usually go through points $ \mathbf{P}_1, \mathbf{P}_2 $. The interpolation forumla of the curve \cite{bezier} is
+The curves drawn using quadrilaterals are not very smooth. For smoother curves, straight lines must be replaced with interpolation splines. Both SVG and Canvas 2D Context implement \textit{cubic Bézier curves}. Cubic Bézier curves are defined by four control points, $ \mathbf{P}_0, \mathbf{P}_1, \mathbf{P}_2, \mathbf{P}_3 $. Path starts in $ \mathbf{P}_0 $ and ends in $ \mathbf{P}_3 $, it does not usually go through points $ \mathbf{P}_1, \mathbf{P}_2 $. The interpolation forumla of the curve~\cite{bezier} is
 
 $$ \mathbf{B}(t) = (1 - t)^3 \mathbf{P}_0 + 3(1-t)^{2}t\mathbf{P}_1 + 3(1-t)^{2}t^2\mathbf{P}_2 + t^3\mathbf{P}_3,\quad 0 \leq t \leq 1$$ 
 
-To calculate the control points of a cubic Bézier curve for segment between points $\mathbf{X}_i$ and $\mathbf{X}_{i+1}$, calculated by the DynaDraw algorithm, we can also take points $\mathbf{X}_{i-1}$ and $\mathbf{X}_{i+2}$ and look at these four points as \textit{Catmull-Rom spline} control points. Catmull-Rom is a special type of \textit{Cardinal spline}, with the tension parameter $\tau = 0$ \cite{catmull_rom}. This approach gives us a nice smooth curve calculated just from the consequent points calcuated by the Dynadraw algorithm.
+To calculate the control points of a cubic Bézier curve for segment between points $\mathbf{X}_i$ and $\mathbf{X}_{i+1}$, calculated by the DynaDraw algorithm, we can also take points $\mathbf{X}_{i-1}$ and $\mathbf{X}_{i+2}$ and look at these four points as \textit{Catmull-Rom spline} control points. Catmull-Rom is a special type of \textit{Cardinal spline}, with the tension parameter $\tau = 0$~\cite{catmull_rom}. This approach gives us a nice smooth curve calculated just from the consequent points calcuated by the Dynadraw algorithm.
 
-A special conversion matrix between Catmull-Rom spline and Bézier curve is defined \cite{catmull_bezier} and so the conversion is very straighforward. The formula for calculating cubic Bézier control points $ \mathbf{P}_0, \mathbf{P}_1, \mathbf{P}_2, \mathbf{P}_3 $, from the points $ \mathbf{X}_{i-1}, \mathbf{X}_i, \mathbf{X}_{i+1}, \mathbf{X}_{i+2} $ is
+A special conversion matrix between Catmull-Rom spline and Bézier curve is defined~\cite{catmull_bezier} and so the conversion is very straighforward. The formula for calculating cubic Bézier control points $ \mathbf{P}_0, \mathbf{P}_1, \mathbf{P}_2, \mathbf{P}_3 $, from the points $ \mathbf{X}_{i-1}, \mathbf{X}_i, \mathbf{X}_{i+1}, \mathbf{X}_{i+2} $ is
 
 $$
 \begin{pmatrix}\mathbf{P}_0 & \mathbf{P}_1 & \mathbf{P}_{2} & \mathbf{P}_{3} \end{pmatrix} = \frac{1}{6}\begin{pmatrix} 0 & 6 & 0 & 0 \\ -1 & 6 & 1 & 0 \\ 0 & 1 & 6 & -1 \\ 0 & 0 & 6 & 0 \end{pmatrix} \begin{pmatrix} \mathbf{X}_{i-1} \\ \mathbf{X}_i \\ \mathbf{X}_{i+1} \\ \mathbf{X}_{i+2} \end{pmatrix}
@@ -245,7 +242,7 @@ For an example of cubic Bézier curve, see figure~\ref{fig:bezier-curve}.
 
 
 \section{Parsing and generating Vector Screencast SVG}
-Parsing and generating the XML structure of the vector screencast file uses factories and chains of responsibility to avoid large if-else statements or switch blocks \cite{gang_of_four}.
+Parsing and generating the XML structure of the vector screencast file uses factories and chains of responsibility to avoid large if-else statements or switch blocks~\cite{gang_of_four}.
 
 To make processing of the commands and XML elements faster, the factories in the chain are ordered by their expected occurrence -- the factory processing cursor movement is the first one in the chain, and the draw-next-segment command factory is the second one.
 
@@ -260,19 +257,18 @@ These instructions correspond to path chunks. To save extra instructions, the sh
 \begin{figure}
 	\centering
 		\includegraphics[width=130mm]{../img/path_serialization.eps}
-		\caption{SVG path instructions corresponding to path segments}
-		\label{fig:parsing_path}
+		\caption{SVG path instructions corresponding to path segments\label{fig:parsing_path}}		
 \end{figure}
 
 
 
 \subsubsection{Audio capturing, processing and upload}
 
-HTML5 provides only one way to access microphone data at the moment and it is through the \textit{getUserMedia API} \cite{get_user_media}. \verb|navigator.getUserMedia| function prompts the user to for permission to use their audio input\footnote{\texttt|getUserMedia| function is also used to access webcam stream in other applications}.
+HTML5 provides only one way to access microphone data at the moment and it is through the \textit{getUserMedia API}~\cite{get_user_media}. \verb|navigator.getUserMedia| function prompts the user to for permission to use their audio input\footnote{\texttt|getUserMedia| function is also used to access webcam stream in other applications}.
 
 If user's device has a connected microphone and user gives his permission to use his audio input, then a \verb|MediaStream| object is provided by the browser and from this time on audio can be processed. Error callback with \verb|MediaStreamError| instance as a parameter is called otherwise.
 
-Current browsers implement \verb|ScriptProcessorNode| according to the W3C Working Draft from 10 October 2013 of \textit{Web Audio API}. Unfortunately, the \verb|ScriptProcessorNode| interface is deprecated in newer drafts of the specification and should be replaced with \verb|AudioWorkerNote| in the future\cite{mic_deprecated}. This new approach is not yet standardised, implemented and documented in web browsers. Both of these methods provide access to \verb|AudioBuffer| instance, which contains \textit{linear pulse-code modulation} (LPCM)\cite{wiki_pcm} sampled data from the microphone \cite{mic_pcm}.
+Current browsers implement \verb|ScriptProcessorNode| according to the W3C Working Draft from 10 October 2013 of \textit{Web Audio API}. Unfortunately, the \verb|ScriptProcessorNode| interface is deprecated in newer drafts of the specification and should be replaced with \verb|AudioWorkerNote| in the future\cite{mic_deprecated}. This new approach is not yet standardised, implemented and documented in web browsers. Both of these methods provide access to \verb|AudioBuffer| instance, which contains \textit{linear pulse-code modulation} (LPCM)\cite{wiki_pcm} sampled data from the microphone~\cite{mic_pcm}.
 
 The \verb|Float32Array| buffer containing LPCM data gained from the AudioBuffer is converted to an \verb|Int16Array|. This reduces the amount of data that will be transferred over the Internet.
 
@@ -306,7 +302,7 @@ Unfortunately, the situation among other pointing devices other than computer mi
 Event handler is passed the \verb|MouseEvent| object. The relevat information are the \verb|clientX| and \verb|clientY| properties, stating current mouse posititon relative to the position of the element it is attached to. 
 
 \paragraph{Wacom Webplugin pen API}
-The Wacom Webplugin pen API (WebPAPI) is a browser plugin interface for pen data access from all Wacom consumer and professional tablets. Unfortunatelly support for this plugin was discontinued by Chromium and Google Chrome \cite{wacom_discontinued} and therefore it should not be relied on.
+The Wacom Webplugin pen API (WebPAPI) is a browser plugin interface for pen data access from all Wacom consumer and professional tablets. Unfortunatelly support for this plugin was discontinued by Chromium and Google Chrome~\cite{wacom_discontinued} and therefore it should not be relied on.
 
 \paragraph{Touch Events API}
 Touch Events API is an API for handling touch input from touch screens. The standard is proposed by Apple and is implemented across many platforms and in many mobile web browsers.

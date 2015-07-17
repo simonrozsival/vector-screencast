@@ -6,7 +6,7 @@ Using Vector Screencast library is intended to be as simple as possible. All the
 \section{Obtaining the Vector Screencast library}
 Prepared library files can be obtained either from the attached files or from Git repository https://github.com/simonrozsival/vectorvideo in the \verb|/release/VectorScreencast| and \verb|/release/themes/| folders. You only need to copy files \verb|vector-screencast.min.js| and \verb|theme-default.min.css| into your project.
 
-The library files must be linked to your document and you should make sure that your website will be displayed properly on mobile devices by specifying the \verb|viewport| meta tag in the \verb|head| section of your document \cite{html_viewport}. Also create an empty element with a specific \verb|id| attribute -- this will be the container, into which either the screencast player or the recorder will be placed.
+The library files must be linked to your document and you should make sure that your website will be displayed properly on mobile devices by specifying the \verb|viewport| meta tag in the \verb|head| section of your document~\cite{html_viewport}. Also create an empty element with a specific \verb|id| attribute -- this will be the container, into which either the screencast player or the recorder will be placed.
 
 An example of a HTML5 template with correct setup can look similarly (irrelevant parts of the document were let omitted and replaced by suspension points):
 
@@ -41,9 +41,70 @@ Inside your scripts, create a new instance of \verb|VectorScreencast.Player|. Th
 
 There are several other interesting optional settings, that will help you customize the screencast player. One of them is the \textit{Localization} property, which takes an object implementing the \verb|VectorScreencast.Localization.PlayerLocalization| interface. To see the complete list of all configuration options and further details, please refer to the \verb|VectorScreencast.Settings.PlayerSettings| interface in the API reference of the project in the \verb|/docs/| folder of the attached files. You can see an advanced example of \verb|VectorScreencast.Player| usage \verb|/demo/public/play.html| in the attached files.
 
-\paragraph{Audio recording server process}
-@todo
+\subsection{Audio recording server process}
+\label{websocket-protocol}
 
+The recording tool uploads recorded data through a WebSocket during the recording. You must run a WebSocket server process on your server which will receive audio LPCM data. After the recording is finished, the server sends 
+
+The protocol of communication between the client (web browser) and the server is described in the following paragraphs. The URL and the port number on which the server listens must be passed to the instance of the \verb|Recorder| object.
+
+The logical unit of communication between a server and a client is a message. Messages do not have fixed length and their payload can be either textual or binary. Each message has a flag indicating whether the payload of the message is binary or not.
+
+\paragraph{New recording esabelishing}
+After new connection of a client to the WebSocket server is opened, the client send a textual message containing information about the nature of the audio data that will be sent through the socket later. This message should contain a valid JSON message. This message must be parsed into an object literal. Audio server expects the object to have the properties defined in table~\ref{tbl:start_ws}. Any other property of the object is ignored.
+
+\begin{table}
+	\begin{tabular}{L{2cm}C{2cm}L{9cm}l}
+		\hline
+		\textbf{property name} 	& \textbf{value} 	& \textbf{purpose of the property} &\\ \hline
+		\verb|type|				& \verb|"start"|	& Identification of the message type. The value must be lower-case. &\\ \hline
+		\verb|channels|			& \textit{number}	& Number of audio channels of the audio track. &\\ \hline
+		\verb|sampleRate|		& \textit{number}	& Number of samples per second. &\\ \hline
+		\verb|bitDepth|			& \textit{number}	& Number of bits per sample. &\\ \hline
+	\end{tabular}
+	\centering		
+		\caption{New recording esabelishing JSON message structure\label{tbl:start_ws}}
+\end{table}
+
+If the server cannot handle the client or the content, the message cannot be parsed, or some required information is missing, the server can close the WebSocket connection and thus rejec the client. Otherwise, the server does not respond anyhow and should await binary messages containing the recorded audio data.
+
+\paragraph{Binary audio data}
+The client can start sending binary messages containing the audio data. This data of all the channels should be already interleaved and the data should correspond to the bit depth that was declared in the first message from the client. The server should not interpret or modify any of the received binary data and should store it directly into an uncompressed WAV file.
+
+\paragraph{End of recording}
+The client can end recording by sending a textual message simillar to the very first message. This message must also contain a serialised object literal in JSON. This object must have a property \verb|type| with the value of \verb|"end"|\footnote{The value must be lower-case.}. Other properties are ignored. The server stops receiving any data from this client. The server must process the data it has received and send a response through the WebSocket. The audio recording should be converted into several audio formats supported by web browsers as a source of the \verb|<audio>| element. The response must be a JSON object with properties defined in table~\ref{tbl:response_ws}. After this message is sent, server can close the connection with the clinet.
+
+\begin{table}
+	\begin{tabular}{L{2cm}C{2cm}L{9cm}l}
+		\hline
+		\textbf{property name} 	& \textbf{value} 	& \textbf{purpose of the property} &\\ \hline
+		\verb|error|			& \textit{boolean} & \verb|false| if the data is stored well, \verb|true| if an error occured. &\\ \hline
+		\verb|files|			& \textit{array}
+		& Array of the audio files created by the server based on the received data from the client. Each item of the array must have the properties described in table~\ref{tbl:file_ws}. This property must be an empty array in case of the \verb|error| property is set to true. &\\ \hline
+	\end{tabular}
+
+	\centering			
+		\caption{The format of the response of the server at the end of recording\label{tbl:response_ws}}
+\end{table}
+
+\begin{table}	
+	\begin{tabular}{L{2cm}C{2cm}L{9cm}l}
+		\hline
+		\textbf{property name} 	& \textbf{value} 	& \textbf{purpose of the property} &\\ \hline
+		\verb|url|				& \textit{string} & Absolute URL of the audio file. &\\ \hline
+		\verb|type|				& \textit{string} & MIME type of the audio file. &\\ \hline
+	\end{tabular}
+	\centering		
+		\caption{Format of an information about an audio file \label{tbl:file_ws}}
+\end{table}
+
+\paragraph{Lost connections}
+If the connection of a WebSocket is lost before the communication is finished properly according to the protocol, server is allowed to throw away all the data received by the WebSocket.
+
+\paragraph{Example}
+An example implementation of the audio recording server is included in the demo project which is described in section~\ref{sec:demo}. This implementation is written in TypeScript and runs on Node.js and you can examine its source and use is for testing. The source is placed in the \verb|/src/AudioServer| directory and is used from the \verb|/demo/audio.js| script.
+
+You should be aware of the fact that this implementation of the audio server is only demonstrational and should not be relied on in heavy production use.
 
 \section{Embedding Vector Screencast Player}
 To allow users embed videos from your website on their websites, create a HTML page, where the player will stretch over the whole screen. Then generate an HTML snippet with an \verb|<iframe>| pointing to your player in the \verb|src| attribute.
@@ -56,6 +117,8 @@ You may want to start by editing the default style of the Vector Screencast. The
 After you have created your CSS theme, use HTML \verb|<link>| tag to link the CSS stylesheet to your website.
 
 \section{Demo project}
+\label{sec:demo}
+
 To make life easier to you, we have prepared an example project, where you can see the library in action. This project shows the use of
 \begin{itemize}
 	\item recording tool

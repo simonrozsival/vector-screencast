@@ -7,8 +7,8 @@ The project of Vector Screencast is available online as a public Git repository\
 
 \paragraph{File format} Vector Screencast data is stored in a specificaly formed SVG document extended with a foreign namespace. The data contains information of author's cursor movement and applied pressure and prerendered lines. This type of animation cannot be viewed in any other video player, but a preview of the final state of the blackboard is displayed when the file is opened in a regular SVG viewer. Audio is recorded as an uncompressed WAV file. This file should be converted into one or more common binary audio formats, with respect to web browsers support of audio formats. 
 
-\subparagraph{File size}
-@todo
+% \subparagraph{File size}
+% @todo
 
 \section{Future work}
 The library is ready and anyone can use it today in his website for creating and playing KSVs. There are tools for drawing lines of different widths and colors onto a virtual canvas, erasing parts of the canvas and clearing the whole canvas. Some authors might be missing some tools they use in their bitmap editors when recording KSV -- including bitmap images or photos, using a text tool or drawing straight lines. It would not be hard to implement these tools, but it would have to be thought over, whether they do not breach the idea of simple, natural look of KSV.
@@ -23,6 +23,6 @@ The library can be used in any HTML website and playback of a screencast will wo
 
 
 \subsection*{Known issues}
-\paragraph{Audio recording} \textit{ScriptProcessorNode} interface is deprecated in W3C Editor's Draft of \textit{Web Audio API} from 21 June 2015 \cite{mic_deprecated}. This interface is used in this project and should be replaced using \textit{Audio Workers}, when the specification is finalized \cite{audio_worker}. 
+\paragraph{Audio recording} \textit{ScriptProcessorNode} interface is deprecated in W3C Editor's Draft of \textit{Web Audio API} from 21 June 2015~\cite{mic_deprecated}. This interface is used in this project and should be replaced using \textit{Audio Workers}, when the specification is finalized~\cite{audio_worker}. 
 
 \paragraph{Demo audio server} \textit{Audio recording server} program, which is included in the project as a demo, should be rewritten. This tool is not very robust and sometimes fails to save the data, it receives through a WebSocket, to a file on the server. Users must write this server program themselves at the moment.

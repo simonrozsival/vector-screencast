@@ -161,7 +161,7 @@ module VectorScreencast.Drawing {
 				var d2: number = 0; // squared distance the brush has traveled
 				var step: number = 0;
 				do {
-					d2 = this.cursor.ApplyForce(this.position, 1);
+					d2 = this.cursor.ApplyForce(this.position);
 					step += d2;
 					if(step > this.currentBrushSize.Size) { // distance traveled is at least sqrt(Size)
 						this.cursor.Draw(this.path, this.pressure);
@@ -187,8 +187,7 @@ module VectorScreencast.Drawing {
 		
 		private Tick(time: number) {
 			if(!!this.path) {
-				//if(this.cursor.ApplyForce(this.position, (time - this.lastAnimationTime) / this.oneFrame) > 0) {
-				if(this.cursor.ApplyForce(this.position, 1) > 0) {
+				if(this.cursor.ApplyForce(this.position) > 0) {
 					this.cursor.Draw(this.path, this.pressure);
 				} else {
 					if(!this.position) { // mouse is released
@@ -279,10 +278,9 @@ module VectorScreencast.Drawing {
 		/**
 		 * Apply force created by mouse movement
 		 * @param 	mouse 			Mouse position
-		 * @param	elapsedFrames	The number of frames elapsed since last movement
 		 * @return					Brush movement distance squared 
 		 */
-		public ApplyForce(mouse: Vector2, elapsedFrames: number): number {			
+		public ApplyForce(mouse: Vector2): number {			
 			if(mouse !== null) { // if there is an impulse from the mouse
 				// calculate the force
 				var force: Vector2 = mouse.clone().subtract(this.position);	
@@ -293,7 +291,7 @@ module VectorScreencast.Drawing {
 			}
 			
 			// apply friction		
-			this.velocity.scale((1 - this.brush.Friction) * elapsedFrames);			
+			this.velocity.scale(1 - this.brush.Friction);			
 			// brush stops - unnoticable shift
 			if(this.velocity.getSizeSq() < Threshold.Velocity) {
 				return 0; // nearly no movement (a "heavy" brush)

@@ -166,7 +166,6 @@ class BinaryAudioStreamingProcessor {
                 this.socket = null;
                 return false;
             } else {
-                this.numberOfSentBinaryMessages++;
                 this.socket.send(this.ConvertTo16BitInt(data).buffer);
                 return true;
             }
