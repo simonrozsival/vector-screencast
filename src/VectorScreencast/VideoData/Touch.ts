@@ -9,8 +9,8 @@ module VectorScreencast.VideoData {
 	 */
 	export class TouchEventsAPI extends PointingDevice {
 				
-		constructor(board: HTMLElement, timer: Helpers.VideoTimer) {
-			super(board, timer);
+		constructor(events: Helpers.VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) {
+			super(events, board, timer);
 			
 			board.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
 			board.addEventListener("touchend", 		(ev: TouchEvent) => this.TouchEnd(ev));

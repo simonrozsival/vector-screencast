@@ -16,8 +16,8 @@ module VectorScreencast.VideoData {
 						
 		private currentEvent: PointerEvent; 
 						
-		constructor(board: HTMLElement, timer: Helpers.VideoTimer) {
-			super(board, timer);
+		constructor(events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) {
+			super(events, board, timer);
 							
 			// board events						
 			this.board.addEventListener("pointermove",  	(e) => this.onPointerMove(e));

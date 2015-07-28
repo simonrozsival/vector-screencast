@@ -76,7 +76,7 @@ module VectorScreencast.Drawing {
 		/**
 		 * Init a new colored path
 		 */
-		constructor(protected curved: boolean, protected color: string, protected wireframe?: boolean) {
+		constructor(protected events: VideoEvents, protected curved: boolean, protected color: string, protected wireframe?: boolean) {
 			if(this.wireframe === undefined) {
 				this.wireframe = false;
 			}
@@ -135,7 +135,7 @@ module VectorScreencast.Drawing {
 			// draw the segment
 			var segment: Segment = this.CalculateSegment(right, left);
 			this.DrawSegment(segment);
-			VideoEvents.trigger(VideoEventType.DrawSegment, segment);
+			this.events.trigger(VideoEventType.DrawSegment, segment);
 			
 			// and push it to the list
 			this.segments.push(segment);
@@ -242,8 +242,8 @@ module VectorScreencast.Drawing {
 		/**
 		 * Initialise new SVG path
 		 */
-		constructor(curved: boolean, color: string, private canvas: Element) {
-			super(curved, color);
+		constructor(events: VideoEvents, curved: boolean, color: string, private canvas: Element) {
+			super(events, curved, color);
 		}
 			
 		
@@ -350,8 +350,8 @@ module VectorScreencast.Drawing {
 	export class CanvasPath extends Path {
 						
 		/** Init empty path */
-		constructor(curved: boolean, color: string, private context: CanvasRenderingContext2D) {
-			super(curved, color);
+		constructor(events: VideoEvents, curved: boolean, color: string, private context: CanvasRenderingContext2D) {
+			super(events, curved, color);
 			this.context.fillStyle = this.color;			
 		}
 		

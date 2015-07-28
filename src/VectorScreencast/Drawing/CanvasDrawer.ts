@@ -19,6 +19,16 @@ module VectorScreencast.Drawing {
      */
     export class CanvasDrawer implements DrawingStrategy {
                 
+        /** Video events listening and triggering */
+        protected events: Helpers.VideoEvents;
+        
+        /**
+         * Set the events aggregator.
+         */
+        public SetEvents(events: Helpers.VideoEvents): void {
+            this.events = events;
+        }
+                
         /**
          * Init a new drawer.
          * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
@@ -59,7 +69,7 @@ module VectorScreencast.Drawing {
                 height: height
             });				
 								    
-            Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+            this.events.trigger(Helpers.VideoEventType.CanvasSize, width, height);
 		}
         
         public SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number {
@@ -68,25 +78,10 @@ module VectorScreencast.Drawing {
             var min = Math.min(wr, hr);
                         
             // prepare scale uniformly 
-            this.canvas.width = min*sourceWidth;
-            this.canvas.height = min*sourceHeight;
             this.context.scale(min, min);
-            // translate the (0,0) point
-            if(wr < hr) {
-                // this means the width of the source is scaled to match the width of the output canvas
-                // corrected height of the source is therefore lesser than the height of the output canvas
-                // - shift it a bit so it is centered
-                // this.context.translate(0, this.canvas.height - (min * sourceHeight / 2));  
-            } else if (hr < wr) {                
-                // this means the width of the source is scaled to match the width of the output canvas
-                // corrected height of the source is therefore lesser than the height of the output canvas
-                // - shift it a bit so it is centered
-                // this.context.translate(this.canvas.width - (min * sourceWidth / 2), 0);  
-            }
-            // else - the ratios match      
             
-            this.originalHeight = sourceHeight;
-            this.originalWidth = sourceWidth;
+            //this.canvas.width = min*sourceWidth;
+            //this.canvas.height = min*sourceHeight;
             
             return min;      
         }
@@ -112,8 +107,8 @@ module VectorScreencast.Drawing {
         /**
          * Start drawing a line.
          */
-        public CreatePath(): Path {
-            return new CanvasPath(this.curved, this.currentColor.CssValue, this.context);
+        public CreatePath(events: Helpers.VideoEvents): Path {
+            return new CanvasPath(events, this.curved, this.currentColor.CssValue, this.context);
         }       
         
     }    

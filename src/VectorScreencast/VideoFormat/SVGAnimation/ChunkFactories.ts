@@ -48,9 +48,9 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/**
 		 * Create a chunk from an XML node.
 		 */
-		FromSVG(node: Node, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: Helpers.VideoEvents, node: Node, cmdFactory: CommandFactory): Chunk {
 			if (!!this.next) {
-				return this.next.FromSVG(node, cmdFactory);
+				return this.next.FromSVG(events, node, cmdFactory);
 			}
 
 			throw new Error(`Chunk loading failed: Unsupported node ${node.nodeName}.`)
@@ -121,14 +121,14 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	node		The element of th enode
 		 * @param	cmdFactory 	Factory for processing commands
 		 */
-		FromSVG(node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === VoidChunkFactory.NodeName) {
 				var chunk: VoidChunk = new VoidChunk(SVGA.numAttr(node, "t"), 0); // 0 will be changed later in the IO class
 				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(node.firstElementChild, cmdFactory, chunk.StartTime);
 				return chunk;
 			}
 
-			return super.FromSVG(node, cmdFactory);
+			return super.FromSVG(events, node, cmdFactory);
 		}
 
 		/**
@@ -299,7 +299,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	node		The element of th enode
 		 * @param	cmdFactory 	Factory for processing commands
 		 */
-		FromSVG(node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === PathChunkFactory.NodeName) {				
 				// path chunk must have at least one child node
 				if (node.childElementCount === 0) {
@@ -313,13 +313,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				}
 				
 				// now the chunk instance can be created
-				var chunk: PathChunk = new PathChunk(this.SVGNodeToPath(pathNode), SVGA.numAttr(node, "t"), 0); // 0 will be changed to last erase later
+				var chunk: PathChunk = new PathChunk(this.SVGNodeToPath(events, pathNode), SVGA.numAttr(node, "t"), 0); // 0 will be changed to last erase later
 				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(pathNode.nextElementSibling, cmdFactory, chunk.StartTime);				
 
 				return chunk;
 			}
 
-			return super.FromSVG(node, cmdFactory);
+			return super.FromSVG(events, node, cmdFactory);
 		}
 
 		/**
@@ -351,9 +351,9 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/**
 		 * Deserilize path from an SVG "path" node
 		 */
-		private SVGNodeToPath(node: Node): Drawing.Path {
+		private SVGNodeToPath(events: Helpers.VideoEvents, node: Node): Drawing.Path {
 			var color: string = SVG.attr(node, "fill");
-			var path: Drawing.Path = new Drawing.Path(true, color); // curved = true/false doesn't make any difference - the data are already recorded  
+			var path: Drawing.Path = new Drawing.Path(events, true, color); // curved = true/false doesn't make any difference - the data are already recorded  
 			
 			// convert path data to sequence of segments 
 			var d: string = SVG.attr(node, "d");
@@ -498,7 +498,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return				New chunk
 		 * @throws	Error			
 		 */
-		FromSVG(node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === EraseChunkFactory.NodeName) {				
 				// erase chunk must have at least one child element
 				if (node.childElementCount === 0) {
@@ -517,7 +517,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				return chunk;
 			}
 
-			return super.FromSVG(node, cmdFactory);
+			return super.FromSVG(events, node, cmdFactory);
 		}
 
 		/**

@@ -23,7 +23,7 @@ module VectorScreencast.UI {
 		/** Hovering helper */
 		private arrow: IElement;
 		
-		constructor(id: string) {
+		constructor(id: string, protected events: VideoEvents) {
 			super("div", id);
 			this.length = 0; // must be changed later, when the metadata is loaded 
 			this.GetHTML().classList.add("ui-progressbar");
@@ -106,7 +106,7 @@ module VectorScreencast.UI {
 		 */
 		public SkipTo(time: number) : void {
 			// triger an event...			
-			VideoEvents.trigger(VideoEventType.JumpTo, time / this.length);
+			this.events.trigger(VideoEventType.JumpTo, time / this.length);
 			
 			// sync self
 			this.Sync(time);			

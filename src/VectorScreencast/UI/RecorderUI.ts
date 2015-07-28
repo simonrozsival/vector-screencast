@@ -48,12 +48,9 @@ module VectorScreencast.UI {
 			
 		/**
 		 * Create a new instance of Recorder UI
-		 * @param	id				Unique ID of this recorder instance
-		 * @param	brushSizes		List of possible brush colors
-		 * @param	brushSizes		List of possible brush sizes
-		 * @param	localization	List of translated strings 
+		 * @param	id				Unique ID of this recorder instance 
 		 */
-		constructor(private id: string) {						
+		constructor(private id: string, protected events: Helpers.VideoEvents) {						
 			super("div", `${id}-recorder`);
 			this.AddClass("vector-video-wrapper");
 			
@@ -118,7 +115,7 @@ module VectorScreencast.UI {
 		 * Create the 
 		 */
 		private CreateBoard() : Board {
-			var board: Board = new Board(`${this.id}-board`);			
+			var board: Board = new Board(`${this.id}-board`, this.events);			
 			return board;
 		}
 		
@@ -184,7 +181,7 @@ module VectorScreencast.UI {
 				this.board.IsRecording = true;
 				
 				this.ticking = setInterval(() => this.Tick(), this.tickingInterval);
-				Helpers.VideoEvents.trigger(Helpers.VideoEventType.Start);				
+				this.events.trigger(Helpers.VideoEventType.Start);				
 			}
 		}
 		
@@ -199,7 +196,7 @@ module VectorScreencast.UI {
 				this.board.IsRecording = false;
 				
 				clearInterval(this.ticking);
-				Helpers.VideoEvents.trigger(Helpers.VideoEventType.Pause);				
+				this.events.trigger(Helpers.VideoEventType.Pause);				
 			}
 		}
 		
@@ -215,7 +212,7 @@ module VectorScreencast.UI {
 			Helpers.HTML.SetAttributes(this.recPauseButton.GetHTML(), { "disabled": "disabled" });
 			Helpers.HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
 			// trigger upload
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.StartUpload);
+			this.events.trigger(Helpers.VideoEventType.StartUpload);
 		}
 		
 		/**
@@ -225,7 +222,7 @@ module VectorScreencast.UI {
 		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
 			var colorsGroup = new Panel("div").AddClass("btn-group");					
 			for(var i = 0; i < colorPallete.length; i++) {
-				var btn = new ChangeColorButton(colorPallete[i]);
+				var btn = new ChangeColorButton(this.events, colorPallete[i]);
 				colorsGroup.AddChild(btn);
 			}
 			
@@ -244,7 +241,7 @@ module VectorScreencast.UI {
 		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {
 			var sizesGroup = new Panel("div").AddClass("btn-group");
 			for(var i = 0; i < brushSizes.length; i++) {
-				sizesGroup.AddChild(new ChangeBrushSizeButton(brushSizes[i]));			
+				sizesGroup.AddChild(new ChangeBrushSizeButton(this.events, brushSizes[i]));			
 			}
 			
 			return new Panel("div")
@@ -268,7 +265,7 @@ module VectorScreencast.UI {
 		 * Create a panel containing the eraser brush and the "erase all button"
 		 */
 		private CreateEraserPanel() : Panel {			
-			this.switchToEraserButton = new ChangeColorButton(UI.Color.BackgroundColor);
+			this.switchToEraserButton = new ChangeColorButton(this.events, UI.Color.BackgroundColor);
 			return new Panel("div", `${this.id}-erase`)
 						.AddChildren(
 							new H2(this.Localization.Erase),
@@ -285,8 +282,8 @@ module VectorScreencast.UI {
 			panel.AddChild(title);
 			
 			// the "erase all" button:
-			this.eraseAllButton = new ChangeColorButton(UI.Color.BackgroundColor, () => this.EraseAll());	
-			Helpers.VideoEvents.on(Helpers.VideoEventType.ChangeColor, (color: UI.Color) => {
+			this.eraseAllButton = new ChangeColorButton(this.events, UI.Color.BackgroundColor, () => this.EraseAll());	
+			this.events.on(Helpers.VideoEventType.ChangeColor, (color: UI.Color) => {
 				this.currentColor = color;
 				this.eraseAllButton.SetColor(color);
 			});
@@ -299,7 +296,7 @@ module VectorScreencast.UI {
 		 * Clear the canvas
 		 */
 		private EraseAll(): void {
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.ClearCanvas, this.currentColor);
+			this.events.trigger(Helpers.VideoEventType.ClearCanvas, this.currentColor);
 			this.switchToEraserButton.SetColor(this.currentColor);			
 		}
 		
@@ -315,14 +312,14 @@ module VectorScreencast.UI {
 			Helpers.HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
 			
 			// Change the microphone icon and text according to current settings
-			Helpers.VideoEvents.on(Helpers.VideoEventType.AudioRecordingAvailable, () => {			
+			this.events.on(Helpers.VideoEventType.AudioRecordingAvailable, () => {			
 				this.micButton.GetHTML().removeAttribute("disabled");
 				if(!this.micIsMuted) {
 					this.micButton.ChangeIcon("icon-mic").ChangeContent(this.Localization.AudioRecordingAvailable);					
 				}
 			});
 			
-			Helpers.VideoEvents.on(Helpers.VideoEventType.AudioRecordingUnavailable, () => {
+			this.events.on(Helpers.VideoEventType.AudioRecordingUnavailable, () => {
 				this.micButton.ChangeIcon("icon-mic-off").ChangeContent(this.Localization.AudioRecordingUnavailable);
 				Helpers.HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
 			});
@@ -337,7 +334,7 @@ module VectorScreencast.UI {
 		 * Mute/Unmute the microphone.
 		 */
 		protected MuteMic(): void {
-			Helpers.VideoEvents.trigger(Helpers.VideoEventType.MuteAudioRecording);
+			this.events.trigger(Helpers.VideoEventType.MuteAudioRecording);
 			this.micIsMuted = !this.micIsMuted;
 			
 			if(this.micIsMuted) {

@@ -37,8 +37,8 @@ module VectorScreencast.VideoData {
 	 */
 	export class WacomTablet extends Mouse {
 		
-		constructor(board: HTMLElement, timer: Helpers.VideoTimer, private penApi: IWacomApi) {
-			super(board, timer);
+		constructor(events: Helpers.VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer, private penApi: IWacomApi) {
+			super(events, board, timer);
 		}
 		
 		/**

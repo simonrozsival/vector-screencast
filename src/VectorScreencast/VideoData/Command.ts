@@ -13,7 +13,7 @@ module VectorScreencast.VideoData {
 	export class Command {		
 		public get Time(): number { return this.time; }		
 		constructor(private time: number) { }		
-		Execute(): void {
+		Execute(events: VideoEvents): void {
 			throw new Error("Not implemented");
 		}
 		Clone(): Command {
@@ -46,8 +46,8 @@ module VectorScreencast.VideoData {
 		 * Move cursor to a given point.
 		 * @triggeres-event	CursorState
 		 */
-		Execute(): void {
-			VideoEvents.trigger(VideoEventType.CursorState, new Helpers.CursorState(this.Time, this.x, this.y, this.p));
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.CursorState, new Helpers.CursorState(this.Time, this.x, this.y, this.p));
 		}
 		
 		/**
@@ -66,8 +66,8 @@ module VectorScreencast.VideoData {
 		 * Draw next segment of current path.
 		 * @triggers-event	DrawSegment
 		 */
-		Execute(): void {
-			VideoEvents.trigger(VideoEventType.DrawSegment);
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.DrawSegment);
 		}
 		
 		/**
@@ -97,8 +97,8 @@ module VectorScreencast.VideoData {
 		 * Change current color of the brush to a given color.
 		 * @triggers-event	ChangeColor
 		 */
-		Execute(): void {			
-			VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.ChangeColor, this.color);
 		}
 		
 		/**
@@ -128,8 +128,8 @@ module VectorScreencast.VideoData {
 		 * Change brush size to a given value.
 		 * @triggeres-event	ChangeBrushSize
 		 */
-		Execute(): void {			
-			VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.size);
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.ChangeBrushSize, this.size);
 		}
 		
 		/**
@@ -155,8 +155,8 @@ module VectorScreencast.VideoData {
 			super(time);
 		}
 		
-		Execute(): void {	
-			VideoEvents.trigger(VideoEventType.ClearCanvas, this.color);			
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.ClearCanvas, this.color);			
 		}
 		
 		/**

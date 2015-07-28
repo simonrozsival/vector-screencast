@@ -44,6 +44,8 @@ module VectorScreencast.Helpers {
         CanvasSize,
         /** Announce canvas scaling factor. A number must be specified as a parameter of the triggered event. */
         CanvasScalingFactor,
+        /** The offset of the cursor from the top left corner of the board element. */
+        CursorOffset,
         
         /** Register a recording tool, that should be counted with. */
         RegisterRecordingTool,
@@ -141,19 +143,23 @@ module VectorScreencast.Helpers {
     export class VideoEvents {
         
         /** Registered events */
-        private static events: Events = new Array(VideoEventType.length);
+        private events: Events;
+        
+        constructor() {
+            this.events = new Array(VideoEventType.length);
+        }
          
         /**
          * Register new event listener.
          * @param   type    Event type.
          * @param   command Command to register as a listener of this event.
          */
-        public static on(type: VideoEventType, command: Function) {
-            if (!VideoEvents.events[<number> type]) {
-                VideoEvents.events[<number> type] = new VideoEvent(type);
+        public on(type: VideoEventType, command: Function) {
+            if (!this.events[<number> type]) {
+                this.events[<number> type] = new VideoEvent(type);
             }
 
-            VideoEvents.events[type].on(command);
+            this.events[type].on(command);
         }
         
         /**
@@ -161,9 +167,9 @@ module VectorScreencast.Helpers {
          * @param   type    Event type.
          * @param   command The function to unregister.
          */
-        public static off(type: VideoEventType, command: Function) {
-            if (!!VideoEvents.events[<number> type]) {
-                VideoEvents.events[<number> type].off(command);
+        public off(type: VideoEventType, command: Function) {
+            if (!!this.events[<number> type]) {
+                this.events[<number> type].off(command);
             }
         }         
          
@@ -172,8 +178,8 @@ module VectorScreencast.Helpers {
          * @param   type    Event type.
          * @param   args    A variadic array of arguments.
          */
-        public static trigger(type: VideoEventType, ...args: Array<any>) {
-            var e = VideoEvents.events[<number> type];
+        public trigger(type: VideoEventType, ...args: Array<any>) {
+            var e = this.events[<number> type];
             if (!!e) { // !! - convert to boolean 
                 e.trigger(args);
             }

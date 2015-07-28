@@ -24,21 +24,34 @@ module VectorScreencast.UI {
 		/** Current cursor position */
 		protected position: Helpers.Vector2;
 		
+		/** Constant distance from the top left corner. */
+		protected offset: Vector2;
+		
+		/** Set the value of cursor's offset. */
+		public set Offset(val: Vector2) {
+			this.offset = val;
+		}
+		
 		/** A "constant" defining the stroke size */
 		protected stroke: number;
 		
 		/** Scaling factor */
 		protected scalingFactor: number;
+		
+		/** Current size of the brush */
 		protected size: BrushSize;
+		
+		
 		
 		/**
 		 * Initialise a cursor. It's size and color must be explicitely changed before using it though!
 		 */
-		constructor() {
+		constructor(protected events: Helpers.VideoEvents) {
 			super("div");			
 			this.radius = 20;
 			this.stroke = 3;
 			this.position = new Vector2(0, 0);
+			this.offset = new Vector2(0, 0);
 			this.CreateHTML();
 			this.scalingFactor = 1;
 			this.size = null;
@@ -76,7 +89,7 @@ module VectorScreencast.UI {
 			this.GetHTML().style.background = "transparent";
 			this.GetHTML().style.lineHeight = "0";
 			
-			Helpers.VideoEvents.on(Helpers.VideoEventType.ClearCanvas, (color: Color) => {
+			this.events.on(Helpers.VideoEventType.ClearCanvas, (color: Color) => {
 				this.bgColor = color;
 				Helpers.SVG.SetAttributes(this.dot, { fill: this.bgColor.CssValue });
 				this.ChangeColor(this.color); // make sure the border color is contrastant
@@ -89,8 +102,8 @@ module VectorScreencast.UI {
 		 * @param	y	Y coordinate of cursor center
 		 */
 		public MoveTo(x: number, y: number) : void {
-			this.GetHTML().style.left = `${x*this.scalingFactor - this.radius - this.stroke}px`;
-			this.GetHTML().style.top = `${y*this.scalingFactor - this.radius - this.stroke}px`;
+			this.GetHTML().style.left = `${x*this.scalingFactor - this.radius - this.stroke + this.offset.X}px`;
+			this.GetHTML().style.top = `${y*this.scalingFactor - this.radius - this.stroke + this.offset.Y	}px`;
 			this.position = new Helpers.Vector2(x, y);
 		}
 		

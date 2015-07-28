@@ -20,6 +20,13 @@ module VectorScreencast.Drawing {
      */
     export class SVGDrawer implements DrawingStrategy {
         
+        /** Video events listening and triggering */
+        protected events: Helpers.VideoEvents;
+        
+        public SetEvents(events: Helpers.VideoEvents): void {
+            this.events = events;
+        }
+        
         /**
          * Init a new drawer.
          * @param   {boolean}   curved  Should the lines be curved, or simple quadrilateral?
@@ -74,7 +81,7 @@ module VectorScreencast.Drawing {
                 width: width,
                 height: height
             });            
-            Helpers.VideoEvents.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+            this.events.trigger(Helpers.VideoEventType.CanvasSize, width, height);
         }
         
         /**
@@ -107,8 +114,8 @@ module VectorScreencast.Drawing {
         /**
          * Start drawing a line.
          */
-        public CreatePath(): Path {
-            return new SvgPath(this.curved, this.currentColor.CssValue, this.canvas);
+        public CreatePath(events: Helpers.VideoEvents): Path {
+            return new SvgPath(events, this.curved, this.currentColor.CssValue, this.canvas);
         }
         
                 
@@ -119,9 +126,14 @@ module VectorScreencast.Drawing {
                         
             // prepare scaling and translating
             SVG.SetAttributes(this.svg, {
-                //"viewBox": `${this.svg.clientWidth - (min * sourceWidth / 2)} ${this.svg.clientHeight - (min * sourceHeight / 2)}  ${this.svg.clientWidth * min} ${this.svg.clientHeight * min}`
                 "viewBox": `0 0 ${sourceWidth} ${sourceHeight}`
             });
+            
+            if(min === wr) {
+                this.events.trigger(Helpers.VideoEventType.CursorOffset, new Helpers.Vector2(0, (this.svg.clientHeight - sourceHeight*min) / 2));                
+            } else {
+                this.events.trigger(Helpers.VideoEventType.CursorOffset, new Helpers.Vector2((this.svg.clientWidth - sourceWidth*min) / 2, 0));
+            }
             
             return min;
         }

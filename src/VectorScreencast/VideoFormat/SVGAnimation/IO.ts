@@ -96,7 +96,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	{Document}	doc		Downloaded XML document.
 		 * @return	{Video}				Video data
 		 */
-		public LoadVideo(doc: any): Video {
+		public LoadVideo(events: Helpers.VideoEvents, doc: any): Video {
 			if(doc instanceof Document === false) {
 				throw new Error(`SVGAnimation IO parsing error: Document must be an XML document`);
 			}
@@ -123,7 +123,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			var i: number = 0;						
 			var chunk: Element = chunksLayer.firstElementChild;
 			while(!!chunk) {
-				var next = this.chunkFactory.FromSVG(chunk, this.commandFactory);
+				var next = this.chunkFactory.FromSVG(events, chunk, this.commandFactory);
 				next.LastErase = lastErase;
 				video.PushChunk(next);				
 				if(next instanceof VideoData.EraseChunk) {

@@ -72,12 +72,18 @@ module VectorScreencast {
 		// Cursor movement and pressure is irrelevant for playback, should it be recorded anyway?
 		private recordAllRawData: boolean;
 		
+        /** The instance of video events aggregator */
+        private events: VideoEvents;
+        public get Events(): VideoEvents { return this.events; }
+		
 		/**
 		 * Create a new instance of recorder.		 
          * @param   id          ID of the container element
 		 * @param	sttings		User's own recorder settings
 		 */
 		constructor(private id: string, private settings: Settings.RecorderSettings) {
+			this.events = new VideoEvents();
+			
 			// do not start recording until the user want's to start
 			this.isRecording = false;
 						
@@ -174,24 +180,24 @@ module VectorScreencast {
 			}
 	
 			// Bind video events
-			VideoEvents.on(VET.ChangeBrushSize, (size: UI.BrushSize) => this.ChangeBrushSize(size));
-			VideoEvents.on(VET.ChangeColor, (color: UI.Color) => this.ChangeColor(color));
-			VideoEvents.on(VET.CursorState, (state: CursorState) => this.ProcessCursorState(state));
-			VideoEvents.on(VET.ClearCanvas, (color: UI.Color) => this.ClearCanvas(color));
-			VideoEvents.on(VET.Start, () => this.Start());
-			VideoEvents.on(VET.Pause, () => this.Pause());
-			VideoEvents.on(VET.StartUpload, () => this.StartUpload());
+			this.events.on(VET.ChangeBrushSize, (size: UI.BrushSize) => this.ChangeBrushSize(size));
+			this.events.on(VET.ChangeColor, (color: UI.Color) => this.ChangeColor(color));
+			this.events.on(VET.CursorState, (state: CursorState) => this.ProcessCursorState(state));
+			this.events.on(VET.ClearCanvas, (color: UI.Color) => this.ClearCanvas(color));
+			this.events.on(VET.Start, () => this.Start());
+			this.events.on(VET.Pause, () => this.Pause());
+			this.events.on(VET.StartUpload, () => this.StartUpload());
 			
 			this.busyLevel = 0;
-			VideoEvents.on(VET.Busy, () => this.Busy());
-			VideoEvents.on(VET.Ready, () => this.Ready());
+			this.events.on(VET.Busy, () => this.Busy());
+			this.events.on(VET.Ready, () => this.Ready());
 			
 			// Record paths
-			VideoEvents.on(VET.StartPath, (path: Drawing.Path) => {
+			this.events.on(VET.StartPath, (path: Drawing.Path) => {
 				this.PushChunk(new VideoData.PathChunk(path, this.timer.CurrentTime(), this.lastEraseData));
 				this.data.CurrentChunk.PushCommand(new VideoData.DrawNextSegment(this.timer.CurrentTime())); // draw the start dot
 			});
-			VideoEvents.on(VET.DrawSegment, () => this.data.CurrentChunk.PushCommand(new VideoData.DrawNextSegment(this.timer.CurrentTime())));
+			this.events.on(VET.DrawSegment, () => this.data.CurrentChunk.PushCommand(new VideoData.DrawNextSegment(this.timer.CurrentTime())));
 
 
 			var min: number = brushes.reduce((previousValue: UI.BrushSize, currentValue: UI.BrushSize, index: number, arr: Array<UI.BrushSize>) =>  previousValue.Size <  currentValue.Size ? previousValue : currentValue).Size;
@@ -200,10 +206,11 @@ module VectorScreencast {
 			// the most important part - the rendering and drawing strategy
 			// - default drawing strategy is using SVG
 			this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
-			this.dynaDraw = new Drawing.DynaDraw(() => this.drawer.CreatePath(), !settings.DisableDynamicLineWidth, min, max, this.timer);
+			this.drawer.SetEvents(this.events);
+			this.dynaDraw = new Drawing.DynaDraw(this.events, () => this.drawer.CreatePath(this.events), !settings.DisableDynamicLineWidth, min, max, this.timer);
 			
 			// create UI			
-			this.ui = !!settings.UI ? settings.UI : new UI.RecorderUI(id);
+			this.ui = !!settings.UI ? settings.UI : new UI.RecorderUI(id, this.events);
 			this.ui.Timer = this.timer;
 			this.ui.Localization = settings.Localization;
             this.ui.SetBusyText(settings.Localization.Busy);
@@ -217,31 +224,31 @@ module VectorScreencast {
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
 			if (wacomApi !== null) { // Wacom plugin is prefered
-				var tablet = new WacomTablet(container, this.timer, wacomApi);
+				var tablet = new WacomTablet(this.events, container, this.timer, wacomApi);
 				tablet.InitControlsAvoiding();
 				console.log("Wacom WebPAPI is used");
 			} else if (window.hasOwnProperty("PointerEvent")) { // pointer events implement pressure-sensitivity
-				var pointer = new PointerEventsAPI(container, this.timer);
+				var pointer = new PointerEventsAPI(this.events, container, this.timer);
 				pointer.InitControlsAvoiding();
 				console.log("Pointer Events API is used");
 			} else { // fallback to mouse + touch events
-				var mouse = new Mouse(container, this.timer);
+				var mouse = new Mouse(this.events, container, this.timer);
 				mouse.InitControlsAvoiding();
-				var touch = new TouchEventsAPI(container, this.timer);
+				var touch = new TouchEventsAPI(this.events, container, this.timer);
 				console.log("Mouse and Touch Events API are used.");
 			}
 			
 			// init audio recording
 			if (!!settings.Audio) {
-				this.audioRecorder = new AudioRecorder(settings.Audio);
+				this.audioRecorder = new AudioRecorder(settings.Audio, this.events);
 				this.audioRecorder.Init();
 			}
 		
 			// set default bg color and init the first chunk
 			this.ClearCanvas(UI.Color.BackgroundColor); 
 			// init some values for the brush - user will change it immediately, but some are needed from the very start
-			VideoEvents.trigger(VET.ChangeColor, UI.Color.ForegroundColor);
-			VideoEvents.trigger(VET.ChangeBrushSize, new UI.BrushSize(5));
+			this.events.trigger(VET.ChangeColor, UI.Color.ForegroundColor);
+			this.events.trigger(VET.ChangeBrushSize, new UI.BrushSize(5));
 		}
 		
 		/**
@@ -367,7 +374,7 @@ module VectorScreencast {
          protected Busy(): void {
              this.busyLevel++;
              this.wasRecordingWhenBusy = this.wasRecordingWhenBusy || this.isRecording;
-             VideoEvents.trigger(VET.Pause);
+             this.events.trigger(VET.Pause);
              this.ui.Busy();
          }
          
@@ -378,7 +385,7 @@ module VectorScreencast {
          protected Ready(): void {
              if(--this.busyLevel === 0) {
                  if(this.wasRecordingWhenBusy === true) {
-                     VideoEvents.trigger(VET.Start);
+                     this.events.trigger(VET.Start);
                      this.wasRecordingWhenBusy = false;
                  }
                  this.ui.Ready();                 
@@ -400,12 +407,12 @@ module VectorScreencast {
 			console.log(videoBlob);
 				
 			// if I need saving the data to local computer in the future
-			VideoEvents.on(VET.DownloadData, function() {
+			this.events.on(VET.DownloadData, function() {
 				Helpers.File.Download(videoBlob, `recorded-animation.${writer.GetExtension() }`);
 			});
 			
 			this.ui.SetBusyText(this.settings.Localization.UploadInProgress);
-			VideoEvents.trigger(VET.Busy);
+			this.events.trigger(VET.Busy);
 								
 			// Upload the data via POST Ajax request
 			var formData: FormData = new FormData();
@@ -454,7 +461,7 @@ module VectorScreencast {
 				this.ui.SetBusyText(this.settings.Localization.UploadFailure);
 				if (confirm(this.settings.Localization.FailureApology)) {
 					// download all the recorded data locally
-					VideoEvents.trigger(VET.DownloadData);
+					this.events.trigger(VET.DownloadData);
 				}
 			}
 		}

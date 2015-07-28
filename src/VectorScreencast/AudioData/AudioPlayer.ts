@@ -77,7 +77,7 @@ module VectorScreencast.AudioData {
 		private playing: boolean;
 		private reachedEnd: boolean;
 		
-		constructor(sources: Array<AudioSource>) {
+		constructor(protected events: VideoEvents, sources: Array<AudioSource>) {
 			// create audio element
 			this.audio = this.CreateAudio(sources);
 			if(this.audio === null) { // no source can be played
@@ -155,14 +155,14 @@ module VectorScreencast.AudioData {
 		
 		private InitAudio() : void {			
 			// important audio events
-			this.audio.onended = () => VideoEvents.trigger(VideoEventType.ReachEnd);
+			this.audio.onended = () => this.events.trigger(VideoEventType.ReachEnd);
 			this.audio.onwaiting = () => this.Busy();
 			this.audio.oncanplay = () => this.Ready();
 			
 			// user's volume settings			
-			VideoEvents.on(VideoEventType.Mute, 		() => this.Mute());
-			VideoEvents.on(VideoEventType.VolumeUp, 	() => this.VolumeUp());
-			VideoEvents.on(VideoEventType.VolumeDown,	() => this.VolumeDown());
+			this.events.on(VideoEventType.Mute, 		() => this.Mute());
+			this.events.on(VideoEventType.VolumeUp, 	() => this.VolumeUp());
+			this.events.on(VideoEventType.VolumeDown,	() => this.VolumeDown());
 	
 			this.MonitorBufferingAsync();
 		};
@@ -172,13 +172,13 @@ module VectorScreencast.AudioData {
 		private Busy(): void {
 			if(this.playing) {
 				this.triggeredBusyState = true;
-				VideoEvents.trigger(VideoEventType.Pause);				
+				this.events.trigger(VideoEventType.Pause);				
 			}
 		}
 		
 		private Ready(): void {
 			if(this.triggeredBusyState) {
-				VideoEvents.trigger(VideoEventType.Ready);
+				this.events.trigger(VideoEventType.Ready);
 				this.triggeredBusyState = false; // do not fire more than once for each Busy() status				
 			}
 		}
@@ -200,7 +200,7 @@ module VectorScreencast.AudioData {
 		 * Be the one who tells others, when to play!
 		 */
 		private InitiatePlay() : void {
-			VideoEvents.trigger(VideoEventType.Start);
+			this.events.trigger(VideoEventType.Start);
 		}
 	
 		/**
@@ -252,7 +252,7 @@ module VectorScreencast.AudioData {
 			this.checkPreloaded = setInterval(() => {
 				var end: number = this.audio.buffered.end(this.audio.buffered.length - 1); 
 				if(end !== lastEnd) {
-					VideoEvents.trigger(VideoEventType.BufferStatus, end);
+					this.events.trigger(VideoEventType.BufferStatus, end);
 					lastEnd = end;
 				}
 				

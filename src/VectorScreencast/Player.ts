@@ -44,6 +44,10 @@ module VectorScreencast {
         /** Dimensions of the container */
         private oldWidth: number;
         private oldHeight: number;
+        
+        /** The instance of video events aggregator */
+        private events: VideoEvents;
+        public get Events(): VideoEvents { return this.events; }
                            
         /**
          * Create a new instance of the player and append it to a given container element.
@@ -52,6 +56,8 @@ module VectorScreencast {
          * @triggeres-event Busy
          */     
         constructor(id: string, private settings: Settings.PlayerSettings) {
+            this.events = new VideoEvents();
+            
             var container: HTMLElement = document.getElementById(id);
             if(!container) {
 				Helpers.Errors.Report(Helpers.ErrorType.Fatal, `Container #${id} doesn't exist. Video Player couldn't be initialised.`);
@@ -61,9 +67,6 @@ module VectorScreencast {
             while(!!container.firstChild) {
                 container.removeChild(container.firstChild);
             }
-            
-            // when the container is resized, stretch the canvas apropriately
-            window.onresize = () => this.MonitorResize(container);            
             
 			if(!settings.Localization) {
 				// default localization
@@ -92,7 +95,7 @@ module VectorScreencast {
             this.timer = new Helpers.VideoTimer(false);
                        
             // init the UI and bind it to an instance of a rendering strategy
-            this.ui = !!settings.UI ? settings.UI : new UI.PlayerUI(id);
+            this.ui = !!settings.UI ? settings.UI : new UI.PlayerUI(id, this.events);
             this.ui.Timer = this.timer;
             this.ui.Localization = settings.Localization;
             
@@ -102,40 +105,43 @@ module VectorScreencast {
             
             // init drawing strategy
             this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new Drawing.CanvasDrawer(true);
+            this.drawer.SetEvents(this.events);
             
             // bind drawing strategy with the UI
             this.ui.AcceptCanvas(this.drawer.CreateCanvas());
             container.appendChild(this.ui.GetHTML());
                                                 
 			// Start and stop the video
-			VideoEvents.on(VideoEventType.Start,		    ()	                  => this.Play());
-            VideoEvents.on(VideoEventType.Pause,            ()                    => this.Pause());
-            VideoEvents.on(VideoEventType.ReachEnd,         ()                    => this.Pause());
-            VideoEvents.on(VideoEventType.ClearCanvas,		(color: UI.Color)	  => this.ClearCavnas(color));
-	        VideoEvents.on(VideoEventType.ChangeColor,      (color: UI.Color)     => this.drawer.SetCurrentColor(color));
-            VideoEvents.on(VideoEventType.JumpTo,           (progress: number)    => this.JumpTo(progress));
+			this.events.on(VideoEventType.Start,		    ()	                  => this.Play());
+            this.events.on(VideoEventType.Pause,            ()                    => this.Pause());
+            this.events.on(VideoEventType.ReachEnd,         ()                    => this.Pause());
+            this.events.on(VideoEventType.ClearCanvas,		(color: UI.Color)	  => this.ClearCavnas(color));
+	        this.events.on(VideoEventType.ChangeColor,      (color: UI.Color)     => this.drawer.SetCurrentColor(color));
+            this.events.on(VideoEventType.JumpTo,           (progress: number)    => this.JumpTo(progress));
                         
 			// Draw path segment by segment
-			VideoEvents.on(VideoEventType.DrawSegment,		()	                  => this.DrawSegment());
-            VideoEvents.on(VideoEventType.DrawPath,         (path: Drawing.Path)  => {
+			this.events.on(VideoEventType.DrawSegment,		()	                  => this.DrawSegment());
+            this.events.on(VideoEventType.DrawPath,         (path: Drawing.Path)  => {
                 this.drawnPath.DrawWholePath();
                 this.drawnPath = null; // it is already drawn!
             });
             
             // React for busy/ready state changes
             this.busyLevel = 0;
-            VideoEvents.on(VideoEventType.Busy,     () => this.Busy());
-            VideoEvents.on(VideoEventType.Ready,    () => this.Ready());
+            this.events.on(VideoEventType.Busy,     () => this.Busy());
+            this.events.on(VideoEventType.Ready,    () => this.Ready());
             
             // wait until the file is loaded
             this.ui.SetBusyText(settings.Localization.Busy);
-            VideoEvents.trigger(VideoEventType.Busy);
-                        
-            // resize the canvas
-            this.MonitorResize(container);
+            this.events.trigger(VideoEventType.Busy);
                                     
             Helpers.File.ReadFileAsync(settings.Source,
-                (file: any) => this.ProcessVideoData(file),
+                (file: any) => {
+                    this.ProcessVideoData(file);
+                    this.MonitorResize(container);                            
+                    // when the container is resized, stretch the canvas apropriately
+                    window.onresize = () => this.MonitorResize(container);        
+                },
                 (errStatusCode: number) => {
                     Errors.Report(ErrorType.Warning, this.settings.Localization.DataLoadingFailed);
                     this.ui.SetBusyText(settings.Localization.DataLoadingFailed);                  
@@ -150,11 +156,14 @@ module VectorScreencast {
             var rect = container.getBoundingClientRect();
             if(rect.width !== this.oldWidth || rect.height !== this.oldHeight) {
                 this.drawer.Stretch();
+                var scalingFactor = this.drawer.SetupOutputCorrection(this.video.Metadata.Width, this.video.Metadata.Height);
+                this.events.trigger(VideoEventType.CanvasScalingFactor, scalingFactor);
+            
                 if(!!this.video) {
                     this.RedrawCurrentScreen();                    
                 }
                 this.oldWidth = rect.width;
-                this.oldHeight = rect.width;
+                this.oldHeight = rect.height;
             }
         }
         
@@ -166,9 +175,9 @@ module VectorScreencast {
         private ProcessVideoData(data: any): void {
             try {
                 var reader: VideoFormat.Reader = !!this.settings.VideoFormat ? this.settings.VideoFormat : new VideoFormat.SVGAnimation.IO();
-                this.video = reader.LoadVideo(data);
+                this.video = reader.LoadVideo(this.events, data);
                 reader = null;
-                this.audio = new AudioPlayer(this.video.Metadata.AudioTracks);                
+                this.audio = new AudioPlayer(this.events, this.video.Metadata.AudioTracks);                
             } catch (e) {
                 // parsing data failed                
                 reader = null;
@@ -177,20 +186,18 @@ module VectorScreencast {
                 this.ui.SetBusyText(this.settings.Localization.DataIsCorrupted);
                 return;
             }
-            
-            VideoEvents.trigger(VideoEventType.VideoInfoLoaded, this.video.Metadata);
-            var scalingFactor = this.drawer.SetupOutputCorrection(this.video.Metadata.Width, this.video.Metadata.Height);
-            VideoEvents.trigger(VideoEventType.CanvasScalingFactor, scalingFactor);
-            
+                        
+            this.events.trigger(VideoEventType.VideoInfoLoaded, this.video.Metadata);
+                        
             // do zero-time actions:
             this.video.RewindMinusOne(); // churrent chunk <- -1
             this.MoveToNextChunk();
             
-            VideoEvents.trigger(VideoEventType.Ready);
+            this.events.trigger(VideoEventType.Ready);
             
             // if autostart is set, then this is the right time to start the video 
             if(!!this.settings.Autoplay) {
-                VideoEvents.trigger(VideoEventType.Start);
+                this.events.trigger(VideoEventType.Start);
             }
         }        
         
@@ -261,7 +268,7 @@ module VectorScreencast {
                 if(this.video.CurrentChunk.CurrentCommand instanceof VideoData.MoveCursor) {
                     this.lastMouseMoveState = this.video.CurrentChunk.CurrentCommand;
                 } else {
-                    this.video.CurrentChunk.CurrentCommand.Execute();                    
+                    this.video.CurrentChunk.CurrentCommand.Execute(this.events);                    
                 }
                 
                 this.video.CurrentChunk.MoveNextCommand();                
@@ -269,7 +276,7 @@ module VectorScreencast {
             
             // only one cursor movement per Sync is enough
             if(this.lastMouseMoveState !== null) {
-                this.lastMouseMoveState.Execute();
+                this.lastMouseMoveState.Execute(this.events);
                 this.lastMouseMoveState = null;
             }
                         
@@ -293,11 +300,11 @@ module VectorScreencast {
                 
                 // set current brush color and size, as well as cursor position
                 // this will make sure that paths are rendered correctly even though I skip a lot of commands
-                this.video.CurrentChunk.ExecuteInitCommands();      
+                this.video.CurrentChunk.ExecuteInitCommands(this.events);      
                 
                 // Prepare a path, if it is a PathChunk, of course                
                 if(this.video.CurrentChunk instanceof VideoData.PathChunk) {
-                    this.drawnPath = this.drawer.CreatePath();
+                    this.drawnPath = this.drawer.CreatePath(this.events);
                     // copy the information
                     var path: Drawing.Path = (<VideoData.PathChunk>this.video.CurrentChunk).Path;
                     this.drawnPath.Segments = path.Segments;               
@@ -311,7 +318,7 @@ module VectorScreencast {
                 
                 if(this.video.PeekNextChunk()
                     && this.video.PeekNextChunk().StartTime <= this.timer.CurrentTime()) {                        
-                    this.video.CurrentChunk.Render(); // render the whole chunk at once
+                    this.video.CurrentChunk.Render(this.events); // render the whole chunk at once
                 } else {
                     // this chunk will not be rendered at once
                     break;
@@ -335,7 +342,7 @@ module VectorScreencast {
             
             if(this.isPlaying) {
                 // pause after setting the time            
-    			VideoEvents.trigger(VideoEventType.Pause);                
+    			this.events.trigger(VideoEventType.Pause);                
             }
                         
             // sync the video:		
@@ -359,7 +366,7 @@ module VectorScreencast {
 			
 			if(wasPlaying === true) {
                 // pause after setting the time            
-    			VideoEvents.trigger(VideoEventType.Start);
+    			this.events.trigger(VideoEventType.Start);
 			} 
 		}
         
@@ -371,7 +378,7 @@ module VectorScreencast {
             var wasPlaying: boolean = this.isPlaying;	
 			if(this.isPlaying) {
                 // pause after setting the time            
-    			VideoEvents.trigger(VideoEventType.Pause);                
+    			this.events.trigger(VideoEventType.Pause);                
             }
                         
             // sync the video:		
@@ -385,7 +392,7 @@ module VectorScreencast {
 			// rendering request will also be made			
 			if(wasPlaying === true) {
                 // pause after setting the time            
-    			VideoEvents.trigger(VideoEventType.Start);
+    			this.events.trigger(VideoEventType.Start);
 			} 
         }
         
@@ -394,7 +401,7 @@ module VectorScreencast {
          * @triggeres-event ReachedEnd
 		 */
 		private ReachedEnd() : void {
-			VideoEvents.trigger(VideoEventType.ReachEnd);			
+			this.events.trigger(VideoEventType.ReachEnd);			
 		}
         
         /**
@@ -431,7 +438,7 @@ module VectorScreencast {
          protected Busy(): void {
              this.busyLevel++;
              this.wasPlayingWhenBusy = this.wasPlayingWhenBusy || this.isPlaying;
-             VideoEvents.trigger(VideoEventType.Pause);
+             this.events.trigger(VideoEventType.Pause);
              this.ui.Busy();
          }
          
@@ -443,7 +450,7 @@ module VectorScreencast {
          protected Ready(): void {
              if(--this.busyLevel === 0) {
                  if(this.wasPlayingWhenBusy === true) {
-                     VideoEvents.trigger(VideoEventType.Start);
+                     this.events.trigger(VideoEventType.Start);
                      this.wasPlayingWhenBusy = false;
                  }
                  this.ui.Ready();                 

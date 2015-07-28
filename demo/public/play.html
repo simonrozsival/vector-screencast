@@ -46,8 +46,8 @@
                 Source: sourceFile,
                 Autohide: true,
                 Autoplay: !!urlQuery["autoplay"],
-                ShowControls: !urlQuery["hide-controls"],                
-                DrawingStrategy: !!urlQuery["method"] && urlQuery["method"] === "svg" ? new VS.Drawing.SVGDrawer() : new VS.Drawing.CanvasDrawer()
+                ShowControls: !urlQuery["hide-controls"],
+                //DrawingStrategy: new VS.Drawing.SVGDrawer()
             });
         };
         

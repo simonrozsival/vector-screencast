@@ -61,9 +61,9 @@ module VectorScreencast.VideoData {
 		 * before continuing the playback. This is necessary when skipping to different point 
 		 * on the timeline and skipping rendering of some parts of the video using "lastErase" hints.. 
 		 */
-		ExecuteInitCommands(): void {
+		ExecuteInitCommands(events: VideoEvents): void {
 			for (var i = 0; i < this.initCommands.length; i++) {
-				this.initCommands[i].Execute();
+				this.initCommands[i].Execute(events);
 			}
 		}
 					
@@ -117,7 +117,7 @@ module VectorScreencast.VideoData {
 		 * @abstract
 		 * @throws Error
 		 */
-		Render(): void {
+		Render(events: VideoEvents): void {
 			throw new Error("Not implemented");
 		}
 	}
@@ -155,7 +155,7 @@ module VectorScreencast.VideoData {
 		 * Render the whole (current) path.
 		 * @treggers-event	DrawPath
 		 */
-		Render(): void { VideoEvents.trigger(VideoEventType.DrawPath); }
+		Render(events: VideoEvents): void { events.trigger(VideoEventType.DrawPath); }
 	}
 	
 	/**
@@ -168,20 +168,20 @@ module VectorScreencast.VideoData {
 		/**
 		 * Run the implicit erase command.
 		 */
-		ExecuteInitCommands(): void {
+		ExecuteInitCommands(events: VideoEvents): void {
 			// the clear canvas command is not stored anywhere, create it ad hoc:
-			this.Render();
+			this.Render(events);
 			
 			// now the rest
-			super.ExecuteInitCommands();
+			super.ExecuteInitCommands(events);
 		}
 		
 		/**
 		 * Clear the whole canvas with a single color.
 		 * @triggers-event	ClearCanvas
 		 */
-		Render(): void {
-			VideoEvents.trigger(VideoEventType.ClearCanvas, this.color);
+		Render(events: VideoEvents): void {
+			events.trigger(VideoEventType.ClearCanvas, this.color);
 		}
 		
 		/**

@@ -40,10 +40,11 @@ module VectorScreencast.VideoData {
 					
 		/**
 		 * Listen to events
+		 * @param	events	Event aggregator
 		 * @param	board	HTML element of the board
 		 * @param	timer	(High resolution) timer
 		 */
-		constructor(protected board: HTMLElement, protected timer: Helpers.VideoTimer) {			
+		constructor(protected events: VideoEvents, protected board: HTMLElement, protected timer: Helpers.VideoTimer) {			
 			this.isHoveringOverUIControl = false; 
 		}
 		
@@ -149,7 +150,7 @@ module VectorScreencast.VideoData {
 		 */
 		private ReportAction() {					
 			var state: State = new CursorState(this.timer.CurrentTime(), this.cursor.x, this.cursor.y, this.GetPressure());
-			VideoEvents.trigger(VideoEventType.CursorState, state);
+			this.events.trigger(VideoEventType.CursorState, state);
 		}
 	}
 }

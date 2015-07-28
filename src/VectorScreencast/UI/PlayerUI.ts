@@ -43,9 +43,8 @@ module VectorScreencast.UI {
 		/**
 		 * Create a new instance of Player UI
 		 * @param	id				Unique ID of this recorder instance
-		 * @param	localization	List of translated strings 
 		 */
-		constructor(private id: string) {						
+		constructor(private id: string, protected events: VideoEvents) {						
 			super("div", `${id}-player`);
 			this.AddClass("vector-video-wrapper");
 			
@@ -54,11 +53,11 @@ module VectorScreencast.UI {
 			this.AddChild(this.board);
 						
 			// React to events triggered from outside
-			VideoEvents.on(VideoEventType.Start, () => this.StartPlaying());
-			VideoEvents.on(VideoEventType.Pause, () => this.PausePlaying());		
-			VideoEvents.on(VideoEventType.ReachEnd, () => this.ReachedEnd());
-			VideoEvents.on(VideoEventType.JumpTo, () => this.JumpTo());
-			VideoEvents.on(VideoEventType.ClearCanvas, (c: Color) => this.GetHTML().style.backgroundColor = c.CssValue); // make the bg of the player match the canvas 
+			this.events.on(VideoEventType.Start, () => this.StartPlaying());
+			this.events.on(VideoEventType.Pause, () => this.PausePlaying());		
+			this.events.on(VideoEventType.ReachEnd, () => this.ReachedEnd());
+			this.events.on(VideoEventType.JumpTo, () => this.JumpTo());
+			this.events.on(VideoEventType.ClearCanvas, (c: Color) => this.GetHTML().style.backgroundColor = c.CssValue); // make the bg of the player match the canvas 
 						
 			// set current state
 			this.isPlaying = false;
@@ -94,12 +93,12 @@ module VectorScreencast.UI {
 			);
 			
 			// Set the duration of the video as soon as available
-			VideoEvents.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
+			this.events.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
 				this.videoDuration = meta.Length;
 				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
 				this.timeline.Length = meta.Length;
 			});
-			VideoEvents.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
+			this.events.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
 			
 			// allow keyboard
 			this.BindKeyboardShortcuts();			
@@ -152,7 +151,7 @@ module VectorScreencast.UI {
 		 * Create the 
 		 */
 		private CreateBoard() : Board {
-			var board: Board = new Board(`${this.id}-board`);		
+			var board: Board = new Board(`${this.id}-board`, this.events);		
 			board.GetHTML().onclick = () => this.PlayPause();	
 			return board;
 		}
@@ -183,16 +182,16 @@ module VectorScreencast.UI {
 			if(this.reachedEnd) {
 				this.reachedEnd = false;
 				this.timeline.SkipTo(0); // jump to the start				
-				VideoEvents.trigger(VideoEventType.Start);
+				this.events.trigger(VideoEventType.Start);
 				return;
 			}
 			
 			if(this.isPlaying === true) {
 				this.PausePlaying();
-				VideoEvents.trigger(VideoEventType.Pause);
+				this.events.trigger(VideoEventType.Pause);
 			} else {
 				this.StartPlaying();
-				VideoEvents.trigger(VideoEventType.Start);
+				this.events.trigger(VideoEventType.Start);
 			}
 		}
 		
@@ -240,7 +239,7 @@ module VectorScreencast.UI {
 		 * @return		Timeline instance.
 		 */				
 		private CreateTimeLine() : TimeLine {
-			return new TimeLine(`${this.id}-timeline`);
+			return new TimeLine(`${this.id}-timeline`, this.events);
 		}
 		
 		/** Element with the ifnromation about the total duration of the video. */
@@ -346,7 +345,7 @@ module VectorScreencast.UI {
 		 * @triggeres-event	VolumeUp
 		 */
 		protected VolumeUp(): void {
-			VideoEvents.trigger(VideoEventType.VolumeUp);
+			this.events.trigger(VideoEventType.VolumeUp);
 		}
 		
 		/**
@@ -354,7 +353,7 @@ module VectorScreencast.UI {
 		 * @triggers-event	VolumeDown
 		 */
 		protected VolumeDown(): void {
-			VideoEvents.trigger(VideoEventType.VolumeDown);
+			this.events.trigger(VideoEventType.VolumeDown);
 		}		 
 		 
 		/** Is the audio muted at the moment? */
@@ -376,7 +375,7 @@ module VectorScreencast.UI {
 			}
 			
 			this.isMuted = !this.isMuted;
-			VideoEvents.trigger(VideoEventType.Mute);
+			this.events.trigger(VideoEventType.Mute);
 		}
 		
 		/**

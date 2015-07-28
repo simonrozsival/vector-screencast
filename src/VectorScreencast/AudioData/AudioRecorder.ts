@@ -55,7 +55,7 @@ module VectorScreencast.AudioData {
 		 * Initialise the audio recoder
 		 * @param	config	Audio recorder settings from the outside.
 		 */
-		constructor(config: Settings.AudioRecorderSettings) {
+		constructor(config: Settings.AudioRecorderSettings, protected events: VideoEvents) {
 			// update default settings
 			if(!!config.host) this.settings.host = config.host;
 			if(!!config.port) this.settings.port = config.port;
@@ -64,7 +64,7 @@ module VectorScreencast.AudioData {
 			// wait until the user starts recording
 			this.recording = false;
 			this.muted = false;
-			VideoEvents.on(VideoEventType.MuteAudioRecording, () => this.muted = !this.muted);
+			this.events.on(VideoEventType.MuteAudioRecording, () => this.muted = !this.muted);
 			
 			// default callbacks
 			this.error = (msg: any) => console.log("AudioRecorder error: ", msg);
@@ -88,7 +88,7 @@ module VectorScreencast.AudioData {
 											|| null); // others
 			
 				// busy until user confirms or bans audio recording
-				VideoEvents.trigger(VideoEventType.Busy);
+				this.events.trigger(VideoEventType.Busy);
 				navigator.getUserMedia(
 					// constraints - we record only audio
 					{
@@ -116,9 +116,9 @@ module VectorScreencast.AudioData {
 							if(!!success) {
 								success();								
 							}
-							VideoEvents.trigger(VideoEventType.AudioRecordingAvailable);
-							VideoEvents.trigger(VideoEventType.RegisterRecordingTool, "audio-recorder");
-							VideoEvents.trigger(VideoEventType.Ready); // now the recording might start
+							this.events.trigger(VideoEventType.AudioRecordingAvailable);
+							this.events.trigger(VideoEventType.RegisterRecordingTool, "audio-recorder");
+							this.events.trigger(VideoEventType.Ready); // now the recording might start
 						}
 					},
 	
@@ -128,15 +128,15 @@ module VectorScreencast.AudioData {
 							Errors.Report(ErrorType.Warning, "User didn't allow microphone recording.");
 						}						
 						Errors.Report(ErrorType.Warning, "Can't record audio", err);
-						VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
-						VideoEvents.trigger(VideoEventType.Ready); // now the recording might start
+						this.events.trigger(VideoEventType.AudioRecordingUnavailable);
+						this.events.trigger(VideoEventType.Ready); // now the recording might start
 					}
 				);
 	
 			} else {
 				console.log("getUserMedia not supported by the browser");
 				Errors.Report(ErrorType.Warning, "getUserMedia not supported by the browser");
-				VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
+				this.events.trigger(VideoEventType.AudioRecordingUnavailable);
 			}
 		}
 	
@@ -326,7 +326,7 @@ module VectorScreencast.AudioData {
 			this.recordingWorker.terminate();
 			this.recordingWorker = null;
 			
-			VideoEvents.trigger(VideoEventType.RecordingToolFinished, "audio-recorder");
+			this.events.trigger(VideoEventType.RecordingToolFinished, "audio-recorder");
 			var sources: Array<AudioSource> = [];
 			for (var i = 0; i < msg.files.length; i++) {
 				var file = msg.files[i];
@@ -340,7 +340,7 @@ module VectorScreencast.AudioData {
 		 * Inform about network connection loss.
 		 */
 		 private WorkerNetworkError(): void {
-			 VideoEvents.trigger(VideoEventType.AudioRecordingUnavailable);
+			 this.events.trigger(VideoEventType.AudioRecordingUnavailable);
 		 }
 	}
 	

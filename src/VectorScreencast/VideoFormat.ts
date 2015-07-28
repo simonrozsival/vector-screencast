@@ -15,10 +15,11 @@ module VectorScreencast.VideoFormat {
 	export interface Reader {
 		/**
 		 * Read contents of a file and extrac all the information about the video.
+		 * @param	events	Events aggregator
 		 * @param	file	The downloaded source file
 		 * @return			Video data
 		 */
-		LoadVideo(file: any): Video;
+		LoadVideo(events: Helpers.VideoEvents, file: any): Video;
 		
 		/**
 		 * Get supported extension

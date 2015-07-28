@@ -20,7 +20,7 @@ module VectorScreencast.UI {
 		/** Current color of this button. */
 		private color: Color;
 		
-		constructor(color: Color, callback?: Function) {						
+		constructor(protected events: VideoEvents, color: Color, callback?: Function) {						
 			super(""); // empty text			
 			this.SetColor(color);
 			
@@ -41,7 +41,7 @@ module VectorScreencast.UI {
 						
 			// announce the change
 			ChangeColorButton.active = this;
-			VideoEvents.trigger(VideoEventType.ChangeColor, this.color);
+			this.events.trigger(VideoEventType.ChangeColor, this.color);
 		}
 	
 		/**
@@ -68,7 +68,7 @@ module VectorScreencast.UI {
 		/** Reference to the active button. */
 		private static active: Button;
 		
-		constructor(private size: BrushSize) {						
+		constructor(protected events: VideoEvents, private size: BrushSize) {						
 			super(""); // empty text			
 			
 			// there will be a dot corresponding to the brush size
@@ -111,7 +111,7 @@ module VectorScreencast.UI {
 						
 			// announce the change
 			ChangeBrushSizeButton.active = this;
-			VideoEvents.trigger(VideoEventType.ChangeBrushSize, this.size);
+			this.events.trigger(VideoEventType.ChangeBrushSize, this.size);
 		}
 		
 	}

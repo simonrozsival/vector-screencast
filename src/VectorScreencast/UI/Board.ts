@@ -43,24 +43,25 @@ module VectorScreencast.UI {
 		 * Create a new board
 		 * @param	id	HTML element id attribute value
 		 */
-		constructor(id: string) {
+		constructor(id: string, protected events: VideoEvents) {
 			super("div", id); // Panel
 			HTML.SetAttributes(this.GetHTML(), { class: "vector-video-board" });
 			
 			// create a cursor 
-			this.cursor = new Cursor();
+			this.cursor = new Cursor(events);
 			this.AddChild(<IElement> this.cursor);
 			
 			// make board's position relative for the cursor			
 			HTML.SetAttributes(this.GetHTML(), { position: "relative" });
 			
 			// move the cursor
-			VideoEvents.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));
-			VideoEvents.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));			
-			VideoEvents.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)				=> this.UpdateCursorSize(state));
-			VideoEvents.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
-			VideoEvents.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
-			VideoEvents.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)			=> this.UpdateCursorScale(scalingFactor));
+			events.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));
+			events.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));			
+			events.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)				=> this.UpdateCursorSize(state));
+			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
+			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
+			events.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)			=> this.UpdateCursorScale(scalingFactor));
+			events.on(VideoEventType.CursorOffset, 		(offset: Helpers.Vector2)		=> this.cursor.Offset = offset);
 		}
 				
 		/**

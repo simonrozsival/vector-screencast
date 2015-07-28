@@ -70,7 +70,8 @@ module VectorScreencast.Drawing {
 		/**
 		 * Initialise new instance of DynaDraw
 		 */
-		constructor(protected pathFactory: () => Path,
+		constructor(protected events: VideoEvents,
+					protected pathFactory: () => Path,
 					private slowSimulation: boolean,
 					private minBrushSize: number,
 					private maxBrushSize: number,
@@ -105,7 +106,7 @@ module VectorScreencast.Drawing {
 						
 						// start a new path - prepare new chunk		
 						this.path = this.pathFactory();				
-						VideoEvents.trigger(VideoEventType.StartPath, this.path);
+						this.events.trigger(VideoEventType.StartPath, this.path);
                         this.StartPath(nextPoint, cursor.Pressure);      
                     } else {
                         this.NextPoint(nextPoint, cursor.Pressure);
