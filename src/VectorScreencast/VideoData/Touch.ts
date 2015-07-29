@@ -7,16 +7,16 @@ module VectorScreencast.VideoData {
 	 * Touch Events API implementation
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
 	 */
-	export class TouchEventsAPI extends PointingDevice {
+	export class TouchEventsAPI extends Mouse {
 				
-		constructor(events: Helpers.VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) {
-			super(events, board, timer);
+		constructor(events: Helpers.VideoEvents, container: HTMLElement, protected canvas: HTMLElement, timer: Helpers.VideoTimer) {
+			super(events, container, timer);
 			
-			board.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
-			board.addEventListener("touchend", 		(ev: TouchEvent) => this.TouchEnd(ev));
-			board.addEventListener("touchcancel", 	(ev: TouchEvent) => this.TouchEnd(ev));
-			board.addEventListener("touchleave", 	(ev: TouchEvent) => this.TouchLeave(ev));
-			board.addEventListener("touchmove", 	(ev: TouchEvent) => this.TouchMove(ev));
+			canvas.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
+			canvas.addEventListener("touchend", 	(ev: TouchEvent) => this.TouchEnd(ev));
+			canvas.addEventListener("touchcancel", 	(ev: TouchEvent) => this.TouchEnd(ev));
+			canvas.addEventListener("touchleave", 	(ev: TouchEvent) => this.TouchLeave(ev));
+			canvas.addEventListener("touchmove", 	(ev: TouchEvent) => this.TouchMove(ev));
 		}
 		
 		/** current touch identifier */
@@ -26,16 +26,17 @@ module VectorScreencast.VideoData {
 		 * Some finger touches the screen.
 		 * @param	event	Touch event information.
 		 */
-		private TouchStart(event: TouchEvent): void {			
-			//event.preventDefault();
+		private TouchStart(event: TouchEvent): void {					
+			event.preventDefault();
 			var touches: TouchList = event.changedTouches;
 			
 			// select the first touch and follow only this one touch			
 			var touch = touches[0];
 			this.currentTouch = touch.identifier;
 			this.isInside = true;
+			this.isHoveringOverUIControl = false;
 			
-			this.onDown(touch);
+			this.onMouseDown(touch);
 		}
 		
 		/**
@@ -43,13 +44,13 @@ module VectorScreencast.VideoData {
 		 * @param	event	Touch event information.
 		 */
 		protected TouchLeave(event: TouchEvent): void {
-			//event.preventDefault();
+			event.preventDefault();
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
 				return; // current touch hasn't left the board
 			}
 			
-			this.onLeave(touch);
+			this.onMouseLeave(touch);
 		}
 		
 		/**
@@ -61,7 +62,7 @@ module VectorScreencast.VideoData {
 			if(touch === null) {
 				return;
 			}
-			this.onUp(touch);
+			this.onMouseUp(touch);
 						
 			// forget about the one concrete touch
 			this.currentTouch = null;			
@@ -72,14 +73,14 @@ module VectorScreencast.VideoData {
 		 * @param	event	Touch event information.
 		 */
 		protected TouchMove(event: TouchEvent): void {
-			//event.preventDefault();			
+			event.preventDefault();	
 				
 			var touch = this.filterTouch(event.changedTouches);
 			if(touch === null) {
 				return;
 			}
-			
-			this.onMove(touch);
+						
+			this.onMouseMove(touch);
 		}
 		
 		/**

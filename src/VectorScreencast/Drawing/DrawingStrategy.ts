@@ -6,7 +6,7 @@ module VectorScreencast.Drawing {
      * An interface describing a drawing strategy.
      */
 	export interface DrawingStrategy {        
-        CreateCanvas(): Element;        
+        CreateCanvas(): HTMLElement;        
 		Stretch(): void;
         ClearCanvas(color: UI.Color): void;
         CreatePath(events: Helpers.VideoEvents): Path;

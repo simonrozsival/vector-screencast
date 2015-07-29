@@ -43,7 +43,7 @@ module VectorScreencast.Drawing {
         /** Background layer */
         private bg: Element;          
         
-        public CreateCanvas(): Element {            
+        public CreateCanvas(): HTMLElement {            
             // create the SVG canvas that will be drawn onto
             this.svg = SVG.CreateElement("svg");
             
@@ -61,7 +61,7 @@ module VectorScreencast.Drawing {
             });
             this.svg.appendChild(this.canvas);    
             
-            return this.svg;      
+            return <HTMLElement> this.svg;      
         }
         
         /**

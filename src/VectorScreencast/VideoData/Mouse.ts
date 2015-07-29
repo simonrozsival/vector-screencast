@@ -40,28 +40,28 @@ module VectorScreencast.VideoData {
 		/**
 		 * Trace mouse movement.
 		 */
-		protected onMouseMove(e: MouseEvent) : any {
+		protected onMouseMove(e: PointingDeviceEvent) : any {
 			this.onMove(e);
 		}
 	
 		/**
 		 * Start drawing lines.
 		 */
-		protected onMouseDown(e: MouseEvent) : any {
+		protected onMouseDown(e: PointingDeviceEvent) : any {
 			this.onDown(e);
 		}
 	
 		/**
 		 * Stop drawing lines.
 		 */
-		protected onMouseUp(e: MouseEvent) : any {
+		protected onMouseUp(e: PointingDeviceEvent) : any {
 			this.onUp(e);
 		}
 		
 		/**
 		 * Stop drawing lines.
 		 */
-		protected onMouseLeave(e: MouseEvent) : any {
+		protected onMouseLeave(e: PointingDeviceEvent) : any {
 			this.onLeave(e);
 		}
 		
@@ -77,7 +77,7 @@ module VectorScreencast.VideoData {
 		/**
 		 * Mark down that the cursor is hovering over the canvas.
 		 */
-		protected onMouseOver(e: MouseEvent) : any {
+		protected onMouseOver(e: PointingDeviceEvent) : any {
 			this.isInside = true;
 		}		
 	}

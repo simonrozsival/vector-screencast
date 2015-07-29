@@ -217,13 +217,14 @@ module VectorScreencast {
 			this.ui.CreateHTML(!!settings.Autohide, settings.ColorPallete, settings.BrushSizes);
 			
 			// ...and connect it to the drawer
-			this.ui.AcceptCanvas(this.drawer.CreateCanvas());
+			var canvas: HTMLElement = this.drawer.CreateCanvas();
+			this.ui.AcceptCanvas(canvas);
 			container.appendChild(this.ui.GetHTML());
 			this.drawer.Stretch(); // adapt to the environment
 			
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
-			if (wacomApi !== null) { // Wacom plugin is prefered
+			if (false && wacomApi !== null) { // Wacom plugin is prefered
 				var tablet = new WacomTablet(this.events, container, this.timer, wacomApi);
 				tablet.InitControlsAvoiding();
 				console.log("Wacom WebPAPI is used");
@@ -232,9 +233,8 @@ module VectorScreencast {
 				pointer.InitControlsAvoiding();
 				console.log("Pointer Events API is used");
 			} else { // fallback to mouse + touch events
-				var mouse = new Mouse(this.events, container, this.timer);
-				mouse.InitControlsAvoiding();
-				var touch = new TouchEventsAPI(this.events, container, this.timer);
+				var touch = new TouchEventsAPI(this.events, container, canvas, this.timer);
+				touch.InitControlsAvoiding();
 				console.log("Mouse and Touch Events API are used.");
 			}
 			

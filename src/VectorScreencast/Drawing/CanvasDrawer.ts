@@ -47,10 +47,10 @@ module VectorScreencast.Drawing {
         /**
          * Create a new renderer that will produce output into the CANVAS elemement usning HTML5.
          */
-        CreateCanvas(): Element {
+        CreateCanvas(): HTMLElement {
             this.canvas = <HTMLCanvasElement> HTML.CreateElement("canvas");
 			this.context = <CanvasRenderingContext2D> this.canvas.getContext("2d");            
-            return <Element> this.canvas;     
+            return this.canvas;     
         }
         
         /**
