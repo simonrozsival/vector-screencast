@@ -224,7 +224,7 @@ module VectorScreencast {
 			
 			// select best input method
 			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
-			if (false && wacomApi !== null) { // Wacom plugin is prefered
+			if (wacomApi !== null) { // Wacom plugin is prefered
 				var tablet = new WacomTablet(this.events, container, this.timer, wacomApi);
 				tablet.InitControlsAvoiding();
 				console.log("Wacom WebPAPI is used");
