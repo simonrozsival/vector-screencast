@@ -8,6 +8,7 @@
 /// <reference path="VideoData/Touch" />
 /// <reference path="VideoData/Video" />
 /// <reference path="VideoData/WacomTablet" />
+/// <reference path="VideoData/AppleForceTouch" />
 
 /**
  * Set of classes describing all parts of a vector screencast video.

@@ -13,7 +13,7 @@ module VectorScreencast.VideoData {
 	 * Mouse input detection and processing. 
 	 */
 	export class Mouse extends PointingDevice {
-						
+								
 		constructor(events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) {
 			super(events, board, timer);
 			// board events						
@@ -40,7 +40,7 @@ module VectorScreencast.VideoData {
 		/**
 		 * Trace mouse movement.
 		 */
-		protected onMouseMove(e: PointingDeviceEvent) : any {
+		protected onMouseMove(e: PointingDeviceEvent) : any {			
 			this.onMove(e);
 		}
 	

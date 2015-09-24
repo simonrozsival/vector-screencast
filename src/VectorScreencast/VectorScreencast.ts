@@ -1,6 +1,6 @@
+/// <reference path="Helpers" />
 /// <reference path="AudioData" />
 /// <reference path="Drawing" />
-/// <reference path="Helpers" />
 /// <reference path="Localization" />
 /// <reference path="Settings" />
 /// <reference path="UI" />
@@ -28,4 +28,13 @@
  * @author Šimon Rozsíval <simon@roszival.com>
  * @prefered
  */
-module VectorScreencast { }
+module VectorScreencast {
+	
+}
+
+/**
+ * Named module - for nodejs
+ */
+declare module 'vector-screencast' {
+	export = VectorScreencast;
+}

@@ -1,7 +1,8 @@
-/// <reference path="Mouse" />
 /// <reference path="../VectorScreencast" />
 
 module VectorScreencast.VideoData {
+	
+	import VideoEvents = Helpers.VideoEvents;
 	
 	/**
 	 * This is an interface compatible with Wacom Pen API
@@ -39,6 +40,10 @@ module VectorScreencast.VideoData {
 		
 		constructor(events: Helpers.VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer, private penApi: IWacomApi) {
 			super(events, board, timer);
+		}
+		
+		static Factory(api: IWacomApi): (events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) => PointingDevice {
+			return (events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) => new WacomTablet(events, board, timer, api);
 		}
 		
 		/**

@@ -8,6 +8,9 @@ module VectorScreencast.VideoData {
 	import CursorState = Helpers.CursorState;
 	import Timer = Helpers.VideoTimer;
 
+	export interface PointingDeviceFactory {
+		(events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer): PointingDevice;
+	}
 	
 	/**
 	 * Mouse input detection and processing. 

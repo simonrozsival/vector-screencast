@@ -1,11 +1,16 @@
 {
   "scripts": {
-    "start": "./node_modules/pm2/bin/pm2 start demo/server.js; ./node_modules/pm2/bin/pm2 start demo/audio.js",
-    "stop": "./node_modules/pm2/bin/pm2 stop demo/server.js; ./node_modules/pm2/bin/pm2 stop demo/audio.js"
+    "start": "pm2 start demo/server.js; pm2 start demo/audio.js",
+    "stop": "pm2 stop demo/server.js; pm2 stop demo/audio.js",
+    "build": "gulp",
+    "build-tests": "gulp build-tests",
+    "build-tests:watch": "gulp build-tests:watch",
+    "test": "gulp test",
+    "test:watch": "gulp test:watch"
   },
   "name": "VectorVideo",
-  "version": "0.2.0",
-  "readme": "readme.md",
+  "version": "0.9.0",
+  "readme": "README.md",
   "repository": {
     "type": "git",
     "url": "https://github.com/simonrozsival/vectorvideo"
@@ -47,7 +52,13 @@
     "ws": "^0.7.2"
   },
   "devDependencies": {
+    "babel": "^5.8.23",
     "busboy": "^0.2.9",
-    "gulp-typedoc": "^1.1.0"
+    "chai": "^3.3.0",
+    "gulp-mocha": "^2.1.3",
+    "gulp-typedoc": "^1.1.0",
+    "mocha": "^2.3.3",
+    "typescript": "^1.5.0-beta",
+    "typescript-require": "^0.2.9"
   }
 }

@@ -66,6 +66,9 @@ module VectorScreencast {
 		/** (High resolution) timer */
 		protected timer: Helpers.VideoTimer;
 		
+		/** Cursor movement input */
+		protected pointer: VideoData.PointingDevice;
+		
 		/** Recording might be blocked at some moment - i.e. when uploading data */
 		protected recordingBlocked: boolean;
 				
@@ -222,21 +225,7 @@ module VectorScreencast {
 			container.appendChild(this.ui.GetHTML());
 			this.drawer.Stretch(); // adapt to the environment
 			
-			// select best input method
-			var wacomApi: IWacomApi = WacomTablet.IsAvailable();
-			if (wacomApi !== null) { // Wacom plugin is prefered
-				var tablet = new WacomTablet(this.events, container, this.timer, wacomApi);
-				tablet.InitControlsAvoiding();
-				console.log("Wacom WebPAPI is used");
-			} else if (window.hasOwnProperty("PointerEvent")) { // pointer events implement pressure-sensitivity
-				var pointer = new PointerEventsAPI(this.events, container, this.timer);
-				pointer.InitControlsAvoiding();
-				console.log("Pointer Events API is used");
-			} else { // fallback to mouse + touch events
-				var touch = new TouchEventsAPI(this.events, container, canvas, this.timer);
-				touch.InitControlsAvoiding();
-				console.log("Mouse and Touch Events API are used.");
-			}
+			this.pointer = VideoData.PointingDevice.SelectBestMethod(this.events, this.ui.GetHTML(), canvas, this.timer);			
 			
 			// init audio recording
 			if (!!settings.Audio) {
