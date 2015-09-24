@@ -2,10 +2,10 @@
 node_modules
 
 # do not commit any generated files
-release/*
-docs/*
-demo/public/recordings/*
-demo/public/js/*
-demo/AudioServer*
+release
+docs
+demo/public/recordings
+demo/public/js
+demo/AudioServer
 demo/public/recording-list.json
-test/build/*
+test/build
