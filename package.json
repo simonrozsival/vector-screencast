@@ -16,6 +16,7 @@
     "type": "git",
     "url": "https://github.com/simonrozsival/vectorvideo"
   },
+  "main": "./release/vector-screencast-lib/vector-screencast.js",
   "scripts": {
     "start": "pm2 start demo/server.js; pm2 start demo/audio.js",
     "stop": "pm2 stop demo/server.js; pm2 stop demo/audio.js",
