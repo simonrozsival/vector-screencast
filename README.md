@@ -53,7 +53,7 @@ If you have any trouble, feel free to contact me via email simon(at)rozsival.com
 Roadmap
 -------
 
-Current version: ** 0.9.0 ** -- this version covers the basic behavior which was intended for the 
+Current version: **0.9.0** -- this version covers the basic behavior which was intended for the 
 
 - v1.0.0: Create unit tests
 - v1.1.0: Implement several new features - zooming, infinite canvas - move the canvas via draging, fullscreen
@@ -65,4 +65,4 @@ Bachelor thesis
 ---------------
 
 The original project was inspired by the guys behind the czech branch of the Khan Academy.
-The ideas and  of this project project is described in my [Bachelor thesis](./thesis/thesis.pdf') at the [Faculty of Mathematics and Physics](http://mff.cuni.cz) of the [Charles University in Prague](http://www.cuni.cz). 
+The ideas and  of this project project is described in my [Bachelor thesis](./thesis/thesis.pdf) at the [Faculty of Mathematics and Physics](http://mff.cuni.cz) of the [Charles University in Prague](http://www.cuni.cz). 
