@@ -1,6 +1,5 @@
 # do not commit dependencies
 node_modules
-npm-debug.log
 
 # do not commit any generated files
 release
@@ -10,3 +9,7 @@ demo/public/js
 demo/AudioServer
 demo/public/recording-list.json
 test/build
+
+# tmp and log files
+npm-debug.log
+gulp-tsc-tmp*
