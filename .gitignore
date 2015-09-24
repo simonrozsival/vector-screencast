@@ -1,8 +1,7 @@
 # do not commit dependencies
 node_modules
 
-# do not commit any generated files
-release
+# do not commit any generated files (except the release)
 docs
 demo/public/recordings
 demo/public/js
