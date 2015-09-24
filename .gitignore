@@ -1,5 +1,6 @@
 # do not commit dependencies
 node_modules
+npm-debug.log
 
 # do not commit any generated files
 release

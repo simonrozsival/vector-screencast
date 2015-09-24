@@ -1,20 +1,6 @@
 {
-  "scripts": {
-    "start": "pm2 start demo/server.js; pm2 start demo/audio.js",
-    "stop": "pm2 stop demo/server.js; pm2 stop demo/audio.js",
-    "build": "gulp",
-    "build-tests": "gulp build-tests",
-    "build-tests:watch": "gulp build-tests:watch",
-    "test": "gulp test",
-    "test:watch": "gulp test:watch"
-  },
-  "name": "VectorVideo",
+  "name": "vector-video",
   "version": "0.9.0",
-  "readme": "README.md",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/simonrozsival/vectorvideo"
-  },
   "description": "The goal of this project is to create a library for recording and playing Khan Academy like videos.",
   "keywords": [
     "vectors",
@@ -25,6 +11,20 @@
   ],
   "author": "Šimon Rozsíval",
   "license": "MIT",
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonrozsival/vectorvideo"
+  },
+  "scripts": {
+    "start": "pm2 start demo/server.js; pm2 start demo/audio.js",
+    "stop": "pm2 stop demo/server.js; pm2 stop demo/audio.js",
+    "build": "gulp",
+    "build-tests": "gulp build-tests",
+    "build-tests:watch": "gulp build-tests:watch",
+    "test": "gulp test",
+    "test:watch": "gulp test:watch"
+  },
   "dependencies": {
     "body-parser": "^1.13.1",
     "colors": "^1.1.2",
