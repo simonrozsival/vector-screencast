@@ -1,32 +1,26 @@
-/// <reference path="./DrawingStrategy.ts" />
-/// <reference path="../Helpers/Vector.ts" />
-/// <reference path="../Helpers/State.ts" />
-/// <reference path="../Helpers/HTML.ts" />
-/// <reference path="../Helpers/SVG.ts" />
-/// <reference path="../Helpers/Spline.ts" />
-/// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../UI/BasicElements" />
-/// <reference path="Path" />
+import { DrawingStrategy } from './DrawingStrategy';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import HTML from '../Helpers/HTML';
+import Color from '../UI/Color';
+import Path, { CanvasPath } from './Path';
 
-module VectorScreencast.Drawing {
-
-    import HTML = Helpers.HTML;
+//namespace VectorScreencast.Drawing {
     
     /**
      * This is the main drawing class - processes cursor states
      * and renders the lines on the blackboard.
      * This class uses HTML5 Canvas 2D Context for visualising the lines.
      */
-    export class CanvasDrawer implements DrawingStrategy {
+    export default class CanvasDrawer implements DrawingStrategy {
                 
         /** Video events listening and triggering */
-        protected events: Helpers.VideoEvents;
+        protected events: VideoEvents;
         
         /**
          * Set the events aggregator.
          */
-        public SetEvents(events: Helpers.VideoEvents): void {
-            this.events = events;
+        public SetEvents(events: VideoEvents): void {
+            this.events = events; 
         }
                 
         /**
@@ -64,12 +58,12 @@ module VectorScreencast.Drawing {
             this.originalHeight = height;
             this.originalWidth = width;    
 
-            Helpers.HTML.SetAttributes(this.canvas, {
+            HTML.SetAttributes(this.canvas, {
                 width: width,
                 height: height
             });				
 								    
-            this.events.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+            this.events.trigger(VideoEventType.CanvasSize, width, height);
 		}
         
         public SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number {
@@ -89,27 +83,27 @@ module VectorScreencast.Drawing {
         /**
          * Make the canvas blank.
          */
-        public ClearCanvas(color: UI.Color): void {   
+        public ClearCanvas(color: Color): void {   
 			this.context.fillStyle = color.CssValue;
 			this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
         }
         
         /** Currenb brush color */
-        protected currentColor: UI.Color;
+        protected currentColor: Color;
     
         /**
          * Set color of a path, that will be drawn in the future.
          */
-        public SetCurrentColor(color: UI.Color): void {
+        public SetCurrentColor(color: Color): void {
             this.currentColor = color;
         }
     
         /**
          * Start drawing a line.
          */
-        public CreatePath(events: Helpers.VideoEvents): Path {
+        public CreatePath(events: VideoEvents): Path {
             return new CanvasPath(events, this.curved, this.currentColor.CssValue, this.context);
         }       
         
     }    
-}
+//}

@@ -1,14 +1,12 @@
-/// <reference path="BasicElements" />
-/// <reference path="Color" />
-/// <reference path="Brush" />
-/// <reference path="../Helpers/HTML" />
-/// <reference path="../Helpers/VideoEvents" />
 
-module VectorScreencast.UI {
-	
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-		
+import Color from './Color';
+import { Button } from './BasicElements';
+import BrushSize from './Brush';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import HTML from '../Helpers/HTML';
+
+//namespace VectorScreencast.UI {
+			
 	/**
 	 * Recorder button - change brush color when clicked
 	 */
@@ -51,7 +49,7 @@ module VectorScreencast.UI {
 			this.color = color;
 			
 			// make the button a color option
-			Helpers.HTML.SetAttributes(this.GetHTML(), {
+			HTML.SetAttributes(this.GetHTML(), {
 				class: "option",
 				"data-color": color.CssValue,
 				style: "background-color: " + color.CssValue					
@@ -72,7 +70,7 @@ module VectorScreencast.UI {
 			super(""); // empty text			
 			
 			// there will be a dot corresponding to the brush size
-			var dot = Helpers.HTML.CreateElement("span", {
+			var dot = HTML.CreateElement("span", {
 				style: `width: ${size.CssValue};	
 						height: ${size.CssValue};
 						border-radius: ${size.Size / 2}${size.Unit}; 
@@ -86,7 +84,7 @@ module VectorScreencast.UI {
 			this.GetHTML().appendChild(dot);
 					
 			// make the button a color option
-			Helpers.HTML.SetAttributes(this.GetHTML(), {
+			HTML.SetAttributes(this.GetHTML(), {
 				class: "option",
 				"data-size": size.Size	
 			});
@@ -116,4 +114,4 @@ module VectorScreencast.UI {
 		
 	}
 	
-}
+//}

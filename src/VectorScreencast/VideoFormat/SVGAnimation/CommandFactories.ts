@@ -1,18 +1,12 @@
-/// <reference path="../../VectorScreencast" />
+import Chunk, { EraseChunk, PathChunk, VoidChunk } from '../../VideoData/Chunk';
+import Command, { MoveCursor, ChangeBrushColor, ChangeBrushSize, ClearCanvas, DrawNextSegment } from '../../VideoData/Command';
+import { SVGA } from '../../Helpers/SVG';
+import { precise } from '../../Helpers/HelperFunctions';
+import Color from '../../UI/Color';
+import BrushSize from '../../UI/Brush';
 
-module VectorScreencast.VideoFormat.SVGAnimation {
-	
-	import Command = VideoData.Command;
-	import MoveCursor = VideoData.MoveCursor;
-	import ChangeBrushColor = VideoData.ChangeBrushColor;
-	import ChangeBrushSize = VideoData.ChangeBrushSize;	
-	import ClearCanvas = VideoData.ClearCanvas;	
-	import DrawNextSegment = VideoData.DrawNextSegment;		
-	
-	import SVG = Helpers.SVG;
-	import SVGA = Helpers.SVGA;
-	
-	import precise = Helpers.precise;
+
+//namespace VectorScreencast.VideoFormat.SVGAnimation {
 		
 	/** Time precision is 10ns */
     const TIME_PRECISION = 2;
@@ -25,7 +19,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	 * CommandFactory is the basis of "Chain of responsibility" pattern implementation.
 	 * Derived classes are used to convert commands to or from SVG nodes.
 	 */	
-	export class CommandFactory {		
+	export default class CommandFactory {		
 		constructor(protected next?: CommandFactory) { }
 		
 		/**
@@ -176,7 +170,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 */		
 		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ChangeBrushColorFactory.NodeName) {
-				return new ChangeBrushColor(new UI.Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
+				return new ChangeBrushColor(new Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
@@ -221,7 +215,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 */		
 		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ChangeBrushSizeFactory.NodeName) {
-				return new ChangeBrushSize(new UI.BrushSize(SVGA.numAttr(node, "w")), super.getCmdTime(node, chunkStart));
+				return new ChangeBrushSize(new BrushSize(SVGA.numAttr(node, "w")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
@@ -265,7 +259,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 */		
 		FromSVG(node: Node, chunkStart: number): Command {
 			if(node.localName === ClearCanvasFactory.NodeName) {
-				return new ClearCanvas(new UI.Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
+				return new ClearCanvas(new Color(SVGA.attr(node, "c")), super.getCmdTime(node, chunkStart));
 			}
 			
 			// else pass through the chain of responsibility
@@ -291,4 +285,4 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			return super.ToSVG(cmd, chunkStart);
 		}
 	}
-}
+//}

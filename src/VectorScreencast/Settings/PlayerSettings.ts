@@ -1,6 +1,9 @@
-/// <reference path="../VectorScreencast" />
+import { Reader } from '../VideoFormat';
+import { DrawingStrategy } from '../Drawing/DrawingStrategy';
+import * as Localization from '../Localization/Player';
+import PlayerUI from '../UI/PlayerUI';
 
-module VectorScreencast.Settings {
+//namespace VectorScreencast.Settings {
 	
 	/**
 	 * The inteface of obligatory and possible settings for the Vector Screencast Recorder
@@ -13,13 +16,13 @@ module VectorScreencast.Settings {
 		 * You must specify a video format reader if you use different format than SVG, VectorScreencast.Player
 		 * doesn't examine source file's extension or MIME type.
 		 */
-		VideoFormat?:		VideoFormat.Reader;
+		VideoFormat?:		Reader;
 		/** Instance of Drawing.DrawingStrategy. Defines how the data will be rendered on the screen. Default is Drawing.CanvasDrawer */
-		DrawingStrategy?: 	Drawing.DrawingStrategy;
+		DrawingStrategy?: 	DrawingStrategy;
 		/** Localization object literal. Default language is English. */
-		Localization?: 		Localization.PlayerLocalization;
+		Localization?: 		Localization.Player;
 		/** Object instance defining the HTML structure of the player. */
-		UI?:				UI.PlayerUI;
+		UI?:				PlayerUI;
 		/**
 		 * If set to true, video will start playing as soon as it is loaded.
 		 * - default is *false*
@@ -38,4 +41,4 @@ module VectorScreencast.Settings {
 		ShowControls?:		boolean;
 	}	
 	
-}
+//}

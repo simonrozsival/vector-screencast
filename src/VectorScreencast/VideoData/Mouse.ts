@@ -1,20 +1,16 @@
-/// <reference path="PointingDevice" />
-/// <reference path="../VectorScreencast" />
 
-module VectorScreencast.VideoData {	
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import PointingDevice, { PointingDeviceEvent } from './PointingDevice';
+import VideoTimer from '../Helpers/VideoTimer';
 
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	import CursorState = Helpers.CursorState;
-	import Timer = Helpers.VideoTimer;
+//namespace VectorScreencast.VideoData {
 
-	
 	/**
-	 * Mouse input detection and processing. 
-	 */
-	export class Mouse extends PointingDevice {
+	* Mouse input detection and processing. 
+	*/
+	export default class Mouse extends PointingDevice {
 								
-		constructor(events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) {
+		constructor(events: VideoEvents, board: HTMLElement, timer: VideoTimer) {
 			super(events, board, timer);
 			// board events						
 			this.board.onmousemove = 	(e) => this.onMouseMove(e);
@@ -26,8 +22,8 @@ module VectorScreencast.VideoData {
 		}
 		
 		/**
-		 * Filter all clicks on buttons and other possible UI controls
-		 */
+			* Filter all clicks on buttons and other possible UI controls
+			*/
 		public InitControlsAvoiding(): void {			
 			var controls: NodeList = document.getElementsByClassName("ui-control");
 			for (var i = 0; i < controls.length; i++) {
@@ -38,36 +34,36 @@ module VectorScreencast.VideoData {
 		}
 	
 		/**
-		 * Trace mouse movement.
-		 */
+			* Trace mouse movement.
+			*/
 		protected onMouseMove(e: PointingDeviceEvent) : any {			
 			this.onMove(e);
 		}
 	
 		/**
-		 * Start drawing lines.
-		 */
+			* Start drawing lines.
+			*/
 		protected onMouseDown(e: PointingDeviceEvent) : any {
 			this.onDown(e);
 		}
 	
 		/**
-		 * Stop drawing lines.
-		 */
+			* Stop drawing lines.
+			*/
 		protected onMouseUp(e: PointingDeviceEvent) : any {
 			this.onUp(e);
 		}
 		
 		/**
-		 * Stop drawing lines.
-		 */
+			* Stop drawing lines.
+			*/
 		protected onMouseLeave(e: PointingDeviceEvent) : any {
 			this.onLeave(e);
 		}
 		
 		/**
-		 * Make sure the status of mouse button is consistent.
-		 */
+			* Make sure the status of mouse button is consistent.
+			*/
 		protected onMouseEnter(e: MouseEvent) : any {
 			if(e.buttons === 0) {
 				this.isDown = false; // check mouse down status
@@ -75,10 +71,11 @@ module VectorScreencast.VideoData {
 		}
 				
 		/**
-		 * Mark down that the cursor is hovering over the canvas.
-		 */
+			* Mark down that the cursor is hovering over the canvas.
+			*/
 		protected onMouseOver(e: PointingDeviceEvent) : any {
 			this.isInside = true;
 		}		
 	}
-}
+	
+//}

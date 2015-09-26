@@ -1,16 +1,16 @@
-/// <reference path="../../VectorScreencast" />
 
+import VideoEvents, { VideoEventType } from '../../Helpers/VideoEvents';
+import SVG, { SVGA } from '../../Helpers/SVG';
+import Vector2 from '../../Helpers/Vector';
+import Chunk, { PathChunk, EraseChunk, VoidChunk } from '../../VideoData/Chunk';
+import Command, { MoveCursor, ChangeBrushColor, ChangeBrushSize, DrawNextSegment, ClearCanvas } from '../../VideoData/Command';
+import CommandFactory from './CommandFactories';
+import Path from '../../Drawing/Path';
+import Segment, { QuadrilateralSegment, CurvedSegment, ZeroLengthSegment } from '../../Drawing/Segments';
+import Color from '../../UI/Color';
+import { BezierCurveSegment } from '../../Helpers/Spline';
 
-module VectorScreencast.VideoFormat.SVGAnimation {
-
-	import SVG = Helpers.SVG;
-	import SVGA = Helpers.SVGA;
-
-	import Command = VideoData.Command;
-	import Chunk = VideoData.Chunk;
-	import VoidChunk = VideoData.VoidChunk;
-	import PathChunk = VideoData.PathChunk;
-	import EraseChunk = VideoData.EraseChunk;
+//namespace VectorScreencast.VideoFormat.SVGAnimation {
 	
 	/** Time is in milliseconds */
 	const TIME_PRECISION = 2;
@@ -18,7 +18,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	/**
 	 * Typed array of init commands and regular commands
 	 */
-	interface CommandsPair extends Array<Array<Command>> {
+	export interface CommandsPair extends Array<Array<Command>> {
 		/** Init commands */
 		0: Array<Command>;
 		/** Commands of the chunk */
@@ -30,11 +30,11 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	 */
 	interface InitCommands extends Array<Command> {
 		/** Move cursor */
-		0: VideoData.MoveCursor;
+		0: MoveCursor;
 		/** Change brush color */
-		1: VideoData.ChangeBrushColor;
+		1: ChangeBrushColor;
 		/** Change brush size */
-		2: VideoData.ChangeBrushSize;
+		2: ChangeBrushSize;
 	}
 		
 	/**
@@ -42,13 +42,13 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	 * ChunkFactory is the base class that moves to the next entity in the chain,
 	 * until the end of the chain is reached. 
 	 */
-	export class ChunkFactory {
+	export default class ChunkFactory {
 		constructor(protected next?: ChunkFactory) { }
 		
 		/**
 		 * Create a chunk from an XML node.
 		 */
-		FromSVG(events: Helpers.VideoEvents, node: Node, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: VideoEvents, node: Node, cmdFactory: CommandFactory): Chunk {
 			if (!!this.next) {
 				return this.next.FromSVG(events, node, cmdFactory);
 			}
@@ -96,11 +96,11 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				cmd = cmd.nextElementSibling;
 				
 				// save the last instance of each command - to form init commands for the next chunk
-				if(loadedCmd instanceof VideoData.MoveCursor) {
+				if(loadedCmd instanceof MoveCursor) {
 					this.initCmds[0] = loadedCmd;
-				} else if (loadedCmd instanceof VideoData.ChangeBrushColor) {
+				} else if (loadedCmd instanceof ChangeBrushColor) {
 					this.initCmds[1] = loadedCmd;
-				} else if (loadedCmd instanceof VideoData.ChangeBrushSize) {
+				} else if (loadedCmd instanceof ChangeBrushSize) {
 					this.initCmds[2] = loadedCmd;
 				}
 			}
@@ -121,7 +121,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	node		The element of th enode
 		 * @param	cmdFactory 	Factory for processing commands
 		 */
-		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === VoidChunkFactory.NodeName) {
 				var chunk: VoidChunk = new VoidChunk(SVGA.numAttr(node, "t"), 0); // 0 will be changed later in the IO class
 				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(node.firstElementChild, cmdFactory, chunk.StartTime);
@@ -170,7 +170,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/** Type of the instruction */
 		type: InstructionType,
 		/** Set of coordinates of this instruction */
-		coords: Array<Helpers.Vector2>
+		coords: Array<Vector2>
 	}
 
 	/**
@@ -195,7 +195,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		Create(c: Array<string>): Instruction {
 			var letter = c.shift();
 			if (letter === this.letter) {
-				var coords: Array<Helpers.Vector2> = [];
+				var coords: Array<Vector2> = [];
 				for (var i = 0; i < this.coordsCount; i++) {
 					coords.push(this.CreateVector2(c.shift()));
 				}
@@ -219,12 +219,12 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return		A vector.
 		 * @throws		Error
 		 */
-		protected CreateVector2(pair: string): Helpers.Vector2 {
+		protected CreateVector2(pair: string): Vector2 {
 			var coords: Array<string> = pair.split(",");
 			if (coords.length !== 2) {
 				throw new Error(`Coordinates pair '${pair}' is not valid`);
 			}
-			return new Helpers.Vector2(Number(coords[0]), Number(coords[1]));
+			return new Vector2(Number(coords[0]), Number(coords[1]));
 		}
 	}
 
@@ -248,7 +248,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		Create(c: Array<string>): Instruction {
 			var letter = c.shift();
 			if (letter === this.letter) {
-				var coords: Array<Helpers.Vector2> = [];
+				var coords: Array<Vector2> = [];
 				coords.push(this.CreateVector2(c.shift()));
 				c.shift(); // radius
 				coords.push(this.CreateVector2(c.shift()));
@@ -299,7 +299,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	node		The element of th enode
 		 * @param	cmdFactory 	Factory for processing commands
 		 */
-		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === PathChunkFactory.NodeName) {				
 				// path chunk must have at least one child node
 				if (node.childElementCount === 0) {
@@ -351,9 +351,9 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/**
 		 * Deserilize path from an SVG "path" node
 		 */
-		private SVGNodeToPath(events: Helpers.VideoEvents, node: Node): Drawing.Path {
+		private SVGNodeToPath(events: VideoEvents, node: Node): Path {
 			var color: string = SVG.attr(node, "fill");
-			var path: Drawing.Path = new Drawing.Path(events, true, color); // curved = true/false doesn't make any difference - the data are already recorded  
+			var path = new Path(events, true, color); // curved = true/false doesn't make any difference - the data are already recorded  
 			
 			// convert path data to sequence of segments 
 			var d: string = SVG.attr(node, "d");
@@ -373,7 +373,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			// first segment - zero length segment
 			var l = instructions.length - 1;
 			if (instructions.length >= 2 && instructions[0].type === InstructionType.Move && instructions[l].type === InstructionType.Arc) {
-				path.Segments.push(new Drawing.ZeroLengthSegment(instructions[l-1].coords[0], instructions[0].coords[0]));
+				path.Segments.push(new ZeroLengthSegment(instructions[l-1].coords[0], instructions[0].coords[0]));
 				instructions.pop(); // arc
 				instructions.pop(); // line
 				instructions.shift();
@@ -386,7 +386,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				var start = path.Segments[0].Right;
 				var end = instructions[0].coords[2];
 				//var radius = instructions[0].coords[0];
-				path.Segments = [new Drawing.ZeroLengthSegment(start, end)]; // override the original zero length seg.
+				path.Segments = [new ZeroLengthSegment(start, end)]; // override the original zero length seg.
 				return path;
 			} 
 			
@@ -395,26 +395,26 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			
 			// left and right parts are at the same distance from the ends of the path
 			l = instructions.length - 1;
-			var prevSegment: Drawing.Segment = path.Segments[0];
+			var prevSegment: Segment = path.Segments[0];
 
 			for (var i = 0; i < Math.floor(instructions.length / 2); i++) { // the item in the very middle is an Arc cap, I want to skip that instruction
 				if (instructions[i].type === InstructionType.Line) {
-					var qseg = new Drawing.QuadrilateralSegment(instructions[i].coords[0], instructions[l - i].coords[0]);
+					var qseg = new QuadrilateralSegment(instructions[i].coords[0], instructions[l - i].coords[0]);
 					path.Segments.push(qseg);
 
-					if (prevSegment instanceof Drawing.CurvedSegment) {
-						(<Drawing.CurvedSegment> prevSegment).Left = instructions[l - i].coords[0].clone();
+					if (prevSegment instanceof CurvedSegment) {
+						(<CurvedSegment> prevSegment).Left = instructions[l - i].coords[0].clone();
 					}
 					prevSegment = qseg;
 				} else if (instructions[i].type === InstructionType.Curve) {
-					var right = new Helpers.BezierCurveSegment(null, instructions[i].coords[0], instructions[i].coords[2], instructions[i].coords[1]);
-					var left = new Helpers.BezierCurveSegment(instructions[l - i].coords[2], instructions[l - i].coords[1], null, instructions[l - i].coords[0]);
-					var seg = new Drawing.CurvedSegment(left, right);
+					var right = new BezierCurveSegment(null, instructions[i].coords[0], instructions[i].coords[2], instructions[i].coords[1]);
+					var left = new BezierCurveSegment(instructions[l - i].coords[2], instructions[l - i].coords[1], null, instructions[l - i].coords[0]);
+					var seg = new CurvedSegment(left, right);
 
-					if (!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
+					if (!!prevSegment && prevSegment instanceof CurvedSegment) {
 						prevSegment.Left = seg.LeftBezier.Start.clone();
 						seg.RightBezier.Start = prevSegment.RightBezier.End.clone();
-					} else if (!!prevSegment && prevSegment instanceof Drawing.QuadrilateralSegment) {
+					} else if (!!prevSegment && prevSegment instanceof QuadrilateralSegment) {
 						seg.RightBezier.Start = prevSegment.Right.clone();
 					}
 
@@ -426,7 +426,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			}
 			
 			// I need to fix last segment's left bezier End
-			if (!!prevSegment && prevSegment instanceof Drawing.CurvedSegment) {
+			if (!!prevSegment && prevSegment instanceof CurvedSegment) {
 				prevSegment.Left = instructions[Math.floor(instructions.length / 2)].coords[2].clone(); // this is the ARC cap of the path
 			}
 
@@ -436,7 +436,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		/**
 		 * Encode path into a SVG "path" element 
 		 */
-		private PathToSVGNode(path: Drawing.Path): Node {
+		private PathToSVGNode(path: Path): Node {
 			var segments = path.Segments;
 					
 			// arc cap at the start
@@ -444,20 +444,20 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			var center = seg.Right.pointInBetween(seg.Left);
 			var startDirection = seg.Left.clone().subtract(center);
 			var endDirection = seg.Right.clone().subtract(center);
-			var arc = SVG.ArcString(seg.Right, center.distanceTo(seg.Right), Drawing.Path.angle(startDirection));
+			var arc = SVG.ArcString(seg.Right, center.distanceTo(seg.Right), Path.angle(startDirection));
 
 			var right: string = ``; // start with an empty right part
 			var left: string = ` ${arc}`; // end the path with an arc
 
 			for (var i = 0; i < segments.length; i++) {
 				var seg = segments[i];
-				if(seg instanceof Drawing.ZeroLengthSegment) {
+				if(seg instanceof ZeroLengthSegment) {
 					right += `${SVG.MoveToString(seg.Right) } `; // SPACE divider
 					left = `${SVG.MoveToString(seg.Left) } ${left}`; // SPACE divider
-				} else if (seg instanceof Drawing.CurvedSegment) {
+				} else if (seg instanceof CurvedSegment) {
 					right += `${SVG.CurveToString(seg.RightBezier.StartCP, seg.RightBezier.EndCP, seg.RightBezier.End) } `; // SPACE divider
 					left = `${SVG.CurveToString(seg.LeftBezier.EndCP, seg.LeftBezier.StartCP, seg.LeftBezier.Start) } ${left}`; // SPACE divider
-				} else if (seg instanceof Drawing.QuadrilateralSegment) {
+				} else if (seg instanceof QuadrilateralSegment) {
 					right += `${SVG.LineToString(seg.Right) } `; // SPACE divider
 					left = `${SVG.LineToString(seg.Left) } ${left}`; // SPACE divider
 				} else {
@@ -471,7 +471,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			center = seg.Right.pointInBetween(seg.Left);
 			startDirection = seg.Right.clone().subtract(center);
 			endDirection = seg.Left.clone().subtract(center);
-			var cap = `${SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Drawing.Path.angle(startDirection)) } `;
+			var cap = `${SVG.ArcString(seg.Left, center.distanceTo(seg.Left), Path.angle(startDirection)) } `;
 
 			return SVG.CreateElement("path", {
 				"fill": path.Color,
@@ -498,7 +498,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @return				New chunk
 		 * @throws	Error			
 		 */
-		FromSVG(events: Helpers.VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
+		FromSVG(events: VideoEvents, node: Element, cmdFactory: CommandFactory): Chunk {
 			if (SVGA.attr(node, "type") === EraseChunkFactory.NodeName) {				
 				// erase chunk must have at least one child element
 				if (node.childElementCount === 0) {
@@ -511,7 +511,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 					throw new Error(`Erase chunk must begin with a <rect> element, but ${rectNode.localName} found instead`);
 				}
 				
-				var chunk: EraseChunk = new EraseChunk(new UI.Color(SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), 0); // last erase will be added later
+				var chunk: EraseChunk = new EraseChunk(new Color(SVG.attr(rectNode, "fill")), SVGA.numAttr(node, "t"), 0); // last erase will be added later
 				[chunk.InitCommands, chunk.Commands] = ChunkFactory.GetCommands(rectNode.nextElementSibling, cmdFactory, chunk.StartTime);
 
 				return chunk;
@@ -547,4 +547,4 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 	}
 
 
-}
+//}

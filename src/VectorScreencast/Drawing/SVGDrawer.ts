@@ -1,29 +1,26 @@
-/// <reference path="./DrawingStrategy.ts" />
-/// <reference path="../Helpers/Vector.ts" />
-/// <reference path="../Helpers/State.ts" />
-/// <reference path="../Helpers/HTML.ts" />
-/// <reference path="../Helpers/SVG.ts" />
-/// <reference path="../Helpers/Spline.ts" />
-/// <reference path="../Helpers/VideoEvents.ts" />
-/// <reference path="../UI/BasicElements" />
-/// <reference path="Path" />
 
-module VectorScreencast.Drawing {
+import HTML from '../Helpers/HTML';
+import SVG from '../Helpers/SVG';
+import { DrawingStrategy } from './DrawingStrategy';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import Vector2 from '../Helpers/Vector';
+import Color from '../UI/Color';
+import Path, { SvgPath } from './Path';
 
-    import HTML = Helpers.HTML;
-    import SVG = Helpers.SVG;
+//namespace VectorScreencast.Drawing {
+
     
     /**
      * This is the main drawing class - processes cursor states
      * and renders the lines on the blackboard.
      * This class uses SVG (http://www.w3.org/TR/SVG) for visualising the lines.
      */
-    export class SVGDrawer implements DrawingStrategy {
+    export default class SVGDrawer implements DrawingStrategy {
         
         /** Video events listening and triggering */
-        protected events: Helpers.VideoEvents;
+        protected events: VideoEvents;
         
-        public SetEvents(events: Helpers.VideoEvents): void {
+        public SetEvents(events: VideoEvents): void {
             this.events = events;
         }
         
@@ -38,7 +35,7 @@ module VectorScreencast.Drawing {
         private svg: Element;
         
         /** Canvas layer */
-        private canvas: Element;        
+        private canvas: HTMLElement;        
         
         /** Background layer */
         private bg: Element;          
@@ -56,7 +53,7 @@ module VectorScreencast.Drawing {
             this.svg.appendChild(backgroundLayer);
             
             // canvas             
-            this.canvas = SVG.CreateElement("g", {
+            this.canvas = <HTMLElement> SVG.CreateElement("g", {
                 id: "canvas"
             });
             this.svg.appendChild(this.canvas);    
@@ -72,22 +69,22 @@ module VectorScreencast.Drawing {
             var width: number = parent.clientWidth;
             var height: number = parent.clientHeight;            
 
-            Helpers.SVG.SetAttributes(this.svg, {
+            SVG.SetAttributes(this.svg, {
                 width: width,
                 height: height
             });
             
-            Helpers.SVG.SetAttributes(this.bg, {
+            SVG.SetAttributes(this.bg, {
                 width: width,
                 height: height
             });            
-            this.events.trigger(Helpers.VideoEventType.CanvasSize, width, height);
+            this.events.trigger(VideoEventType.CanvasSize, width, height);
         }
         
         /**
          * Make the canvas blank.
          */
-        public ClearCanvas(color: UI.Color): void {            
+        public ClearCanvas(color: Color): void {            
             // remove all drawn parts
             while (!!this.canvas.firstChild) {
                 this.canvas.removeChild(this.canvas.firstChild);
@@ -100,21 +97,21 @@ module VectorScreencast.Drawing {
     
         
         /** Currenb brush color */
-        protected currentColor: UI.Color;
+        protected currentColor: Color;
     
         /**
          * Set color of a path, that will be drawn in the future.
          * @param   {string} color       Color of the new path.
          */
-        public SetCurrentColor(color: UI.Color): void {
+        public SetCurrentColor(color: Color): void {
             this.currentColor = color;
         }
     
     
         /**
          * Start drawing a line.
-         */
-        public CreatePath(events: Helpers.VideoEvents): Path {
+         */        
+		public CreatePath(events: VideoEvents): Path {
             return new SvgPath(events, this.curved, this.currentColor.CssValue, this.canvas);
         }
         
@@ -130,9 +127,9 @@ module VectorScreencast.Drawing {
             });
             
             if(min === wr) {
-                this.events.trigger(Helpers.VideoEventType.CursorOffset, new Helpers.Vector2(0, (this.svg.clientHeight - sourceHeight*min) / 2));                
+                this.events.trigger(VideoEventType.CursorOffset, new Vector2(0, (this.svg.clientHeight - sourceHeight*min) / 2));                
             } else {
-                this.events.trigger(Helpers.VideoEventType.CursorOffset, new Helpers.Vector2((this.svg.clientWidth - sourceWidth*min) / 2, 0));
+                this.events.trigger(VideoEventType.CursorOffset, new Vector2((this.svg.clientWidth - sourceWidth*min) / 2, 0));
             }
             
             return min;
@@ -140,4 +137,4 @@ module VectorScreencast.Drawing {
     
     }    
 
-}
+//}

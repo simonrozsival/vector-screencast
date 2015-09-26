@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,		
+		"outDir": "../../release/vector-screencast-lib",
+		"declaration": true,
+		"module": "commonjs"
+    },
+	"files": [
+		"./vector-screencast.ts"
+	]
+}

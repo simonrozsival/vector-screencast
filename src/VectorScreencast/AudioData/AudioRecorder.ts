@@ -1,18 +1,17 @@
 /// <reference path="audio.d.ts" />
-/// <reference path="../Helpers" />
 
-module VectorScreencast.AudioData {
-	
-	import Errors = Helpers.Errors;
-	import ErrorType = Helpers.ErrorType;
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import Errors, { ErrorType } from '../Helpers/Errors';
+import AudioPlayer, { AudioSource, AudioSourceType } from './AudioPlayer';
+import { AudioRecorderSettings } from '../Settings/RecorderSettings';
+
+//namespace VectorScreencast.AudioData {
 		
 	/**
 	 * The main audio recording class.
 	 * This implementation wraps the HTML5 API and takes care of everything needed on the client side.
 	 */
-	export class AudioRecorder {
+	export default class AudioRecorder {
 		
 		/** The input stream */
 		private input: any;//MediaStreamAudioSourceNode;
@@ -36,7 +35,7 @@ module VectorScreencast.AudioData {
 		private muted: boolean;
 	
 		/** Default settings of audio recording */
-		private settings: Settings.AudioRecorderSettings = {
+		private settings: AudioRecorderSettings = {
 			host: "http://localhost",
 			port: 4000,
 			path: "/upload/audio",			
@@ -55,7 +54,7 @@ module VectorScreencast.AudioData {
 		 * Initialise the audio recoder
 		 * @param	config	Audio recorder settings from the outside.
 		 */
-		constructor(config: Settings.AudioRecorderSettings, protected events: VideoEvents) {
+		constructor(config: AudioRecorderSettings, protected events: VideoEvents) {
 			// update default settings
 			if(!!config.host) this.settings.host = config.host;
 			if(!!config.port) this.settings.port = config.port;
@@ -147,7 +146,7 @@ module VectorScreencast.AudioData {
 		 * @param	success			This callback will be called if the worker is created
 	 	 * @param	error			This callback will be called if web workers aren't supported
 		 */
-		private CreateAudioProcessor(processorType: string, cfg: Settings.AudioRecorderSettings, success?: Function, error?: Function) {
+		private CreateAudioProcessor(processorType: string, cfg: AudioRecorderSettings, success?: Function, error?: Function) {
 			if(Worker) { // if web workers are supported
 				this.recordingWorker = new Worker(cfg.recordingWorkerPath);
 				this.recordingWorker.onmessage = (e: MessageEvent) => this.ReceiveMessageFromWorker(e);
@@ -344,4 +343,4 @@ module VectorScreencast.AudioData {
 		 }
 	}
 	
-}
+//}

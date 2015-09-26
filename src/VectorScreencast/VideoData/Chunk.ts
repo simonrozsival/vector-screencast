@@ -1,14 +1,12 @@
-/// <reference path="../VectorScreencast" />
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import VideoTimer from '../Helpers/VideoTimer';
+import { StateType } from '../Helpers/State';
+import SVG, { SVGA } from '../Helpers/SVG';	
+import Command from './Command';
+import Path from '../Drawing/Path';
+import Color from '../UI/Color';
 
-module VectorScreencast.VideoData {
-	
-	
-	import StateType = Helpers.StateType;
-	import VideoTimer = Helpers.VideoTimer;
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	import SVG = Helpers.SVG;	
-	import SVGA = Helpers.SVGA;	
+//namespace VectorScreencast.VideoData {
 		
 	/**
 	 * Chunk represents part of the whole video process.
@@ -16,7 +14,7 @@ module VectorScreencast.VideoData {
 	 * that are used to render one chunk in a single moment without unnecessary looping through all commands.
 	 * Each chunk contains an information about the last time the screen was erased. 
 	 */
-	export class Chunk {	
+	export default class Chunk {	
 		public get StartTime(): number { return this.time; }
 		public get LastErase(): number { return this.lastErase; }
 		
@@ -140,14 +138,14 @@ module VectorScreencast.VideoData {
 	 */
 	export class PathChunk extends Chunk {
 		/** The path to be rendered by this chunk */
-		get Path(): Drawing.Path { return this.path; }
+		get Path(): Path { return this.path; }
 		
 		/**
 		 * @param	path		The path containing of the list of segments.
 		 * @param	time		Start time of the chunk
 		 * @param	lastErase	Sequence number of the last time, that the canvas is cleared before this path chunk is drawn. 
 		 */
-		constructor(protected path: Drawing.Path, time: number, lastErase: number) {
+		constructor(protected path: Path, time: number, lastErase: number) {
 			super(time, lastErase);
 		}
 		
@@ -163,7 +161,7 @@ module VectorScreencast.VideoData {
 	 */
 	export class EraseChunk extends Chunk {
 		/** Get the new background color. */
-		get Color(): UI.Color { return this.color; }
+		get Color(): Color { return this.color; }
 		
 		/**
 		 * Run the implicit erase command.
@@ -189,9 +187,9 @@ module VectorScreencast.VideoData {
 		 * @param	time		Start time of the chunk.
 		 * @param	lastErase	Sequence number of the last time, that the canvas is cleared before this path chunk is drawn. 
 		 */
-		constructor(protected color: UI.Color, time: number, lastErase: number) {
+		constructor(protected color: Color, time: number, lastErase: number) {
 			super(time, lastErase);
 		}
 	}
 	
-}
+//}

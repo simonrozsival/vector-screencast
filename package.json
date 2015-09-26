@@ -1,6 +1,6 @@
 {
   "name": "vector-video",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "The goal of this project is to create a library for recording and playing Khan Academy like videos.",
   "keywords": [
     "vectors",
@@ -16,15 +16,12 @@
     "type": "git",
     "url": "https://github.com/simonrozsival/vectorvideo"
   },
-  "main": "./release/vector-screencast-lib/vector-screencast.js",
+  "main": "index.js",
   "scripts": {
-    "start": "pm2 start demo/server.js; pm2 start demo/audio.js",
-    "stop": "pm2 stop demo/server.js; pm2 stop demo/audio.js",
-    "build": "gulp",
-    "build-tests": "gulp build-tests",
-    "build-tests:watch": "gulp build-tests:watch",
-    "test": "gulp test",
-    "test:watch": "gulp test:watch"
+    "build": "webpack",
+    "test": "mocha --require ./test/ts-hook.js test/**/*.ts",
+    "test:watch": "npm run test -- --growl --watch --watch-extensions ts",
+	"build-doc": "typedoc --module commonjs --target es5 --out ./doc ./src/VectorScreencast/**/*.ts"
   },
   "dependencies": {
     "body-parser": "^1.13.1",
@@ -42,9 +39,11 @@
   },
   "devDependencies": {
     "babel": "^5.8.23",
+    "babel-core": "^5.8.25",
+    "babel-loader": "^5.3.2",
     "busboy": "^0.2.9",
     "chai": "^3.3.0",
-	"del": "^1.1.1",    
+    "del": "^1.1.1",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
     "gulp-ignore": "~1.2.1",
@@ -59,7 +58,10 @@
     "merge-stream": "^0.1.7",
     "mocha": "^2.3.3",
     "quick-sort": "^0.2.1",
+    "ts-loader": "^0.5.5",
+    "ts-node": "^0.2.4",
     "typescript": "^1.5.0-beta",
-    "typescript-require": "^0.2.9"
+    "uglify-loader": "^1.2.0",
+    "webpack": "^1.12.2"
   }
 }

@@ -1,17 +1,17 @@
-/// <reference path="PointingDevice" />
-/// <reference path="../VectorScreencast" />
 
-module VectorScreencast.VideoData {
-		
-	import VideoEvents = Helpers.VideoEvents;	
+import VideoEvents from '../Helpers/VideoEvents';
+import VideoTimer from '../Helpers/VideoTimer';
+import Mouse from './Mouse'; 	
+	
+//namespace VectorScreencast.VideoData {
 	
 	/**
 	 * Touch Events API implementation
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
 	 */
-	export class TouchEventsAPI extends Mouse {
+	export default class TouchEventsAPI extends Mouse {
 				
-		constructor(events: Helpers.VideoEvents, container: HTMLElement, protected canvas: HTMLElement, timer: Helpers.VideoTimer) {
+		constructor(events: VideoEvents, container: HTMLElement, protected canvas: HTMLElement, timer: VideoTimer) {
 			super(events, container, timer);
 			
 			canvas.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
@@ -101,4 +101,4 @@ module VectorScreencast.VideoData {
 		
 	}
 	
-}
+//}

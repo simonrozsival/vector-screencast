@@ -1,11 +1,11 @@
-/// <reference path="HTML" />
+import HTML from './HTML';
 
-module VectorScreencast.Helpers {
+//namespace VectorScreencast.Helpers {
 	
 	/**
 	 * File helper
 	 */
-	export class File {
+	export default class File {
 		
 		/**
 		 * Checks, if request was successful and if the MIME type is matching (if requested)
@@ -133,4 +133,4 @@ module VectorScreencast.Helpers {
 		
 	}
 	
-}
+//}

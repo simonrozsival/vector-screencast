@@ -1,6 +1,8 @@
+import Color from '../UI/Color';
+import VideoEvents from '../Helpers/VideoEvents';
+import Path from './Path';
 
-
-module VectorScreencast.Drawing {
+//namespace VectorScreencast.Drawing {
 	
     /**
      * An interface describing a drawing strategy.
@@ -8,11 +10,11 @@ module VectorScreencast.Drawing {
 	export interface DrawingStrategy {        
         CreateCanvas(): HTMLElement;        
 		Stretch(): void;
-        ClearCanvas(color: UI.Color): void;
-        CreatePath(events: Helpers.VideoEvents): Path;
-        SetCurrentColor(color: UI.Color): void;	
+        ClearCanvas(color: Color): void;
+        CreatePath(events: VideoEvents): Path;
+        SetCurrentColor(color: Color): void;	
         SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number;
-        SetEvents(events: Helpers.VideoEvents): void;
+        SetEvents(events: VideoEvents): void;
 	} 
 	
-}
+//}

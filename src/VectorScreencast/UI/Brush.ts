@@ -1,11 +1,11 @@
 
 
-module VectorScreencast.UI {
+//namespace VectorScreencast.UI {
 		
 	/**
 	 * Brush size representation.
 	 */
-	export class BrushSize {
+	export default class BrushSize {
 		constructor(private size: number) { }
 		
 		/**
@@ -24,4 +24,4 @@ module VectorScreencast.UI {
 		public get CssValue() : string { return `${this.Size}${this.Unit}`; }
 	}
 	
-} 
+//} 

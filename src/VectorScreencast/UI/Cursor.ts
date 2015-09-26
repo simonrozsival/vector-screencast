@@ -1,16 +1,19 @@
-/// <reference path="BasicElements.ts" />
-/// <reference path="Color.ts" />
-/// <reference path="../Helpers/HTML.ts" />
-/// <reference path="../Helpers/SVG.ts" />
 
-module VectorScreencast.UI {
-	
-	import Vector2 = Helpers.Vector2;
+import Vector2 from '../Helpers/Vector';
+import { SimpleElement } from './BasicElements';
+import BrushSize from './Brush';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import HTML from '../Helpers/HTML';
+import SVG from '../Helpers/SVG';
+import Color from './Color';
+
+
+//namespace VectorScreencast.UI {
 	
 	/**
 	 * Cursor implementation.
 	 */
-	export class Cursor extends SimpleElement {
+	export default class Cursor extends SimpleElement {
 		
 		/** The distance of the  */
 		protected radius:  number;
@@ -22,7 +25,7 @@ module VectorScreencast.UI {
 		protected dot: Element;
 		
 		/** Current cursor position */
-		protected position: Helpers.Vector2;
+		protected position: Vector2;
 		
 		/** Constant distance from the top left corner. */
 		protected offset: Vector2;
@@ -46,7 +49,7 @@ module VectorScreencast.UI {
 		/**
 		 * Initialise a cursor. It's size and color must be explicitely changed before using it though!
 		 */
-		constructor(protected events: Helpers.VideoEvents) {
+		constructor(protected events: VideoEvents) {
 			super("div");			
 			this.radius = 20;
 			this.stroke = 3;
@@ -67,18 +70,18 @@ module VectorScreencast.UI {
 		 * Prepares the cursor shape - a dot, but with zero size and no specific color (default white)
 		 */
 		private CreateHTML() : void {
-			this.svg = Helpers.SVG.CreateElement("svg", {
+			this.svg = SVG.CreateElement("svg", {
 				width: 2*this.radius,
 				height: 2*this.radius
 			});
 			this.GetHTML().appendChild(this.svg);
 	
 			// draw the dot at the center of the SVG element
-			this.bgColor = UI.Color.BackgroundColor;
-			this.color = UI.Color.ForegroundColor;
+			this.bgColor = Color.BackgroundColor;
+			this.color = Color.ForegroundColor;
 			
-			this.dot = Helpers.SVG.CreateDot(new Helpers.Vector2(this.radius, this.radius), this.radius - this.stroke, this.bgColor.CssValue);
-			Helpers.SVG.SetAttributes(this.dot, {
+			this.dot = SVG.CreateDot(new Vector2(this.radius, this.radius), this.radius - this.stroke, this.bgColor.CssValue);
+			SVG.SetAttributes(this.dot, {
 				"stroke": this.color.CssValue,
 				"stroke-width": this.stroke
 			});
@@ -89,9 +92,9 @@ module VectorScreencast.UI {
 			this.GetHTML().style.background = "transparent";
 			this.GetHTML().style.lineHeight = "0";
 			
-			this.events.on(Helpers.VideoEventType.ClearCanvas, (color: Color) => {
+			this.events.on(VideoEventType.ClearCanvas, (color: Color) => {
 				this.bgColor = color;
-				Helpers.SVG.SetAttributes(this.dot, { fill: this.bgColor.CssValue });
+				SVG.SetAttributes(this.dot, { fill: this.bgColor.CssValue });
 				this.ChangeColor(this.color); // make sure the border color is contrastant
 			});			
 		}
@@ -104,7 +107,7 @@ module VectorScreencast.UI {
 		public MoveTo(x: number, y: number) : void {
 			this.GetHTML().style.left = `${x*this.scalingFactor - this.radius - this.stroke + this.offset.X}px`;
 			this.GetHTML().style.top = `${y*this.scalingFactor - this.radius - this.stroke + this.offset.Y	}px`;
-			this.position = new Helpers.Vector2(x, y);
+			this.position = new Vector2(x, y);
 		}
 		
 		/**
@@ -112,10 +115,10 @@ module VectorScreencast.UI {
 		 */
 		public ChangeColor(color: Color) {
 			if(color.CssValue === this.bgColor.CssValue) {
-				color = color.CssValue === UI.Color.ForegroundColor.CssValue ? UI.Color.BackgroundColor : UI.Color.ForegroundColor; // make it inverse
+				color = color.CssValue === Color.ForegroundColor.CssValue ? Color.BackgroundColor : Color.ForegroundColor; // make it inverse
 			}
 			
-			Helpers.SVG.SetAttributes(this.dot, {
+			SVG.SetAttributes(this.dot, {
 				stroke: color.CssValue				
 			});
 			this.color = color;
@@ -131,7 +134,7 @@ module VectorScreencast.UI {
 			
 			// resize the whole SVG element
 			var calculatedSize: number = 2*(this.radius + this.stroke);
-			Helpers.SVG.SetAttributes(this.svg, {
+			SVG.SetAttributes(this.svg, {
 				width: calculatedSize,
 				height: calculatedSize
 			});
@@ -141,7 +144,7 @@ module VectorScreencast.UI {
 			this.MoveTo(this.position.X + shift, this.position.Y + shift);
 			
 			// scale the dot
-			Helpers.SVG.SetAttributes(this.dot, {
+			SVG.SetAttributes(this.dot, {
 				cx: calculatedSize / 2,
 				cy: calculatedSize / 2,
 				r: Math.max(1, this.radius - this.stroke) // do not allow zero or even negative radius
@@ -158,4 +161,4 @@ module VectorScreencast.UI {
 			}
 		}
 	}	
-}
+//}

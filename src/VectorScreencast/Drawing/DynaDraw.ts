@@ -1,14 +1,16 @@
-/// <reference path="Path" />
-/// <reference path="../Helpers/VideoTimer" />
 
-module VectorScreencast.Drawing {
+
+import Vector2 from '../Helpers/Vector';
+import VideoTimer from '../Helpers/VideoTimer';
+import { CursorState } from '../Helpers/State';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+
+import BrushSize from '../UI/Brush';
+import Color from '../UI/Color';
+import Path from './Path'; 
+
+//namespace VectorScreencast.Drawing {
 	
-	import Vector2 = Helpers.Vector2;
-	import VideoTimer = Helpers.VideoTimer;
-    import CursorState = Helpers.CursorState;
-	
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
 		
 	/**
 	 * This class is an implementation of the algorithm originally created
@@ -16,7 +18,7 @@ module VectorScreencast.Drawing {
 	 * The algorithm is based on physical properties of an object which is guided
 	 * by mouse movement.
 	 */	
-	export class DynaDraw {
+	export default class DynaDraw {
 				
 		/** The cursor */
 		private cursor: BrushTip;
@@ -37,13 +39,13 @@ module VectorScreencast.Drawing {
 		private maxFriction: number = 0.6;
 				
 		/** Currently used brush size */
-		protected currentBrushSize: UI.BrushSize;
+		protected currentBrushSize: BrushSize;
 		
         /**
          * Set current brush size
          * @param   size    The new size of the brush (line thickness)
          */
-        public SetBrushSize(size: UI.BrushSize): void {
+        public SetBrushSize(size: BrushSize): void {
             this.currentBrushSize = size;
         }		 
 		
@@ -369,4 +371,4 @@ module VectorScreencast.Drawing {
 		}
 		
 	}
-}
+//}

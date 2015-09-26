@@ -1,23 +1,22 @@
 
+//namespace VectorScreencast.UI {
 
-module VectorScreencast.UI {
-		
 	/**
 	 * Color representation.
 	 */
-	export class Color {
+	export default class Color {
 		/**
 		 * @param	cssValue	Valid CSS value of a color.
 		 */
 		constructor(private cssValue: string) { }
-		
+
 		/**
 		 * CSS value of the color.
 		 */
 		public get CssValue(): string {  return this.cssValue;  }
-				 		
+
 		/** Current background color. */
-		private static backgroundPrototype: Color = new Color("#111"); // dark gray
+		private static backgroundPrototype = new Color("#111"); // dark gray
 		/**
 		 * Set different background color.
 		 * @param	c 	New background color.
@@ -30,9 +29,9 @@ module VectorScreencast.UI {
 		public static get BackgroundColor(): Color {
 			return new Color(this.backgroundPrototype.CssValue);
 		}
-		
+
 		/** Current foreground color */
-		private static foregroundPrototype: Color = new Color("#fff"); // white
+		private static foregroundPrototype = new Color("#fff"); // white
 		/**
 		 * Set different foreground color.
 		 * @param	c	New foreground color
@@ -46,5 +45,4 @@ module VectorScreencast.UI {
 		}
 
 	}
-
-}
+//}

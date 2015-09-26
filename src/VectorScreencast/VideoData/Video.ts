@@ -1,17 +1,16 @@
-/// <reference path="../VectorScreencast" />
+import VideoTimer from '../Helpers/VideoTimer';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import { StateType } from '../Helpers/State';
+import Metadata from './Metadata';
+import Chunk from './Chunk';
 
-module VectorScreencast.VideoData {
-	
-	import StateType = Helpers.StateType;
-	import VideoTimer = Helpers.VideoTimer;
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-				
+//namespace VectorScreencast.VideoData {
+			
 	/**
 	 * Video data storage - contains information about the chunks,
 	 * commands and metadata of the video.
 	 */
-	export class Video {				
+	export default class Video {				
 		constructor() {
 			this.chunks = [];
 		}
@@ -121,5 +120,5 @@ module VectorScreencast.VideoData {
 			return foundChunk;
 		}
 	}
-	
-}
+
+//}

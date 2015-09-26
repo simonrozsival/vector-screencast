@@ -1,12 +1,11 @@
 /// <reference path="audio.d.ts" />
 /// <reference path="../Helpers" />
 
-module VectorScreencast.AudioData {
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import Errors, { ErrorType } from '../Helpers/Errors';
+import HTML from '../Helpers/HTML';
 
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	import Errors = Helpers.Errors;
-	import ErrorType = Helpers.ErrorType;
+//namespace VectorScreencast.AudioData {
 	
 	/**
 	 * Enumeration of supported audio types.
@@ -69,7 +68,7 @@ module VectorScreencast.AudioData {
 	/**
 	 * This is the audio player
 	 */
-	export class AudioPlayer {
+	export default class AudioPlayer {
 		private isReady: boolean;
 		public get IsReady() : boolean { return this.isReady; }
 		
@@ -112,7 +111,7 @@ module VectorScreencast.AudioData {
 				for (var i = 0; i < sources.length; i++) {
 					var element: AudioSource = sources[i];
 					if(audio.canPlayType(element.MimeType) === "probably") { // 'probably' is the best we can get
-						var source: HTMLElement = Helpers.HTML.CreateElement("source", {
+						var source: HTMLElement = HTML.CreateElement("source", {
 							src: element.Url,
 							type: element.MimeType
 						});
@@ -125,7 +124,7 @@ module VectorScreencast.AudioData {
 					for (var i = 0; i < sources.length; i++) {
 						var element: AudioSource = sources[i];
 						if(audio.canPlayType(element.MimeType) === "maybe") { // 'maybe' might also work...
-							var source: HTMLElement = Helpers.HTML.CreateElement("source", {
+							var source: HTMLElement = HTML.CreateElement("source", {
 								src: element.Url,
 								type: element.MimeType
 							});
@@ -301,4 +300,4 @@ module VectorScreencast.AudioData {
 			this.audio.volume = Math.max(0, this.audio.volume - 0.1);
 		} 
 	}
-}
+//}

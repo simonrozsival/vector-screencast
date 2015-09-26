@@ -1,11 +1,11 @@
 /// <reference path="../Helpers" />
 
-module VectorScreencast.Drawing {
+import Vector2 from '../Helpers/Vector';
+import { BezierCurveSegment } from '../Helpers/Spline';
 	
-	import Vector2 = Helpers.Vector2;
-	import BezierCurveSegment = Helpers.BezierCurveSegment;
-	
-	export class Segment {
+//namespace VectorScreencast.Drawing {
+		
+	export default class Segment {
 		public get Left(): Vector2 { throw new Error("Not implemented"); }
 		public get Right(): Vector2 { throw new Error("Not implemented"); }
 		
@@ -40,4 +40,4 @@ module VectorScreencast.Drawing {
 		}		
 	}
 	
-}
+//}

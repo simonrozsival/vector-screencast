@@ -1,8 +1,8 @@
 /// <reference path="../Helpers/HTML" />
 
-module VectorScreencast.UI {
+import HTML from '../Helpers/HTML';
 	
-	import HTML = Helpers.HTML;
+//namespace VectorScreencast.UI {
 		
 	/**
 	 * Basic UI interface
@@ -101,7 +101,7 @@ module VectorScreencast.UI {
 		 * @param	text	Button caption
 		 * @param	onClick	Optional click event handler
 		 */
-		constructor(text: string, onClick?: (e: Event) => void) {
+		constructor(text: string, onClick?: (e: MouseEvent) => void) {
 			super("button");	
 			this.AddClass("ui-button");
 			this.content = new SimpleElement("span", text);
@@ -284,4 +284,4 @@ module VectorScreencast.UI {
 	}
 
 	
-}
+//}

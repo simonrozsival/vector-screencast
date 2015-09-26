@@ -1,15 +1,18 @@
 /// <references path="BasicElements" />
 /// <references path="../Helpers/VideoEvents" />
+/// <reference path="./BasicElements" />
 
-module VectorScreencast.UI {
-	
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import { IElement, SimpleElement, Panel } from './BasicElements';
+import { millisecondsToString } from '../Helpers/HelperFunctions';
+
+
+//namespace VectorScreencast.UI {
 	
 	/**
 	 * Video progress visualisation in the form of a progress bar.
 	 */
-	export class TimeLine extends Panel {
+	export default class TimeLine extends Panel {
 		
 		/** Length of the video in milliseconds */
 		private length: number;		
@@ -71,7 +74,7 @@ module VectorScreencast.UI {
 		 */
 		private OnMouseMove(e: MouseEvent) : void {
 			var progress: number = (e.clientX - this.GetHTML().clientLeft) / this.GetHTML().clientWidth;
-			var time: string = Helpers.millisecondsToString(progress * this.length);
+			var time: string = millisecondsToString(progress * this.length);
 			this.arrow.GetHTML().textContent = time;
 			this.arrow.GetHTML().style.left = `${progress * 100}%`;  
 			
@@ -114,4 +117,4 @@ module VectorScreencast.UI {
 		
 	}
 	
-}
+//}

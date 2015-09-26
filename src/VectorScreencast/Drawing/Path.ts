@@ -2,22 +2,21 @@
 /// <reference path="../Helpers/SVG" />
 /// <reference path="./Segments" />
 
-module VectorScreencast.Drawing {
+import SVG from '../Helpers/SVG';
+import Vector2 from '../Helpers/Vector';
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import { Spline, BezierCurveSegment } from '../Helpers/Spline';
+
+import Segment, { ZeroLengthSegment, QuadrilateralSegment, CurvedSegment } from './Segments';
+
+//namespace VectorScreencast.Drawing {
 	
-	import BezierHelper = Helpers.BezierCurveSegment;
-	import SVG = Helpers.SVG;
-	import Vector2 = Helpers.Vector2;
-	
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	
-	
-	interface PathPoint {
+	export interface PathPoint {
 		Left: Vector2;
 		Right: Vector2;
 	}
 		
-	export class Path {		
+	export default class Path {		
 				
 				
 		/** List of all points that were drawn */
@@ -152,8 +151,8 @@ module VectorScreencast.Drawing {
 		}
 		
 		private CalculateCurvedSegment(right: Vector2, left: Vector2): Segment {			
-			var leftBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
-			var rightBezier: Helpers.BezierCurveSegment = Helpers.Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);			
+			var leftBezier: BezierCurveSegment = Spline.catmullRomToBezier(this.LastButTwoPoint.Left, this.LastButOnePoint.Left, this.LastPoint.Left, left);
+			var rightBezier: BezierCurveSegment = Spline.catmullRomToBezier(this.LastButTwoPoint.Right, this.LastButOnePoint.Right, this.LastPoint.Right, right);			
 			var segment: CurvedSegment = new CurvedSegment(leftBezier, rightBezier)
 			this.DrawCurvedSegment(segment);
 						
@@ -242,7 +241,7 @@ module VectorScreencast.Drawing {
 		/**
 		 * Initialise new SVG path
 		 */
-		constructor(events: VideoEvents, curved: boolean, color: string, private canvas: Element) {
+		constructor(events: VideoEvents, curved: boolean, color: string, private canvas: HTMLElement) {
 			super(events, curved, color);
 		}
 			
@@ -419,4 +418,4 @@ module VectorScreencast.Drawing {
 			this.context.beginPath();			
 		}
 	}	
-}
+//}

@@ -1,6 +1,8 @@
 ///<reference path="./Vector.ts" />
 
-module VectorScreencast.Helpers {
+import Vector2 from './Vector';
+
+//namespace VectorScreencast.Helpers {
     
     /**
      * A set of functions for better spline handling. 
@@ -52,4 +54,4 @@ module VectorScreencast.Helpers {
          */                        
         constructor(private start: Vector2, private startCP: Vector2, private end: Vector2, private endCP: Vector2) { }
     }
-}
+//}

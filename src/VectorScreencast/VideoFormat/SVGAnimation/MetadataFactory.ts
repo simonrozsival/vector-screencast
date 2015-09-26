@@ -1,15 +1,13 @@
-/// <reference path="../../VectorScreencast" />
+import Metadata from '../../VideoData/Metadata';
+import SVG, { SVGA } from '../../Helpers/SVG';
+import { AudioSource, AudioSourceType } from '../../AudioData/AudioPlayer';
 
-module VectorScreencast.VideoFormat.SVGAnimation {
-	
-	import Metadata = VideoData.Metadata;
-	import SVG = Helpers.SVG;
-	import SVGA = Helpers.SVGA;
-	
+//namespace VectorScreencast.VideoFormat.SVGAnimation {
+				
 	/**
 	 * Converts metadata to and from SVG elements.
 	 */
-	export class MetadataFactory {
+	export default class MetadataFactory {
 		
 		/**
 		 * Extract metadata information form an SVG element
@@ -56,8 +54,8 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 			var audioElement: Element = height.nextElementSibling;
 			var audioSource: Element = audioElement.firstElementChild;
 			while(!!audioSource) {
-				var type: AudioData.AudioSourceType = AudioData.AudioSource.StringToType(SVGA.attr(audioSource, "type"));
-				meta.AudioTracks.push(new AudioData.AudioSource(SVGA.attr(audioSource, "src"), type));
+				var type: AudioSourceType = AudioSource.StringToType(SVGA.attr(audioSource, "type"));
+				meta.AudioTracks.push(new AudioSource(SVGA.attr(audioSource, "src"), type));
 				audioSource = audioSource.nextElementSibling;
 			}
 			
@@ -111,4 +109,4 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		
 	}
 	
-}
+//}

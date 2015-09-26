@@ -1,13 +1,12 @@
-/// <reference path="../VectorScreencast" />
 
-module VectorScreencast.VideoData {	
-	
-	import AudioSource = AudioData.AudioSource;
+import { AudioSource } from '../AudioData/AudioPlayer';
+
+//namespace VectorScreencast.VideoData {
 
 	/**
 	 * Basic information about the video
 	 */
-	export class Metadata {		
+	export default class Metadata {		
 		/** Duration of the video in milliseconds */
 		public Length: number;		
 		/** Width of the board */
@@ -18,4 +17,4 @@ module VectorScreencast.VideoData {
 		public AudioTracks: Array<AudioSource>;
 	}
 	
-}
+//}

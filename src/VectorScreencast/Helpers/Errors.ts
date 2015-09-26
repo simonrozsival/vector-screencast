@@ -1,5 +1,5 @@
 
-module VectorScreencast.Helpers {
+//namespace VectorScreencast.Helpers {
 	
 	export enum ErrorType {
 		Warning,
@@ -13,7 +13,7 @@ module VectorScreencast.Helpers {
 	/**
 	 * A class for logging errors that happen within the application
 	 */
-	export class Errors {
+	export default class Errors {
 		
 		/** If the logging should be done or not. */
 		private static doLog = true;
@@ -65,4 +65,4 @@ module VectorScreencast.Helpers {
 		
 	}
 	
-}
+//}

@@ -1,15 +1,23 @@
-/// <reference path="../VectorScreencast" />
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import HTML from '../Helpers/HTML';
+import VideoTimer from '../Helpers/VideoTimer';
+import { millisecondsToString } from '../Helpers/HelperFunctions';
 
-module VectorScreencast.UI {
+import { IElement, SimpleElement, Panel, IconButton, IconOnlyButton, H2 } from './BasicElements';
+import Board from './Board';
+import BrushSize from './Brush';
+import Color from '../UI/Color';
+import TimeLine from './TimeLine';
+import * as Localization from '../Localization/Player';
+import Metadata from '../VideoData/Metadata';
 
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
+//namespace VectorScreencast.UI {
 
 
 	/**
 	 * This class wraps the whole UI of the recorder.
 	 */	
-	export class PlayerUI extends Panel {
+	export default class PlayerUI extends Panel {
 		
 		/** The black board container */
 		private board: Board;
@@ -34,9 +42,9 @@ module VectorScreencast.UI {
 		/** The total duration of the video in milliseconds */
 		private videoDuration: number;
 				
-		public Localization: Localization.PlayerLocalization;
+		public Localization: Localization.Player;
 		
-		public Timer: Helpers.VideoTimer;
+		public Timer: VideoTimer;
 		
 		private isBusy: boolean = false;
 		
@@ -93,9 +101,9 @@ module VectorScreencast.UI {
 			);
 			
 			// Set the duration of the video as soon as available
-			this.events.on(VideoEventType.VideoInfoLoaded, (meta: VideoData.Metadata) => {
+			this.events.on(VideoEventType.VideoInfoLoaded, (meta: Metadata) => {
 				this.videoDuration = meta.Length;
-				this.totalTime.GetHTML().textContent = Helpers.millisecondsToString(meta.Length);
+				this.totalTime.GetHTML().textContent = millisecondsToString(meta.Length);
 				this.timeline.Length = meta.Length;
 			});
 			this.events.on(VideoEventType.BufferStatus, (seconds: number) => this.timeline.SetBuffer(seconds * 1000)); // convert to milliseconds first
@@ -109,7 +117,7 @@ module VectorScreencast.UI {
 		 * @param	text	User information.
 		 */
 		public SetBusyText(text: string) {
-			Helpers.HTML.SetAttributes(this.GetHTML(), { "data-busy-string": text });
+			HTML.SetAttributes(this.GetHTML(), { "data-busy-string": text });
 		}
 		
 		/**
@@ -276,7 +284,7 @@ module VectorScreencast.UI {
 		 * @param	time	Optional - specific time in seconds
 		 */
 		public UpdateCurrentTime(time?: number) : void {
-			this.currentTime.GetHTML().textContent = Helpers.millisecondsToString(!!time ? time : this.Timer.CurrentTime());
+			this.currentTime.GetHTML().textContent = millisecondsToString(!!time ? time : this.Timer.CurrentTime());
 			this.timeline.Sync(!!time ? time : this.Timer.CurrentTime());
 		}
 		
@@ -365,8 +373,8 @@ module VectorScreencast.UI {
 		 */
 		protected Mute(): void {
 			if(!this.isMuted) {
-				Helpers.HTML.SetAttributes(this.volumeDownBtn.GetHTML(), { disabled: "disabled" });
-				Helpers.HTML.SetAttributes(this.volumeUpBtn.GetHTML(), { disabled: "disabled" });
+				HTML.SetAttributes(this.volumeDownBtn.GetHTML(), { disabled: "disabled" });
+				HTML.SetAttributes(this.volumeUpBtn.GetHTML(), { disabled: "disabled" });
 				this.volumeOffBtn.AddClass("active");
 			} else {				
 				this.volumeDownBtn.GetHTML().removeAttribute("disabled");
@@ -393,4 +401,4 @@ module VectorScreencast.UI {
 		 
 	}
 	
-}
+//}

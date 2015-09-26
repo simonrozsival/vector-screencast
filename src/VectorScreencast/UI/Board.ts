@@ -1,20 +1,21 @@
-/// <reference path="BasicElements" />
-/// <reference path="Cursor" />
-/// <reference path="Color" />
-/// <reference path="../Helpers/VideoEvents" />
-/// <reference path="../Helpers/State" />
-/// <reference path="../Helpers/HTML" />
 
-module VectorScreencast.UI {
-	
-	import HTML = Helpers.HTML;
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import HTML from '../Helpers/HTML';
+import Vector2 from '../Helpers/Vector';
+import { CursorState } from '../Helpers/State';
+import Color from '../UI/Color';
+
+import { IElement, SimpleElement, Panel } from './BasicElements';
+import Cursor from './Cursor';
+import BrushSize from './Brush';
+
+
+//namespace VectorScreencast.UI {
 	
 	/**
 	 * The board itself.
 	 */
-	export class Board extends Panel {				
+	export default class Board extends Panel {				
 			
 		/** Custom cursor that replaces the system arrow. */
 		private cursor: Cursor;
@@ -55,19 +56,19 @@ module VectorScreencast.UI {
 			HTML.SetAttributes(this.GetHTML(), { position: "relative" });
 			
 			// move the cursor
-			events.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));
-			events.on(VideoEventType.CursorState, 			(state: Helpers.CursorState) 	=> this.UpdateCursorPosition(state));			
+			events.on(VideoEventType.CursorState, 			(state: CursorState) 	=> this.UpdateCursorPosition(state));
+			events.on(VideoEventType.CursorState, 			(state: CursorState) 	=> this.UpdateCursorPosition(state));			
 			events.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)				=> this.UpdateCursorSize(state));
 			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
 			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
 			events.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)			=> this.UpdateCursorScale(scalingFactor));
-			events.on(VideoEventType.CursorOffset, 		(offset: Helpers.Vector2)		=> this.cursor.Offset = offset);
+			events.on(VideoEventType.CursorOffset, 		(offset: Vector2)		=> this.cursor.Offset = offset);
 		}
 				
 		/**
 		 * Position the element
 		 */
-		private UpdateCursorPosition(state: Helpers.CursorState): void {	
+		private UpdateCursorPosition(state: CursorState): void {	
 			this.cursor.MoveTo(state.X, state.Y);
 		}
 		
@@ -93,4 +94,4 @@ module VectorScreencast.UI {
 		}
 	}
 	
-}
+//}

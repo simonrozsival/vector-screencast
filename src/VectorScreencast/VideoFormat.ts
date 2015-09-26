@@ -1,13 +1,11 @@
-/// <reference path="VideoData" />
-/// <reference path="VideoFormat/SVGAnimation/IO" />
+import VideoEvents, { VideoEventType } from './Helpers/VideoEvents';
+import Video from './VideoData/Video';
 
 /**
  * Reading and writing video data to (different) Vector Screencast formats.
  * @prefered
  */
-module VectorScreencast.VideoFormat {
-	
-	import Video = VideoData.Video;
+//namespace VectorScreencast.VideoFormat {
 		
 	/**
 	 * Instance of this interface is capable of parsing a specific file format.
@@ -19,7 +17,7 @@ module VectorScreencast.VideoFormat {
 		 * @param	file	The downloaded source file
 		 * @return			Video data
 		 */
-		LoadVideo(events: Helpers.VideoEvents, file: any): Video;
+		LoadVideo(events: VideoEvents, file: any): Video;
 		
 		/**
 		 * Get supported extension
@@ -59,4 +57,4 @@ module VectorScreencast.VideoFormat {
 		GetMimeType(): string;
 	}
 	
-}
+//}

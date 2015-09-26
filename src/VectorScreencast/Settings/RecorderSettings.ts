@@ -1,6 +1,11 @@
-/// <reference path="../VectorScreencast" />
+import Color from '../UI/Color';
+import { DrawingStrategy } from '../Drawing/DrawingStrategy';
+import * as Localization from '../Localization/Recorder';
+import RecorderUI from '../UI/RecorderUI';
+import BrushSize from '../UI/Brush';
+import { Writer } from '../VideoFormat';
 
-module VectorScreencast.Settings {
+//namespace VectorScreencast.Settings {
 	
 	/**
 	 * The inteface of obligatory and possible settings for the Vector Screencast Recorder
@@ -9,23 +14,23 @@ module VectorScreencast.Settings {
 		/** URL, where the data will be uploaded using a POST request. */	
 		UploadURL:			string;		
 		/** Instance of Drawing.DrawingStrategy. Defines how the data will be rendered on the screen. Default is Drawing.CanvasDrawer */		
-		DrawingStrategy?: 	Drawing.DrawingStrategy;
+		DrawingStrategy?: 	DrawingStrategy;
 		/** Audio recording settings instance. */
 		Audio?: 			AudioRecorderSettings;
 		/** Localization object literal. Default language is English. */
-		Localization?: 		Localization.RecorderLocalization;
+		Localization?: 		Localization.Recorder;
 		/** Default brush color */
-		DefaultBrushColor?:	UI.Color;
+		DefaultBrushColor?:	Color;
 		/** Default board background color */
-		DefaultBackgroundColor?: UI.Color;
+		DefaultBackgroundColor?: Color;
 		/** Array of brush size options. */
-		BrushSizes?: 		Array<UI.BrushSize>;
+		BrushSizes?: 		Array<BrushSize>;
 		/** Array of colors for the color palete. */
-		ColorPallete?: 		Array<UI.Color>;
+		ColorPallete?: 		Array<Color>;
 		/** Enable or disable dynamic line width depending on brush's speed. */
 		DisableDynamicLineWidth?:	boolean;
 		/** Object instance defining the HTML structure of the recorder. */		
-		UI?:				UI.RecorderUI;	
+		UI?:				RecorderUI;	
 		/**
 		 * If set to true, UI controls will hide when playing so the user isn't distracted.
 		 * Controlswill appear if the mouse hovers above them or a button in bottom right corner is clicked.
@@ -41,7 +46,7 @@ module VectorScreencast.Settings {
 		 * Instance of VideoFormat.Writer, that defines the format of the output.
 		 * @default VideoFormat.SVGAnimation.IO
 		 */
-		VideoFormat?:		VideoFormat.Writer;	
+		VideoFormat?:		Writer;	
 	}
 	
 	/**
@@ -73,4 +78,4 @@ module VectorScreencast.Settings {
 	} 
 	
 		
-}
+//}

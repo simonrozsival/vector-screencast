@@ -1,8 +1,10 @@
-/// <reference path="../VectorScreencast" />
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import VideoTimer from '../Helpers/VideoTimer';
+import Mouse from './Mouse';
+import PointingDevice from './PointingDevice';
+import HTML from '../Helpers/HTML';
 
-module VectorScreencast.VideoData {
-	
-	import VideoEvents = Helpers.VideoEvents;
+//namespace VectorScreencast.VideoData {
 	
 	/**
 	 * This is an interface compatible with Wacom Pen API
@@ -36,14 +38,14 @@ module VectorScreencast.VideoData {
 	 * Wacom tablets can be used to enhance the recording with their ability to detect pen pressure
 	 * for variable thickness of drawn lines.  
 	 */
-	export class WacomTablet extends Mouse {
+	export default class WacomTablet extends Mouse {
 		
-		constructor(events: Helpers.VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer, private penApi: IWacomApi) {
+		constructor(events: VideoEvents, board: HTMLElement, timer: VideoTimer, private penApi: IWacomApi) {
 			super(events, board, timer);
 		}
 		
-		static Factory(api: IWacomApi): (events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) => PointingDevice {
-			return (events: VideoEvents, board: HTMLElement, timer: Helpers.VideoTimer) => new WacomTablet(events, board, timer, api);
+		static Factory(api: IWacomApi): (events: VideoEvents, board: HTMLElement, timer: VideoTimer) => PointingDevice {
+			return (events: VideoEvents, board: HTMLElement, timer: VideoTimer) => new WacomTablet(events, board, timer, api);
 		}
 		
 		/**
@@ -68,7 +70,7 @@ module VectorScreencast.VideoData {
 		 */
 		public static IsAvailable() : IWacomApi {			
 			// create the plugin according to the documentation
-			var plugin: IWacomPlugin = <IWacomPlugin> Helpers.HTML.CreateElement("object", { type:	"application/x-wacomtabletplugin" });
+			var plugin: IWacomPlugin = <IWacomPlugin> HTML.CreateElement("object", { type:	"application/x-wacomtabletplugin" });
 			//plugin.style.display = "none";
 			document.body.appendChild(plugin);
 						
@@ -83,4 +85,4 @@ module VectorScreencast.VideoData {
 		
 	}
 	
-}
+//}

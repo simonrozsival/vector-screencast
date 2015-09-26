@@ -1,21 +1,24 @@
-/// <reference path="ChunkFactories" />
-/// <reference path="CommandFactories" />
-/// <reference path="MetadataFactory" />
+import Video from '../../VideoData/Video';
+import Metadata from '../../VideoData/Metadata';
+import Chunk, { EraseChunk, PathChunk, VoidChunk } from '../../VideoData/Chunk';
 
-/// <reference path="../../VectorScreencast" />
+import ChunkFactory, { EraseChunkFactory, VoidChunkFactory, PathChunkFactory } from './ChunkFactories';
+import CommandFactory, { MoveCursorFactory, DrawSegmentFactory, ChangeBrushColorFactory, ChangeBrushSizeFactory, ClearCanvasFactory } from './CommandFactories';
+import MetadataFactory from './MetadataFactory'; 
 
-module VectorScreencast.VideoFormat.SVGAnimation {
+import Vector2 from '../../Helpers/Vector';
+import { IAttributes } from '../../Helpers/HTML';
+import SVG, { SVGA } from '../../Helpers/SVG';
+import VideoEvents from '../../Helpers/VideoEvents';
 	
-	import Video = VideoData.Video;
-	import Metadata = VideoData.Metadata;
-	import Chunk = VideoData.Chunk;
-	import SVG = Helpers.SVG;
-	import SVGA = Helpers.SVGA;
-		
+import { Writer, Reader } from '../../VideoFormat';
+	
+//namespace VectorScreencast.VideoFormat.SVGAnimation {
+	
 	/**
 	 * Read video information from an SVG file.
 	 */
-	export class IO implements VideoFormat.Writer, VideoFormat.Reader {
+	export default class IO implements Writer, Reader {
 						
 		/** Factories for creating parts of the video */
 		private chunkFactory: ChunkFactory;
@@ -96,7 +99,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		 * @param	{Document}	doc		Downloaded XML document.
 		 * @return	{Video}				Video data
 		 */
-		public LoadVideo(events: Helpers.VideoEvents, doc: any): Video {
+		public LoadVideo(events: VideoEvents, doc: any): Video {
 			if(doc instanceof Document === false) {
 				throw new Error(`SVGAnimation IO parsing error: Document must be an XML document`);
 			}
@@ -126,7 +129,7 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 				var next = this.chunkFactory.FromSVG(events, chunk, this.commandFactory);
 				next.LastErase = lastErase;
 				video.PushChunk(next);				
-				if(next instanceof VideoData.EraseChunk) {
+				if(next instanceof EraseChunk) {
 					// remember the position of last erase 
 					lastErase = i;
 				}				
@@ -153,5 +156,4 @@ module VectorScreencast.VideoFormat.SVGAnimation {
 		}
 		
 	}
-	
-}
+//}

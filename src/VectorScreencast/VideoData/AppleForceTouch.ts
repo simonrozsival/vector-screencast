@@ -1,10 +1,12 @@
 /// <reference path="PointingDevice" />
-/// <reference path="../VectorScreencast" />
 
-module VectorScreencast.VideoData {	
+import VideoEvents from '../Helpers/VideoEvents';
+import { CursorState } from '../Helpers/State';
+import TouchEventsAPI from './Touch';
+import VideoTimer from '../Helpers/VideoTimer';
 
-	import VideoEvents = Helpers.VideoEvents;
-	import CursorState = Helpers.CursorState;
+//namespace VectorScreencast.VideoData {
+	
 	
 	interface WebkitMouseEvent extends MouseEvent {
 		webkitForce: number;
@@ -13,14 +15,14 @@ module VectorScreencast.VideoData {
 	/**
 	 * Mouse input detection and processing. 
 	 */
-	export class AppleForceTouch extends TouchEventsAPI {
+	export default class AppleForceTouch extends TouchEventsAPI {
 			
 		private useAppleForceTouchAPI: boolean;
 				
 		/** This property *might* contain information about pressure level, if the device  */
 		private forceLevel: number;
 						
-		constructor(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: Helpers.VideoTimer) {
+		constructor(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer) {
 			super(events, board, canvas, timer);			
 			// board events						
 			this.board.onmousemove = (e: MouseEvent) => this.checkForce((<WebkitMouseEvent>e).webkitForce); // only bind the event if I am sure there is the force touch API
@@ -43,4 +45,4 @@ module VectorScreencast.VideoData {
 			this.forceLevel = Math.min(1, webkitForce); 
 		}
 	}
-}
+//}

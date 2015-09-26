@@ -1,88 +1,86 @@
 
-module VectorScreencast.Helpers {
 
+/**
+	* Common interface for my intended usage of Date and Performance.
+	*/
+interface IMsTimer {
 	/**
-	 * Common interface for my intended usage of Date and Performance.
-	 */
-	interface IMsTimer {
-		/**
-		 * Return current time ellapsed from some fixed point in the past in milliseconds.
-		 */
-		now(): number;
+		* Return current time ellapsed from some fixed point in the past in milliseconds.
+		*/
+	now(): number;
+}
+
+/**
+* (High resolution) timer.
+*/
+export default class VideoTimer {
+	
+	/** The instance of the best available timer by the browser. */
+	private clock: IMsTimer;
+	
+	/** The time of the last reset */
+	private startTime: number;
+	public get StartTime() : number { return this.startTime; }
+	
+	private paused: boolean;
+	
+	/**
+		* Get time ellapsed since the last clock reset
+		*/
+	public CurrentTime() : number {
+		return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
 	}
 	
 	/**
-	* (High resolution) timer.
-	*/
-	export class VideoTimer {
-		
-		/** The instance of the best available timer by the browser. */
-		private clock: IMsTimer;
-		
-		/** The time of the last reset */
-		private startTime: number;
-		public get StartTime() : number { return this.startTime; }
-		
-		private paused: boolean;
-		
-		/**
-		 * Get time ellapsed since the last clock reset
-		 */
-		public CurrentTime() : number {
-			return !this.paused ? this.clock.now() - this.startTime : this.pauseTime;
+		* Set the timer to a specific point (in milliseconds)
+		*/
+	public SetTime(milliseconds: number) : void {
+		if(this.paused) {
+			this.pauseTime = milliseconds;				
+		} else {
+			this.startTime = this.clock.now() - milliseconds;				
 		}
-		
-		/**
-		 * Set the timer to a specific point (in milliseconds)
-		 */
-		public SetTime(milliseconds: number) : void {
-			if(this.paused) {
-				this.pauseTime = milliseconds;				
-			} else {
-				this.startTime = this.clock.now() - milliseconds;				
-			}
-		}
-				
-		/** Current time of the moment when the timer was paused. */
-		private pauseTime: number = 0;	
+	}
 			
-		/**
-		 * Pause the timer
-		 */
-		public Pause() : void {
-			this.pauseTime = this.CurrentTime();
-			this.paused = true;
+	/** Current time of the moment when the timer was paused. */
+	private pauseTime: number = 0;	
+		
+	/**
+		* Pause the timer
+		*/
+	public Pause() : void {
+		this.pauseTime = this.CurrentTime();
+		this.paused = true;
+	}
+	
+	/**
+		* Unpause the timer
+		*/
+	public Resume() : void {
+		this.paused = false;
+		this.Reset();
+		this.SetTime(this.pauseTime);
+	}
+	
+	/**
+		* Start counting from zero
+		*/
+	public Reset() : void {
+		this.startTime = this.clock.now();
+	}
+	
+	/**
+		* Creates a timer and resets it.
+		*/
+	constructor(running?: boolean) {
+		/** @type {Date|object} */
+		if(!window.performance) {
+			this.clock = Date;
+		} else {
+			this.clock = window.performance; // High resolution timer
 		}
 		
-		/**
-		 * Unpause the timer
-		 */
-		public Resume() : void {
-			this.paused = false;
-			this.Reset();
-			this.SetTime(this.pauseTime);
-		}
-		
-		/**
-		 * Start counting from zero
-		 */
-		public Reset() : void {
-			this.startTime = this.clock.now();
-		}
-		
-		/**
-		 * Creates a timer and resets it.
-		 */
-		constructor(running?: boolean) {
-			/** @type {Date|object} */
-			if(!window.performance) {
-				this.clock = Date;
-			} else {
-				this.clock = window.performance; // High resolution timer
-			}
-			
-			this.paused = !running; // default is false
-			this.Reset();
-		}
+		this.paused = !running; // default is false
+		this.Reset();
 	}
 }

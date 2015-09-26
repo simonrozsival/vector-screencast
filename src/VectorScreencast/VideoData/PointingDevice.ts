@@ -1,12 +1,14 @@
-/// <reference path="../VectorScreencast" />
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import VideoTimer from '../Helpers/VideoTimer';
+import { State, CursorState } from '../Helpers/State';
+import Cursor from './Cursor';
 
-module VectorScreencast.VideoData {	
+import WacomTablet, { IWacomApi } from './WacomTablet';
+import PointerEventsAPI from './Pointer';
+import AppleForceTouch from './AppleForceTouch';
+import TouchEventsAPI from './Touch';
 
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	import CursorState = Helpers.CursorState;
-	import State = Helpers.State;
-	import Timer = Helpers.VideoTimer;
+//namespace VectorScreencast.VideoData {
 
 	/**
 	 * Minimum information needed to determine cursor movement across different events - Mouse/Touch/Pointer... 
@@ -21,9 +23,9 @@ module VectorScreencast.VideoData {
 	/**
 	 * Any pointing device input detection and processing. 
 	 */
-	export class PointingDevice {
+	export default class PointingDevice {
 		
-		static SelectBestMethod(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: Helpers.VideoTimer): PointingDevice {
+		static SelectBestMethod(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer): PointingDevice {
 			var device: PointingDevice;
 			
 			// select best input method
@@ -67,7 +69,7 @@ module VectorScreencast.VideoData {
 		 * @param	board	HTML element of the board
 		 * @param	timer	(High resolution) timer
 		 */
-		constructor(protected events: VideoEvents, protected board: HTMLElement, protected timer: Helpers.VideoTimer) {			
+		constructor(protected events: VideoEvents, protected board: HTMLElement, protected timer: VideoTimer) {			
 			this.isHoveringOverUIControl = false; 
 		}
 		
@@ -75,9 +77,9 @@ module VectorScreencast.VideoData {
 		 * Filter all clicks on buttons and other possible UI controls
 		 */
 		public InitControlsAvoiding(): void {			
-			var controls: NodeList = document.getElementsByClassName("ui-control-panel");
+			var controls = <Array<HTMLElement>><any>document.getElementsByClassName("ui-control-panel"); // typescript hack :-)
 			for (var i = 0; i < controls.length; i++) {
-				var element = <HTMLElement> controls[i];
+				var element = controls[i];
 				element.onmouseover = (e: MouseEvent) => this.isHoveringOverUIControl = true;
 				element.onmouseout = (e: MouseEvent) => this.isHoveringOverUIControl = false; 
 			}
@@ -176,4 +178,5 @@ module VectorScreencast.VideoData {
 			this.events.trigger(VideoEventType.CursorState, state);
 		}
 	}
-}
+	
+//}

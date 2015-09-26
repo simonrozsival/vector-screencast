@@ -1,16 +1,15 @@
-/// <reference path="../VectorScreencast" />
-
-module VectorScreencast.VideoData {
+import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
+import { SVGA } from '../Helpers/SVG';
+import Color from '../UI/Color';
+import BrushSize from '../UI/Brush';
+import { CursorState } from '../Helpers/State';
 	
-	import VideoEvents = Helpers.VideoEvents;
-	import VideoEventType = Helpers.VideoEventType;
-	import SVGA = Helpers.SVGA;
-		
+//namespace VectorScreencast.VideData {
 	
 	/**
 	 * Commands are used to trigger some event at given moment.
 	 */		
-	export class Command {		
+	export default class Command {		
 		public get Time(): number { return this.time; }		
 		constructor(private time: number) { }		
 		Execute(events: VideoEvents): void {
@@ -47,7 +46,7 @@ module VectorScreencast.VideoData {
 		 * @triggeres-event	CursorState
 		 */
 		Execute(events: VideoEvents): void {
-			events.trigger(VideoEventType.CursorState, new Helpers.CursorState(this.Time, this.x, this.y, this.p));
+			events.trigger(VideoEventType.CursorState, new CursorState(this.Time, this.x, this.y, this.p));
 		}
 		
 		/**
@@ -83,13 +82,13 @@ module VectorScreencast.VideoData {
 	 */
 	export class ChangeBrushColor extends Command {
 		/** Color to change the brush to */
-		get Color(): UI.Color { return this.color; }
+		get Color(): Color { return this.color; }
 				
 		/**
-		 * @param	color	New color of the brush
-		 * @param	time	Time, when this command should be executed
-		 */
-		constructor(protected color: UI.Color, time: number) {
+	 	 * @param	color	New color of the brush
+	 	 * @param	time	Time, when this command should be executed
+	 	 */
+		constructor(protected color: Color, time: number) {
 			super(time);
 		}
 						
@@ -114,13 +113,13 @@ module VectorScreencast.VideoData {
 	 */
 	export class ChangeBrushSize extends Command {
 		/** The new size of the brush */
-		get Size(): UI.BrushSize { return this.size; }
+		get Size(): BrushSize { return this.size; }
 		
 		/**
 		 * @param	size	New size of the brush
 		 * @param	time	The time, when this command should be executed
 		 */
-		constructor(protected size: UI.BrushSize, time: number) {
+		constructor(protected size: BrushSize, time: number) {
 			super(time);
 		}
 						
@@ -145,13 +144,13 @@ module VectorScreencast.VideoData {
 	 */
 	export class ClearCanvas extends Command {
 		/** New color of the canvas */
-		public get Color(): UI.Color { return this.color; }
+		public get Color(): Color { return this.color; }
 		
 		/**
 		 * @param	color	The intended color of the background.
 		 * @param	time	The time, when this command should be executed
 		 */
-		constructor(protected color: UI.Color, time: number) {
+		constructor(protected color: Color, time: number) {
 			super(time);
 		}
 		
@@ -165,5 +164,5 @@ module VectorScreencast.VideoData {
 		Clone(): Command {
 			return new ClearCanvas(this.color, this.Time);
 		}
-	}			
-}
+	}
+//}
