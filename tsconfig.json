@@ -1,15 +1,14 @@
 {
     "compilerOptions": {
-        "target": "ES5",
+        "target": "es5",
+		"module": "commonjs",
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": true,		
-		"outDir": "../../release/vector-screencast-lib",
-		"declaration": true,
-		"module": "commonjs"
+		"outDir": "./lib"
     },
 	"files": [
-		"./vector-screencast.ts"
+		"./src/lib/Player.ts",
+		"./src/lib/Recorder.ts"	
 	]
 }

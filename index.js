@@ -1,2 +1,8 @@
-var VectorScreencast = require("./release/vector-screencast-lib/vector-screencast.js");
-module.exports = VectorScreencast;
+
+var Player = require("./lib/Player");
+var Recorder = require("./lib/Recorder");
+
+module.exports = {
+	Player: Player,
+	Recorder: Recorder
+};

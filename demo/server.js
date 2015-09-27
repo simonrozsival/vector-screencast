@@ -1,4 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
 /**
  * Application serving the whole page.
  * Please take in mind that this just a DEMO.
