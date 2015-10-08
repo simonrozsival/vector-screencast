@@ -1,6 +1,6 @@
 {
-  "name": "vector-video",
-  "version": "0.9.1",
+  "name": "vector-screencast",
+  "version": "0.9.2",
   "description": "The goal of this project is to create a library for recording and playing Khan Academy like videos.",
   "keywords": [
     "vectors",
@@ -19,7 +19,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf release doc lib",
-    "build": "webpack",
+    "build": "tsc && webpack",
     "test": "mocha --require ./test/ts-hook.js test/**/*.ts",
     "test:watch": "npm run test -- --growl --watch --watch-extensions ts",
     "build-doc": "typedoc --target es6 --out ./doc ./src/lib/**/*.ts"
