@@ -3,7 +3,7 @@
         "target": "ES6",
         "noImplicitAny": false,
         "removeComments": true,
-        "sourcemap": true
+        "sourceMap": true
     },
 	"files": [
 		"RecordingWorker.ts",

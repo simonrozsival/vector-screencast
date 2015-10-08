@@ -19,7 +19,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf release doc lib",
-    "build": "tsc && webpack",
+    "build": "webpack",
     "test": "mocha --require ./test/ts-hook.js test/**/*.ts",
     "test:watch": "npm run test -- --growl --watch --watch-extensions ts",
     "build-doc": "typedoc --target es6 --out ./doc ./src/lib/**/*.ts"
@@ -37,7 +37,7 @@
     "merge-stream": "^0.1.7",
     "mocha": "^2.3.3",
     "quick-sort": "^0.2.1",
-    "ts-loader": "^0.5.5",
+    "ts-loader": "^0.5.6",
     "ts-node": "^0.2.4",
     "typescript": "^1.5.0-beta",
     "uglify-loader": "^1.2.0",

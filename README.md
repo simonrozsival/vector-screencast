@@ -14,7 +14,7 @@ Install [Node.js](https://nodejs.org) first. Then download the library to your p
 ```
 
 ```es6
-import { Recorder, Player } from 'vector-screencast';
+import Recorder from 'vector-screencast/lib/Recorder';
 
 // to attach the recorder to your page:
 var recorder = new Recorder("recorder", {
@@ -26,10 +26,21 @@ var recorder = new Recorder("recorder", {
 	}
 });
 
+import Player from 'vector-screencast/lib/Player';
+
 // to attach a player to your page:
 var player = new Player("player", {
 	Source: "path/to/the/recording.svg"
 });
+```
+
+If you want to write your application in [TypeScript](http://typescriptlang.com), you can import the classes directly from the `.ts` source files:
+
+```typescript
+import Recorder from 'vector-screencast/src/lib/Recorder';
+import Player from 'vector-screencast/src/lib/Player';
+
+let player: Player = new Player(...);
 ```
 
 For more settings and details, see the demo and read the [API docs](http://rozsival.com/docs) please.
