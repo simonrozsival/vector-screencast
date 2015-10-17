@@ -59,6 +59,7 @@ import { AudioRecorderSettings } from '../Settings/RecorderSettings';
 			if(!!config.host) this.settings.host = config.host;
 			if(!!config.port) this.settings.port = config.port;
 			if(!!config.path) this.settings.path = config.path;
+			if(!!config.recordingWorkerPath) this.settings.recordingWorkerPath = config.recordingWorkerPath;
 	
 			// wait until the user starts recording
 			this.recording = false;

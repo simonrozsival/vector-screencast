@@ -5,7 +5,8 @@
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
-		"outDir": "./lib"
+		"outDir": "./lib",
+		"declaration": true
     },
 	"files": [
 		"./src/lib/Player.ts",

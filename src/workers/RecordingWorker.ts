@@ -1,3 +1,5 @@
+/// <reference path="../../node_modules/typescript/lib/lib.webworker.d.ts" />
+
 import { Message } from './common';
 
 // communication protocol between the browser and this worker
@@ -11,7 +13,7 @@ var CMD_FINISH = "finish";
  */
 function error(msg: string) : void {
     console.log("Recording Worker error: " + msg);
-    this.postMessage({ type: "error", msg: msg }); // report error
+    postMessage({ type: "error", msg: msg }); // report error
 }
 
 /** The audio processing object */
@@ -21,7 +23,7 @@ var audioProcessor: any = null;
  * Worker entry point.
  * @param {object}  Message object
  */
-this.onmessage = function(e: Message) {
+onmessage = (e: Message) => {
     var msg: any = e.data;
     if(!msg.hasOwnProperty("cmd")) {
         console.log("Recording Worker error: message does not contain 'cmd' property.");
@@ -37,7 +39,7 @@ this.onmessage = function(e: Message) {
                     path: msg.path,
                     secured: false,
                     opened: () => console.log("Streaming was initialised successfully."),
-                    finished: (files: Array<string>) => this.postMessage({ type: "finished", files: files }),
+                    finished: (files: Array<string>) => postMessage({ type: "finished", files: files }),
                     error: () => error("Can't init audio processor")
                 });
                 break;
@@ -45,14 +47,14 @@ this.onmessage = function(e: Message) {
             // next block of data is available
             case CMD_PUSH_DATA:
                 if(!audioProcessor.PushData(msg.data)) {
-                    this.postMessage({ type: "network-error" });
+                    postMessage({ type: "network-error" });
                 }
                 break;
                 
             // user stopped the recording
             case CMD_FINISH:
                 audioProcessor.Finish({
-                    success: (data: any) => this.postMessage({ error: false, files: data.files }),
+                    success: (data: any) => postMessage({ error: false, files: data.files }),
                     error: error
                 });
                 break;

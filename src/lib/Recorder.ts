@@ -27,6 +27,7 @@ import IO from './VideoFormat/SVGAnimation/IO';
 import { Writer } from './VideoFormat/VideoFormat';
 import RecorderUI from './UI/RecorderUI';
 
+import selectBestInputMethod from './VideoData/selectBestInputMethod';
 
 //namespace VectorScreencast {
 	
@@ -230,7 +231,7 @@ import RecorderUI from './UI/RecorderUI';
 			container.appendChild(this.ui.GetHTML());
 			this.drawer.Stretch(); // adapt to the environment
 			
-			this.pointer = PointingDevice.SelectBestMethod(this.events, this.ui.GetHTML(), canvas, this.timer);			
+			this.pointer = selectBestInputMethod(this.events, this.ui.GetHTML(), canvas, this.timer);			
 			
 			// init audio recording
 			if (!!settings.Audio) {

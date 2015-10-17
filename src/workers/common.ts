@@ -1,6 +1,6 @@
 
 
-export interface Message {
+export interface Message extends MessageEvent {
 	cmd: string;
 	data: any;
 }
