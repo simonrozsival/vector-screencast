@@ -14,15 +14,14 @@
   "readme": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/simonrozsival/vectorvideo"
+    "url": "https://github.com/simonrozsival/vector-screencast"
   },
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf release doc lib",
-    "build": "tsc && webpack",
+    "clean": "rm -rf release/*",
+    "build": "webpack",
     "test": "mocha --require ./test/ts-hook.js test/**/*.ts",
-    "test:watch": "npm run test -- --growl --watch --watch-extensions ts",
-    "build-doc": "typedoc --target es6 --out ./doc ./src/lib/**/*.ts"
+    "test:watch": "npm run test -- --growl --watch --watch-extensions ts"
   },
   "dependencies": {},
   "devDependencies": {

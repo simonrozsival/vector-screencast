@@ -1,0 +1,37 @@
+import Vector2 from '../Helpers/Vector';
+import VideoTimer from '../Helpers/VideoTimer';
+import { CursorState } from '../Helpers/State';
+import VideoEvents from '../Helpers/VideoEvents';
+import BrushSize from '../UI/Brush';
+import Path from './Path';
+export default class DynaDraw {
+    protected events: VideoEvents;
+    protected pathFactory: () => Path;
+    private slowSimulation;
+    private minBrushSize;
+    private maxBrushSize;
+    private cursor;
+    private position;
+    private pressure;
+    protected path: Path;
+    private minMass;
+    private maxMass;
+    private minFriction;
+    private maxFriction;
+    protected currentBrushSize: BrushSize;
+    SetBrushSize(size: BrushSize): void;
+    private interpolateMass(brushSize);
+    private interpolateFriction(brushSize);
+    private brushes;
+    private GetBrush(brushSize);
+    constructor(events: VideoEvents, pathFactory: () => Path, slowSimulation: boolean, minBrushSize: number, maxBrushSize: number, timer: VideoTimer);
+    protected lastState: CursorState;
+    ObserveCursorMovement(cursor: CursorState): void;
+    StartPath(position: Vector2, pressure: number): void;
+    NextPoint(position: Vector2, pressure: number): void;
+    EndPath(position: Vector2, pressure: number): void;
+    private TickWhile();
+    private lastAnimationTime;
+    private oneFrame;
+    private Tick(time);
+}
