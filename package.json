@@ -1,6 +1,6 @@
 {
   "name": "vector-screencast",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "The goal of this project is to create a library for recording and playing Khan Academy like videos.",
   "keywords": [
     "vectors",
