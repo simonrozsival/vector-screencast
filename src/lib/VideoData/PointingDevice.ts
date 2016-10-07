@@ -136,9 +136,10 @@ import Cursor from './Cursor';
 				console.log("Wrong 'getCursorPosition' parameter. Event data required.");
 			}
 	
+			const rect = this.board.getBoundingClientRect();
 			return <Cursor> {
-				x: e.clientX,
-				y: e.clientY
+				x: e.clientX - rect.left,
+				y: e.clientY - rect.top
 			};
 		}
 		

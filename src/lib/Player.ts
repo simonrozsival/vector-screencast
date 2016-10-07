@@ -1,7 +1,7 @@
 import Video from './VideoData/Video';
 import AudioPlayer from './AudioData/AudioPlayer';
 
-import VideoEvents, { VideoEventType } from './Helpers/VideoEvents';
+import VideoEvents, { VideoEventType as VET } from './Helpers/VideoEvents';
 
 import Errors, { ErrorType } from './Helpers/Errors';
 import { CursorState } from './Helpers/State';
@@ -15,7 +15,7 @@ import { PlayerSettings } from './Settings/PlayerSettings';
 import * as Localization from './Localization/Player';
 import CanvasDrawer from './Drawing/CanvasDrawer';
 
-import Command, { MoveCursor } from './VideoData/Command';
+import { Command, MoveCursor } from './VideoData/Command';
 import Chunk, { PathChunk } from './VideoData/Chunk';
 import Segment, { ZeroLengthSegment } from './Drawing/Segments';
 
@@ -23,6 +23,9 @@ import Color from './UI/Color';
 import File from './Helpers/File';
 import { Reader } from './VideoFormat/VideoFormat';
 import IO from './VideoFormat/SVGAnimation/IO';
+
+import { Component, ComponentParams } from './Components/Component';
+import ComponentContainer from './Components/ComponentContainer';
 
 /**
  * # Player class.
@@ -60,6 +63,10 @@ export default class Player {
 	/** The instance of video events aggregator */
 	private events: VideoEvents;
 	public get Events(): VideoEvents { return this.events; }
+	
+	/** Container of the components placed in the background of the video. */
+	protected components: ComponentContainer;
+	public get Components(): ComponentContainer { return this.components; }
 						
 	/**
 	 * Create a new instance of the player and append it to a given container element.
@@ -69,6 +76,7 @@ export default class Player {
 	 */     
 	constructor(id: string, private settings: PlayerSettings) {
 		this.events = new VideoEvents();
+		let e = this.events;
 		
 		var container: HTMLElement = document.getElementById(id);
 		if(!container) {
@@ -85,7 +93,7 @@ export default class Player {
 			var loc: Localization.Player = {
 				NoJS:					"Your browser does not support JavaScript or it is turned off. Video can't be recorded without enabled JavaScript in your browser.",
 				DataLoadingFailed:      "Unfortunatelly, downloading data failed.",
-				DataIsCorrupted:           "This video can't be played, the data is corrupted.",
+				DataIsCorrupted:        "This video can't be played, the data is corrupted.",
 				
 				ControlPlayback:        "Play/Pause video",					
 				Play:                   "Play",
@@ -124,28 +132,34 @@ export default class Player {
 		container.appendChild(this.ui.GetHTML());
 											
 		// Start and stop the video
-		this.events.on(VideoEventType.Start,		    ()	                => this.Play());
-		this.events.on(VideoEventType.Pause,            ()                  => this.Pause());
-		this.events.on(VideoEventType.ReachEnd,         ()                  => this.Pause());
-		this.events.on(VideoEventType.ClearCanvas,		(color: Color)	  	=> this.ClearCavnas(color));
-		this.events.on(VideoEventType.ChangeColor,      (color: Color)     	=> this.drawer.SetCurrentColor(color));
-		this.events.on(VideoEventType.JumpTo,           (progress: number)  => this.JumpTo(progress));
+		e.on(VET.Start,		   ()	                	=> this.Play());
+		e.on(VET.Pause,         ()                  	=> this.Pause());
+		e.on(VET.ReachEnd,      ()                  	=> this.Pause());
+		e.on(VET.ClearCanvas,   (color: Color)	  		=> this.ClearCavnas(color));
+		e.on(VET.ChangeColor,   (color: Color)     		=> this.ChangeColor(color));
+		e.on(VET.JumpTo,        (progress: number)  	=> this.JumpTo(progress));
 					
 		// Draw path segment by segment
-		this.events.on(VideoEventType.DrawSegment,		()	                => this.DrawSegment());
-		this.events.on(VideoEventType.DrawPath,         (path: Path)  		=> {
+		this.events.on(VET.DrawSegment,		()	                => this.DrawSegment());
+		this.events.on(VET.DrawPath,         (path: Path)  		=> {
 			this.drawnPath.DrawWholePath();
 			this.drawnPath = null; // it is already drawn!
 		});
 		
 		// React for busy/ready state changes
 		this.busyLevel = 0;
-		this.events.on(VideoEventType.Busy,     () => this.Busy());
-		this.events.on(VideoEventType.Ready,    () => this.Ready());
+		this.events.on(VET.Busy,     () => this.Busy());
+		this.events.on(VET.Ready,    () => this.Ready());
+		
+		// Record components behaviour
+		this.components = new ComponentContainer(this.ui, e); // @todo CHANGE THE PANEL!
+		e.on(VET.AddComponent, 		(type: string, id: string, params: ComponentParams) 		=> this.components.AddComponent(type, id, params));
+		e.on(VET.RemoveComponent, 	(id: string) 												=> this.components.RemoveComponent(id));
+		e.on(VET.ComponentCommand, 	(targetId: string, cmd: string, params: ComponentParams) 	=> this.components.ExecuteCommand(targetId, cmd, params));
 		
 		// wait until the file is loaded
 		this.ui.SetBusyText(settings.Localization.Busy);
-		this.events.trigger(VideoEventType.Busy);
+		this.events.trigger(VET.Busy);
 								
 		File.ReadFileAsync(settings.Source,
 			(file: any) => {
@@ -169,7 +183,7 @@ export default class Player {
 		if(rect.width !== this.oldWidth || rect.height !== this.oldHeight) {
 			this.drawer.Stretch();
 			var scalingFactor = this.drawer.SetupOutputCorrection(this.video.Metadata.Width, this.video.Metadata.Height);
-			this.events.trigger(VideoEventType.CanvasScalingFactor, scalingFactor);
+			this.events.trigger(VET.CanvasScalingFactor, scalingFactor);
 		
 			if(!!this.video) {
 				this.RedrawCurrentScreen();                    
@@ -199,17 +213,17 @@ export default class Player {
 			return;
 		}
 					
-		this.events.trigger(VideoEventType.VideoInfoLoaded, this.video.Metadata);
+		this.events.trigger(VET.VideoInfoLoaded, this.video.Metadata);
 					
 		// do zero-time actions:
 		this.video.RewindMinusOne(); // churrent chunk <- -1
 		this.MoveToNextChunk();
 		
-		this.events.trigger(VideoEventType.Ready);
+		this.events.trigger(VET.Ready);
 		
 		// if autostart is set, then this is the right time to start the video 
 		if(!!this.settings.Autoplay) {
-			this.events.trigger(VideoEventType.Start);
+			this.events.trigger(VET.Start);
 		}
 	}        
 	
@@ -257,6 +271,11 @@ export default class Player {
 		while(!!this.video.CurrentChunk) {                        
 			// move to next chunk, if the last one just ended
 			if(this.video.CurrentChunk.CurrentCommand === undefined) {
+				if(!!this.drawnPath) {
+					// flush the last path
+					this.drawnPath.Draw();					
+				}
+				
 				this.MoveToNextChunk();
 				
 				// I might have reached the end here
@@ -354,7 +373,7 @@ export default class Player {
 		
 		if(this.isPlaying) {
 			// pause after setting the time            
-			this.events.trigger(VideoEventType.Pause);                
+			this.events.trigger(VET.Pause);                
 		}
 					
 		// sync the video:		
@@ -378,7 +397,7 @@ export default class Player {
 		
 		if(wasPlaying === true) {
 			// pause after setting the time            
-			this.events.trigger(VideoEventType.Start);
+			this.events.trigger(VET.Start);
 		} 
 	}
 	
@@ -390,7 +409,7 @@ export default class Player {
 		var wasPlaying: boolean = this.isPlaying;	
 		if(this.isPlaying) {
 			// pause after setting the time            
-			this.events.trigger(VideoEventType.Pause);                
+			this.events.trigger(VET.Pause);                
 		}
 					
 		// sync the video:		
@@ -404,7 +423,7 @@ export default class Player {
 		// rendering request will also be made			
 		if(wasPlaying === true) {
 			// pause after setting the time            
-			this.events.trigger(VideoEventType.Start);
+			this.events.trigger(VET.Start);
 		} 
 	}
 	
@@ -413,7 +432,7 @@ export default class Player {
 	 * @triggeres-event ReachedEnd
 	 */
 	private ReachedEnd() : void {
-		this.events.trigger(VideoEventType.ReachEnd);			
+		this.events.trigger(VET.ReachEnd);			
 	}
 	
 	/**
@@ -422,6 +441,15 @@ export default class Player {
 	 */
 	protected ClearCavnas(color: Color): void {
 		this.drawer.ClearCanvas(color);
+	}
+	
+	protected ChangeColor(color: Color): void {		
+		if(color.CssValue === "transparent") {
+			this.drawer.EnterEraserMode();
+		} else {
+			this.drawer.ExitEraserMode();
+			this.drawer.SetCurrentColor(color);				
+		}
 	}
 			
 	/**
@@ -450,7 +478,7 @@ export default class Player {
 	protected Busy(): void {
 		this.busyLevel++;
 		this.wasPlayingWhenBusy = this.wasPlayingWhenBusy || this.isPlaying;
-		this.events.trigger(VideoEventType.Pause);
+		this.events.trigger(VET.Pause);
 		this.ui.Busy();
 	}
 	
@@ -462,7 +490,7 @@ export default class Player {
 	protected Ready(): void {
 		if(--this.busyLevel === 0) {
 			if(this.wasPlayingWhenBusy === true) {
-				this.events.trigger(VideoEventType.Start);
+				this.events.trigger(VET.Start);
 				this.wasPlayingWhenBusy = false;
 			}
 			this.ui.Ready();                 

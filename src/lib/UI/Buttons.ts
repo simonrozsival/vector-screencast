@@ -23,7 +23,7 @@ import HTML from '../Helpers/HTML';
 			this.SetColor(color);
 			
 			// announce color change when the button is clicked
-			this.GetHTML().onclick = (e) => !!callback ? callback() : this.ChangeColor(e); // if there is some expicit callback, then call it
+			this.Click = (e) => !!callback ? callback() : this.ChangeColor(e); // if there is some expicit callback, then call it
 		}
 		
 		/**

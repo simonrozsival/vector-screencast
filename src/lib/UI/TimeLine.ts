@@ -1,5 +1,5 @@
 import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
-import { IElement, SimpleElement, Panel } from './BasicElements';
+import { IElement, SimpleElement, Panel, Div } from './BasicElements';
 import { millisecondsToString } from '../Helpers/HelperFunctions';
 
 
@@ -30,20 +30,20 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 			// create progress bar
 			var bar: Panel = new Panel("div");
 			bar.AddClass("ui-progress");			
-			bar.AddChild(new SimpleElement("div").AddClass("ui-current-time"));
+			bar.AddChild(new Div().AddClass("ui-current-time"));
 			this.progresbar = bar;
 			this.AddChild(bar);
 			bar = null;
 			
 			// create progress bar
-			var buffer: SimpleElement = new SimpleElement("div");
+			var buffer: SimpleElement = new Div();
 			buffer.AddClass("ui-buffer");			
 			this.bufferbar = buffer;
 			this.AddChild(buffer);
 			buffer = null;
 			
 			// skipping helper
-			this.arrow = new SimpleElement("div", "0:00");
+			this.arrow = new Div("0:00");
 			this.arrow.AddClass("ui-arrow");
 			this.AddChild(this.arrow);
 			
@@ -59,8 +59,8 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 		 * Skip to given moment after user clicks on the timeline
 		 * @param	e	Event information
 		 */
-		private OnClick(e: MouseEvent) : void {
-			var time: number = (e.clientX - this.GetHTML().clientLeft) / this.GetHTML().clientWidth * this.length;
+		private OnClick(e: MouseEvent) {
+			var time: number = (e.clientX / this.GetHTML().clientWidth) * this.length;
 			this.SkipTo(time);  
 		}
 	
@@ -68,8 +68,8 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 		 * Show the user an information about the point he is pointing to
 		 * @param	e	Event information
 		 */
-		private OnMouseMove(e: MouseEvent) : void {
-			var progress: number = (e.clientX - this.GetHTML().clientLeft) / this.GetHTML().clientWidth;
+		private OnMouseMove(e: MouseEvent) {
+			var progress: number = e.clientX / this.GetHTML().clientWidth;
 			var time: string = millisecondsToString(progress * this.length);
 			this.arrow.GetHTML().textContent = time;
 			this.arrow.GetHTML().style.left = `${progress * 100}%`;  
@@ -86,7 +86,7 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 		 * Synchronize progress bar width with current time 
 		 * @param	time	What is the current progress in milliseconds.
 		 */
-		public Sync(time: number) : void {
+		public Sync(time: number) {
 			this.progresbar.GetHTML().style.width = this.length > 0 ? `${time / this.length * 100}%` : "O%";
 		}
 		
@@ -94,7 +94,7 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 		 * Synchronize buffer bar width with current time 
 		 * @param	time	How much is loaded in seconds.
 		 */
-		public SetBuffer(time: number) : void {
+		public SetBuffer(time: number) {
 			this.bufferbar.GetHTML().style.width = this.length > 0 ? `${time / this.length * 100}%` : "O%";
 		}
 		
@@ -103,7 +103,7 @@ import { millisecondsToString } from '../Helpers/HelperFunctions';
 		 * @param	time	Time in milliseconds
 		 * @triggers-event	JumpTo
 		 */
-		public SkipTo(time: number) : void {
+		public SkipTo(time: number) {
 			// triger an event...			
 			this.events.trigger(VideoEventType.JumpTo, time / this.length);
 			

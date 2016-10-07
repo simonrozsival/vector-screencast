@@ -207,6 +207,17 @@ export class SVGA {
 		
 		throw new Error(`Attribute ${name} is missing in ${node.localName}`);
 	}
+	
+	public static attrs(node: Node): Array<Attr> {
+		let attrs: Array<Attr> = [];
+		for(let i = 0; i < node.attributes.length; ++i) {
+			let attr = node.attributes.item(i);
+			if(attr.namespaceURI === this.namespace) {
+				attrs.push(attr);				
+			}
+		}
+		return attrs;
+	}
 		
 	/**
 		* Read numberic value of an attribute

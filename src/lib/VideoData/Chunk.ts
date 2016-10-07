@@ -2,7 +2,7 @@ import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
 import VideoTimer from '../Helpers/VideoTimer';
 import { StateType } from '../Helpers/State';
 import SVG, { SVGA } from '../Helpers/SVG';	
-import Command from './Command';
+import { Command } from './Command';
 import Path from '../Drawing/Path';
 import Color from '../UI/Color';
 
@@ -17,6 +17,7 @@ import Color from '../UI/Color';
 	export default class Chunk {	
 		public get StartTime(): number { return this.time; }
 		public get LastErase(): number { return this.lastErase; }
+		public set LastErase(value: number) { this.lastErase = value; }
 		
 		/** The list of initialisation commands of this chunk */
 		private initCommands: Array<Command>;

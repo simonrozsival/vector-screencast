@@ -21,7 +21,9 @@
 		 * Set different background color.
 		 * @param	c 	New background color.
 		 */
-		public static set BackgroundColor(c: Color) { this.backgroundPrototype = c; }
+		public static set BackgroundColor(c: Color) {
+			this.backgroundPrototype = c;
+		}
 		/**
 		 * Access current background color.
 		 * @return 	Current background color.
@@ -36,7 +38,7 @@
 		 * Set different foreground color.
 		 * @param	c	New foreground color
 		 */
-		public static set ForegroundColor(c: Color) { this.foregroundPrototype = c; }
+		public static set ForegroundColor(c: Color) { this.foregroundPrototype = c; }		
 		/**
 		 * Get current foreground color.
 		 */
@@ -44,5 +46,15 @@
 			return new Color(this.foregroundPrototype.CssValue);
 		}
 
+
+		/** The transparent */
+		private static transparent = new Color("transparent"); // white
+		/**
+		 * Get current foreground color.
+		 */
+		public static get Transparent(): Color {
+			return this.transparent;
+		}
+		
 	}
 //}

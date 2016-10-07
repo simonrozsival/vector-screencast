@@ -83,10 +83,38 @@ import Path, { CanvasPath } from './Path';
         /**
          * Make the canvas blank.
          */
-        public ClearCanvas(color: Color): void {   
-			this.context.fillStyle = color.CssValue;
-			this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
+        public ClearCanvas(color: Color): void {
+			if(color.CssValue === "transparent") {
+				// make the background transparent
+				let op = this.context.globalCompositeOperation;
+				this.context.globalCompositeOperation = "destination-out";
+				this.context.fillStyle = "rgba(0,0,0,1)";
+				this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
+				this.context.globalCompositeOperation = op;	
+			} else {
+				this.context.fillStyle = color.CssValue;
+				this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);	
+			}
         }
+		
+		private oldOperation: string;
+		
+		/**
+		 * Turn the brush into an eraser.
+		 */
+		public EnterEraserMode() {
+			this.oldOperation = this.context.globalCompositeOperation;
+			this.context.globalCompositeOperation = "destination-out";
+			this.context.fillStyle = "rgba(0,0,0,1)";
+			this.context.strokeStyle = "rgba(0,0,0,1)";			
+		}
+		
+		/**
+		 * Turn the eraser back to the brush mode. 
+		 */
+		public ExitEraserMode() {
+			this.context.globalCompositeOperation = this.oldOperation;
+		}
         
         /** Currenb brush color */
         protected currentColor: Color;

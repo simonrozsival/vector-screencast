@@ -1,11 +1,10 @@
 import PointingDevice from './VideoData/PointingDevice';
 import Video from './VideoData/Video';
 import Chunk, { PathChunk, VoidChunk, EraseChunk } from './VideoData/Chunk';
-import Command, { DrawNextSegment, ChangeBrushColor, ChangeBrushSize, MoveCursor, ClearCanvas } from './VideoData/Command';
+import { Command, DrawNextSegment, ChangeBrushColor, ChangeBrushSize, MoveCursor, ClearCanvas, AddComponent, RemoveComponent, ComponentCommand } from './VideoData/Command';
 
 import DynaDraw from './Drawing/DynaDraw';
 import { DrawingStrategy } from './Drawing/DrawingStrategy';
-import SVGDrawer from './Drawing/SVGDrawer';
 import CanvasDrawer from './Drawing/CanvasDrawer';
 import Path from './Drawing/Path';
 
@@ -26,6 +25,9 @@ import File from './Helpers/File';
 import IO from './VideoFormat/SVGAnimation/IO';
 import { Writer } from './VideoFormat/VideoFormat';
 import RecorderUI from './UI/RecorderUI';
+
+import { Component, ComponentParams } from './Components/Component';
+import ComponentContainer from './Components/ComponentContainer';
 
 import selectBestInputMethod from './VideoData/selectBestInputMethod';
 
@@ -63,7 +65,7 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 		private isRecording: boolean;
 		
 		/** User interface instance */
-		private ui: RecorderUI;
+		protected ui: RecorderUI;
 		
 		/** Recorded data */
 		protected data: Video;
@@ -85,6 +87,10 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 		private events: VideoEvents;
 		public get Events(): VideoEvents { return this.events; }
 		
+		/** Container of the components placed in the background of the video. */
+		protected components: ComponentContainer;
+		public get Components(): ComponentContainer { return this.components; }
+		
 		/**
 		 * Create a new instance of recorder.		 
 		 * @param   id          ID of the container element
@@ -92,6 +98,7 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 		 */
 		constructor(private id: string, private settings: RecorderSettings) {
 			this.events = new VideoEvents();
+			let e = this.events;
 			
 			// do not start recording until the user want's to start
 			this.isRecording = false;
@@ -139,7 +146,7 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 				colors.push(new Color("#8cfa59"));
 				colors.push(new Color("#59a0fa"));
 				colors.push(new Color("#fbff06"));
-				colors.push(Color.BackgroundColor);
+				colors.push(new Color("#000000"))
 				settings.ColorPallete = colors;
 			}
 			
@@ -189,17 +196,17 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 			}
 	
 			// Bind video events
-			this.events.on(VET.ChangeBrushSize, (size: BrushSize) => this.ChangeBrushSize(size));
-			this.events.on(VET.ChangeColor, (color: Color) => this.ChangeColor(color));
-			this.events.on(VET.CursorState, (state: CursorState) => this.ProcessCursorState(state));
-			this.events.on(VET.ClearCanvas, (color: Color) => this.ClearCanvas(color));
-			this.events.on(VET.Start, () => this.Start());
-			this.events.on(VET.Pause, () => this.Pause());
-			this.events.on(VET.StartUpload, () => this.StartUpload());
+			e.on(VET.ChangeBrushSize, (size: BrushSize) => this.ChangeBrushSize(size));
+			e.on(VET.ChangeColor, (color: Color) => this.ChangeColor(color));
+			e.on(VET.CursorState, (state: CursorState) => this.ProcessCursorState(state));
+			e.on(VET.ClearCanvas, (color: Color) => this.ClearCanvas(color));
+			e.on(VET.Start, () => this.Start());
+			e.on(VET.Pause, () => this.Pause());
+			e.on(VET.StartUpload, () => this.StartUpload());
 			
 			this.busyLevel = 0;
-			this.events.on(VET.Busy, () => this.Busy());
-			this.events.on(VET.Ready, () => this.Ready());
+			e.on(VET.Busy, () => this.Busy());
+			e.on(VET.Ready, () => this.Ready());
 			
 			// Record paths
 			this.events.on(VET.StartPath, (path: Path) => {
@@ -207,19 +214,19 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 				this.data.CurrentChunk.PushCommand(new DrawNextSegment(this.timer.CurrentTime())); // draw the start dot
 			});
 			this.events.on(VET.DrawSegment, () => this.data.CurrentChunk.PushCommand(new DrawNextSegment(this.timer.CurrentTime())));
-	
-	
+				
 			var min: number = brushes.reduce((previousValue: BrushSize, currentValue: BrushSize, index: number, arr: Array<BrushSize>) =>  previousValue.Size <  currentValue.Size ? previousValue : currentValue).Size;
 			var max: number = brushes.reduce((previousValue: BrushSize, currentValue: BrushSize, index: number, arr: Array<BrushSize>) =>  previousValue.Size >  currentValue.Size ? previousValue : currentValue).Size;				
 																
 			// the most important part - the rendering and drawing strategy
 			// - default drawing strategy is using SVG
-			this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer(true);
+			this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new CanvasDrawer(true);
 			this.drawer.SetEvents(this.events);
-			this.dynaDraw = new DynaDraw(this.events, () => this.drawer.CreatePath(this.events), !settings.DisableDynamicLineWidth, min, max, this.timer);
+			this.dynaDraw = new DynaDraw(e, () => this.drawer.CreatePath(e), !settings.DisableDynamicLineWidth, min, max, this.timer);
 			
 			// create UI			
-			this.ui = !!settings.UI ? settings.UI : new RecorderUI(id, this.events);
+			this.ui = !!settings.UI ? settings.UI : new RecorderUI(id);
+			this.ui.Events = e;
 			this.ui.Timer = this.timer;
 			this.ui.Localization = settings.Localization;
 			this.ui.SetBusyText(settings.Localization.Busy);
@@ -229,21 +236,44 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 			var canvas: HTMLElement = this.drawer.CreateCanvas();
 			this.ui.AcceptCanvas(canvas);
 			container.appendChild(this.ui.GetHTML());
-			this.drawer.Stretch(); // adapt to the environment
 			
-			this.pointer = selectBestInputMethod(this.events, this.ui.GetHTML(), canvas, this.timer);			
-			
-			// init audio recording
-			if (!!settings.Audio) {
-				this.audioRecorder = new AudioRecorder(settings.Audio, this.events);
-				this.audioRecorder.Init();
-			}
-		
+			this.pointer = selectBestInputMethod(e, this.ui.GetHTML(), this.ui.Board.GetHTML(), canvas, this.timer);			
+					
 			// set default bg color and init the first chunk
 			this.ClearCanvas(Color.BackgroundColor); 
 			// init some values for the brush - user will change it immediately, but some are needed from the very start
-			this.events.trigger(VET.ChangeColor, Color.ForegroundColor);
-			this.events.trigger(VET.ChangeBrushSize, new BrushSize(5));
+			e.trigger(VET.ChangeColor, Color.ForegroundColor);
+			e.trigger(VET.ChangeBrushSize, new BrushSize(5));			
+			
+			// Record components behaviour
+			this.components = new ComponentContainer(this.ui.ComponentsLayer, e);
+			e.on(VET.AddComponent, (type: string, id: string, params: ComponentParams) => {
+				this.data.CurrentChunk.PushCommand(new AddComponent(type, id, params, this.timer.CurrentTime()))
+				this.components.AddComponent(type, id, params);
+			});
+			e.on(VET.RemoveComponent, (id: string) => {
+				this.data.CurrentChunk.PushCommand(new RemoveComponent(id, this.timer.CurrentTime()));
+				this.components.RemoveComponent(id);
+			});
+			e.on(VET.ComponentCommand, (targetId: string, cmd: string, params: ComponentParams) => {
+				this.data.CurrentChunk.PushCommand(new ComponentCommand(targetId, cmd, params, this.timer.CurrentTime()));
+				this.components.ExecuteCommand(targetId, cmd, params);
+			});
+			
+			// init audio recording - this will block the browser, so it is done after
+			// the canvas is stretched
+			if (!!settings.Audio) {
+				this.audioRecorder = new AudioRecorder(settings.Audio, e);
+				this.audioRecorder.Init();
+			}
+			
+			// all components are now attached to the DOM, refresh all the components, which need refreshing
+			this.RefreshUI();
+		}
+		
+		public RefreshUI() {
+			this.ui.Refresh();
+			this.drawer.Stretch(); // adapt to the environment
 		}
 		
 		/**
@@ -320,7 +350,13 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 		private ChangeColor(color: Color): void {
 			// User can change the color even if recording hasn't started or is paused
 			!this.recordingBlocked && this.data.CurrentChunk.PushCommand(new ChangeBrushColor(color, this.timer.CurrentTime()))
-			this.drawer.SetCurrentColor(color);
+			
+			if(color.CssValue === "transparent") {
+				this.drawer.EnterEraserMode();
+			} else {
+				this.drawer.ExitEraserMode();
+				this.drawer.SetCurrentColor(color);				
+			}
 		}
 		
 		/**
@@ -373,20 +409,20 @@ import selectBestInputMethod from './VideoData/selectBestInputMethod';
 			this.ui.Busy();
 		}
 			
-			
-			/**
-			* The thing that instructed 
-			*/       
-			protected Ready(): void {
-				if(--this.busyLevel === 0) {
-					if(this.wasRecordingWhenBusy === true) {
-						this.events.trigger(VET.Start);
-						this.wasRecordingWhenBusy = false;
-					}
-					this.ui.Ready();                 
+		
+		/**
+		 * The thing that instructed 
+		 */       
+		protected Ready(): void {
+			if(--this.busyLevel === 0) {
+				if(this.wasRecordingWhenBusy === true) {
+					this.events.trigger(VET.Start);
+					this.wasRecordingWhenBusy = false;
 				}
+				this.ui.Ready();                 
 			}
-			
+		}
+		
 		//
 		// Upload the result
 		//

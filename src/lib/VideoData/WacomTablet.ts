@@ -40,12 +40,8 @@ import HTML from '../Helpers/HTML';
 	 */
 	export default class WacomTablet extends Mouse {
 		
-		constructor(events: VideoEvents, board: HTMLElement, timer: VideoTimer, private penApi: IWacomApi) {
-			super(events, board, timer);
-		}
-		
-		static Factory(api: IWacomApi): (events: VideoEvents, board: HTMLElement, timer: VideoTimer) => PointingDevice {
-			return (events: VideoEvents, board: HTMLElement, timer: VideoTimer) => new WacomTablet(events, board, timer, api);
+		constructor(events: VideoEvents, container: HTMLElement, board: HTMLElement, timer: VideoTimer, private penApi: IWacomApi) {
+			super(events, container, board, timer);
 		}
 		
 		/**

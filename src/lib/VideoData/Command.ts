@@ -3,21 +3,18 @@ import { SVGA } from '../Helpers/SVG';
 import Color from '../UI/Color';
 import BrushSize from '../UI/Brush';
 import { CursorState } from '../Helpers/State';
+import { Component, ComponentParams } from '../Components/Component';
 	
 //namespace VectorScreencast.VideData {
 	
 	/**
 	 * Commands are used to trigger some event at given moment.
 	 */		
-	export default class Command {		
+	export abstract class Command {		
 		public get Time(): number { return this.time; }		
 		constructor(private time: number) { }		
-		Execute(events: VideoEvents): void {
-			throw new Error("Not implemented");
-		}
-		Clone(): Command {
-			throw new Error("Not implemented");
-		}
+		abstract Execute(events: VideoEvents): void;
+		abstract Clone(): Command;
 	}
 	
 	/**
@@ -165,4 +162,57 @@ import { CursorState } from '../Helpers/State';
 			return new ClearCanvas(this.color, this.Time);
 		}
 	}
+	
+	export class AddComponent extends Command {		
+		public get Type(): string { return this.type; }
+		public get Id(): string { return this.id; }
+		public get Params(): ComponentParams { return this.params; }
+		
+		constructor(protected type: string, protected id: string, protected params: ComponentParams, time: number) {
+			super(time);
+		}		
+		
+		Clone(): Command {
+			return new AddComponent(this.type, this.id, this.params, this.Time);
+		}
+		
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.AddComponent, this.type, this.id, this.params);
+		}
+	}
+	
+	export class RemoveComponent extends Command {		
+		public get Id(): string { return this.id; }
+		
+		constructor(protected id: string, time: number) {
+			super(time);
+		}		
+		
+		Clone(): Command {
+			return new RemoveComponent(this.id, this.Time);
+		}
+		
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.RemoveComponent, this.id);
+		}
+	}
+		
+	export class ComponentCommand extends Command {		
+		public get Cmd(): string { return this.cmd; }
+		public get TargetId(): string { return this.targetId; }
+		public get Params(): ComponentParams { return this.params; }
+		
+		constructor(protected targetId: string, protected cmd: string, protected params: ComponentParams, time: number) {
+			super(time);
+		}		
+		
+		Clone(): Command {
+			return new ComponentCommand(this.targetId, this.cmd, this.params, this.Time);
+		}
+		
+		Execute(events: VideoEvents): void {
+			events.trigger(VideoEventType.ComponentCommand, this.targetId, this.cmd, this.params);
+		}
+	}
+	
 //}

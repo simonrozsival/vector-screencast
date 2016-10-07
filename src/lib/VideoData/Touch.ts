@@ -11,8 +11,8 @@ import Mouse from './Mouse';
 	 */
 	export default class TouchEventsAPI extends Mouse {
 				
-		constructor(events: VideoEvents, container: HTMLElement, protected canvas: HTMLElement, timer: VideoTimer) {
-			super(events, container, timer);
+		constructor(events: VideoEvents, container: HTMLElement, board: HTMLElement, protected canvas: HTMLElement, timer: VideoTimer) {
+			super(events, container, board, timer);
 			
 			canvas.addEventListener("touchstart", 	(ev: TouchEvent) => this.TouchStart(ev));
 			canvas.addEventListener("touchend", 	(ev: TouchEvent) => this.TouchEnd(ev));

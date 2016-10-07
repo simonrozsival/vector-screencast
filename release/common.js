@@ -30,7 +30,7 @@
 /******/ 	// "0" means "already loaded"
 /******/ 	// Array means "loading", array contains callbacks
 /******/ 	var installedChunks = {
-/******/ 		4:0
+/******/ 		5:0
 /******/ 	};
 /******/
 /******/ 	// The require function
@@ -98,13 +98,14 @@
 /* 3 */,
 /* 4 */,
 /* 5 */,
-/* 6 */
+/* 6 */,
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/// <reference path="audio.d.ts" />
-	var VideoEvents_1 = __webpack_require__(7);
-	var Errors_1 = __webpack_require__(8);
-	var HTML_1 = __webpack_require__(9);
+	var VideoEvents_1 = __webpack_require__(8);
+	var Errors_1 = __webpack_require__(9);
+	var HTML_1 = __webpack_require__(10);
 	(function (AudioSourceType) {
 	    AudioSourceType[AudioSourceType["MP3"] = 0] = "MP3";
 	    AudioSourceType[AudioSourceType["OGG"] = 1] = "OGG";
@@ -317,7 +318,7 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	/**
@@ -354,7 +355,10 @@
 	    VideoEventType[VideoEventType["Mute"] = 26] = "Mute";
 	    VideoEventType[VideoEventType["Busy"] = 27] = "Busy";
 	    VideoEventType[VideoEventType["Ready"] = 28] = "Ready";
-	    VideoEventType[VideoEventType["length"] = 29] = "length";
+	    VideoEventType[VideoEventType["AddComponent"] = 29] = "AddComponent";
+	    VideoEventType[VideoEventType["RemoveComponent"] = 30] = "RemoveComponent";
+	    VideoEventType[VideoEventType["ComponentCommand"] = 31] = "ComponentCommand";
+	    VideoEventType[VideoEventType["length"] = 32] = "length";
 	})(exports.VideoEventType || (exports.VideoEventType = {}));
 	var VideoEventType = exports.VideoEventType;
 	var VideoEvent = (function () {
@@ -416,7 +420,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	//namespace VectorScreencast.Helpers {
@@ -468,7 +472,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	//namespace VectorScreencast.Helpers {
@@ -499,8 +503,8 @@
 
 
 /***/ },
-/* 10 */,
-/* 11 */
+/* 11 */,
+/* 12 */
 /***/ function(module, exports) {
 
 	//namespace VectorScreencast.Helpers {
@@ -538,7 +542,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -546,7 +550,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var HTML_1 = __webpack_require__(9);
+	var HTML_1 = __webpack_require__(10);
 	var SimpleElement = (function () {
 	    function SimpleElement(tag, content) {
 	        if (tag instanceof HTMLElement) {
@@ -556,7 +560,7 @@
 	            this.element = HTML_1.default.CreateElement(tag);
 	        }
 	        if (!!content) {
-	            this.element.textContent = content;
+	            this.element.innerText = content;
 	        }
 	    }
 	    SimpleElement.prototype.GetHTML = function () { return this.element; };
@@ -592,12 +596,30 @@
 	    return SimpleElement;
 	})();
 	exports.SimpleElement = SimpleElement;
+	var Span = (function (_super) {
+	    __extends(Span, _super);
+	    function Span(text) {
+	        text = text || "";
+	        _super.call(this, "span", text);
+	    }
+	    return Span;
+	})(SimpleElement);
+	exports.Span = Span;
+	var Div = (function (_super) {
+	    __extends(Div, _super);
+	    function Div(text) {
+	        text = text || "";
+	        _super.call(this, "div", text);
+	    }
+	    return Div;
+	})(SimpleElement);
+	exports.Div = Div;
 	var Button = (function (_super) {
 	    __extends(Button, _super);
 	    function Button(text, onClick) {
 	        _super.call(this, "button");
 	        this.AddClass("ui-button");
-	        this.content = new SimpleElement("span", text);
+	        this.content = new Span(text);
 	        this.GetHTML().appendChild(this.content.GetHTML());
 	        if (!!onClick) {
 	            this.GetHTML().onclick = onClick;
@@ -615,7 +637,7 @@
 	    function IconButton(iconClass, content, onClick) {
 	        _super.call(this, content, onClick);
 	        this.iconClass = iconClass;
-	        this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);
+	        this.icon = new Span("").AddClasses("icon", iconClass);
 	        this.AddClass("has-icon");
 	        this.GetHTML().appendChild(this.icon.GetHTML());
 	    }
@@ -684,6 +706,16 @@
 	        }
 	        return this;
 	    };
+	    Panel.prototype.RemoveChild = function (el) {
+	        var i = this.elements.indexOf(el);
+	        if (i === -1) {
+	            return false;
+	        }
+	        var child = this.elements[i];
+	        this.GetHTML().removeChild(child.GetHTML());
+	        this.elements.splice(i, 1);
+	        return true;
+	    };
 	    Panel.prototype.GetHTML = function () { return this.element; };
 	    Panel.prototype.HasClass = function (className) {
 	        return this.GetHTML().classList.contains(className);
@@ -720,7 +752,7 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -728,10 +760,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
-	var HTML_1 = __webpack_require__(9);
-	var BasicElements_1 = __webpack_require__(12);
-	var Cursor_1 = __webpack_require__(14);
+	var VideoEvents_1 = __webpack_require__(8);
+	var HTML_1 = __webpack_require__(10);
+	var BasicElements_1 = __webpack_require__(13);
+	var Cursor_1 = __webpack_require__(15);
 	var Board = (function (_super) {
 	    __extends(Board, _super);
 	    function Board(id, events) {
@@ -793,7 +825,7 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -801,11 +833,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var Vector_1 = __webpack_require__(15);
-	var BasicElements_1 = __webpack_require__(12);
-	var VideoEvents_1 = __webpack_require__(7);
-	var SVG_1 = __webpack_require__(16);
-	var Color_1 = __webpack_require__(17);
+	var Vector_1 = __webpack_require__(16);
+	var BasicElements_1 = __webpack_require__(13);
+	var VideoEvents_1 = __webpack_require__(8);
+	var SVG_1 = __webpack_require__(17);
+	var Color_1 = __webpack_require__(18);
 	var Cursor = (function (_super) {
 	    __extends(Cursor, _super);
 	    function Cursor(events) {
@@ -894,7 +926,7 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	var Vector2 = (function () {
@@ -973,10 +1005,10 @@
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var HelperFunctions_1 = __webpack_require__(11);
+	var HelperFunctions_1 = __webpack_require__(12);
 	var SVG = (function () {
 	    function SVG() {
 	    }
@@ -1095,6 +1127,16 @@
 	        }
 	        throw new Error("Attribute " + name + " is missing in " + node.localName);
 	    };
+	    SVGA.attrs = function (node) {
+	        var attrs = [];
+	        for (var i = 0; i < node.attributes.length; ++i) {
+	            var attr = node.attributes.item(i);
+	            if (attr.namespaceURI === this.namespace) {
+	                attrs.push(attr);
+	            }
+	        }
+	        return attrs;
+	    };
 	    SVGA.numAttr = function (node, name, defaultValue) {
 	        return Number(SVGA.attr(node, name, defaultValue !== undefined ? defaultValue.toString() : undefined));
 	    };
@@ -1105,7 +1147,7 @@
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	//namespace VectorScreencast.UI {
@@ -1143,8 +1185,8 @@
 
 
 /***/ },
-/* 18 */,
-/* 19 */
+/* 19 */,
+/* 20 */
 /***/ function(module, exports) {
 
 	var VideoTimer = (function () {
@@ -1194,8 +1236,62 @@
 
 
 /***/ },
-/* 20 */,
 /* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var VideoEvents_1 = __webpack_require__(8);
+	var HTML_1 = __webpack_require__(10);
+	var Path_1 = __webpack_require__(22);
+	var CanvasDrawer = (function () {
+	    function CanvasDrawer(curved) {
+	        if (curved === void 0) { curved = true; }
+	        this.curved = curved;
+	    }
+	    CanvasDrawer.prototype.SetEvents = function (events) {
+	        this.events = events;
+	    };
+	    CanvasDrawer.prototype.CreateCanvas = function () {
+	        this.canvas = HTML_1.default.CreateElement("canvas");
+	        this.context = this.canvas.getContext("2d");
+	        return this.canvas;
+	    };
+	    CanvasDrawer.prototype.Stretch = function () {
+	        var parent = this.canvas.parentElement;
+	        var width = parent.clientWidth;
+	        var height = parent.clientHeight;
+	        this.originalHeight = height;
+	        this.originalWidth = width;
+	        HTML_1.default.SetAttributes(this.canvas, {
+	            width: width,
+	            height: height
+	        });
+	        this.events.trigger(VideoEvents_1.VideoEventType.CanvasSize, width, height);
+	    };
+	    CanvasDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
+	        var wr = this.canvas.width / sourceWidth;
+	        var hr = this.canvas.height / sourceHeight;
+	        var min = Math.min(wr, hr);
+	        this.context.scale(min, min);
+	        return min;
+	    };
+	    CanvasDrawer.prototype.ClearCanvas = function (color) {
+	        this.context.fillStyle = color.CssValue;
+	        this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
+	    };
+	    CanvasDrawer.prototype.SetCurrentColor = function (color) {
+	        this.currentColor = color;
+	    };
+	    CanvasDrawer.prototype.CreatePath = function (events) {
+	        return new Path_1.CanvasPath(events, this.curved, this.currentColor.CssValue, this.context);
+	    };
+	    return CanvasDrawer;
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = CanvasDrawer;
+
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1203,11 +1299,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var SVG_1 = __webpack_require__(16);
-	var Vector_1 = __webpack_require__(15);
-	var VideoEvents_1 = __webpack_require__(7);
-	var Spline_1 = __webpack_require__(22);
-	var Segments_1 = __webpack_require__(23);
+	var SVG_1 = __webpack_require__(17);
+	var Vector_1 = __webpack_require__(16);
+	var VideoEvents_1 = __webpack_require__(8);
+	var Spline_1 = __webpack_require__(23);
+	var Segments_1 = __webpack_require__(24);
 	var Path = (function () {
 	    function Path(events, curved, color, wireframe) {
 	        this.events = events;
@@ -1262,9 +1358,8 @@
 	        configurable: true
 	    });
 	    Object.defineProperty(Path.prototype, "Color", {
-	        get: function () {
-	            return this.color;
-	        },
+	        get: function () { return this.color; },
+	        set: function (value) { this.color = value; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -1462,11 +1557,11 @@
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	///<reference path="./Vector.ts" />
-	var Vector_1 = __webpack_require__(15);
+	var Vector_1 = __webpack_require__(16);
 	var Spline = (function () {
 	    function Spline() {
 	    }
@@ -1517,7 +1612,7 @@
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1605,7 +1700,7 @@
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1613,8 +1708,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
-	var State_1 = __webpack_require__(25);
+	var VideoEvents_1 = __webpack_require__(8);
+	var State_1 = __webpack_require__(26);
 	var Command = (function () {
 	    function Command(time) {
 	        this.time = time;
@@ -1624,16 +1719,9 @@
 	        enumerable: true,
 	        configurable: true
 	    });
-	    Command.prototype.Execute = function (events) {
-	        throw new Error("Not implemented");
-	    };
-	    Command.prototype.Clone = function () {
-	        throw new Error("Not implemented");
-	    };
 	    return Command;
 	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Command;
+	exports.Command = Command;
 	var MoveCursor = (function (_super) {
 	    __extends(MoveCursor, _super);
 	    function MoveCursor(x, y, p, time) {
@@ -1740,10 +1828,94 @@
 	    return ClearCanvas;
 	})(Command);
 	exports.ClearCanvas = ClearCanvas;
+	var AddComponent = (function (_super) {
+	    __extends(AddComponent, _super);
+	    function AddComponent(type, id, params, time) {
+	        _super.call(this, time);
+	        this.type = type;
+	        this.id = id;
+	        this.params = params;
+	    }
+	    Object.defineProperty(AddComponent.prototype, "Type", {
+	        get: function () { return this.type; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(AddComponent.prototype, "Id", {
+	        get: function () { return this.id; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(AddComponent.prototype, "Params", {
+	        get: function () { return this.params; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    AddComponent.prototype.Clone = function () {
+	        return new AddComponent(this.type, this.id, this.params, this.Time);
+	    };
+	    AddComponent.prototype.Execute = function (events) {
+	        events.trigger(VideoEvents_1.VideoEventType.AddComponent, this.type, this.id, this.params);
+	    };
+	    return AddComponent;
+	})(Command);
+	exports.AddComponent = AddComponent;
+	var RemoveComponent = (function (_super) {
+	    __extends(RemoveComponent, _super);
+	    function RemoveComponent(id, time) {
+	        _super.call(this, time);
+	        this.id = id;
+	    }
+	    Object.defineProperty(RemoveComponent.prototype, "Id", {
+	        get: function () { return this.id; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    RemoveComponent.prototype.Clone = function () {
+	        return new RemoveComponent(this.id, this.Time);
+	    };
+	    RemoveComponent.prototype.Execute = function (events) {
+	        events.trigger(VideoEvents_1.VideoEventType.RemoveComponent, this.id);
+	    };
+	    return RemoveComponent;
+	})(Command);
+	exports.RemoveComponent = RemoveComponent;
+	var ComponentCommand = (function (_super) {
+	    __extends(ComponentCommand, _super);
+	    function ComponentCommand(targetId, cmd, params, time) {
+	        _super.call(this, time);
+	        this.targetId = targetId;
+	        this.cmd = cmd;
+	        this.params = params;
+	    }
+	    Object.defineProperty(ComponentCommand.prototype, "Cmd", {
+	        get: function () { return this.cmd; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(ComponentCommand.prototype, "TargetId", {
+	        get: function () { return this.targetId; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(ComponentCommand.prototype, "Params", {
+	        get: function () { return this.params; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    ComponentCommand.prototype.Clone = function () {
+	        return new ComponentCommand(this.targetId, this.cmd, this.params, this.Time);
+	    };
+	    ComponentCommand.prototype.Execute = function (events) {
+	        events.trigger(VideoEvents_1.VideoEventType.ComponentCommand, this.targetId, this.cmd, this.params);
+	    };
+	    return ComponentCommand;
+	})(Command);
+	exports.ComponentCommand = ComponentCommand;
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1751,7 +1923,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var Vector_1 = __webpack_require__(15);
+	var Vector_1 = __webpack_require__(16);
 	(function (StateType) {
 	    StateType[StateType["ChangeBrushSize"] = 0] = "ChangeBrushSize";
 	    StateType[StateType["ChangeColor"] = 1] = "ChangeColor";
@@ -1828,7 +2000,7 @@
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1836,7 +2008,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
+	var VideoEvents_1 = __webpack_require__(8);
 	var Chunk = (function () {
 	    function Chunk(time, lastErase) {
 	        this.time = time;
@@ -1852,6 +2024,7 @@
 	    });
 	    Object.defineProperty(Chunk.prototype, "LastErase", {
 	        get: function () { return this.lastErase; },
+	        set: function (value) { this.lastErase = value; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -1953,10 +2126,10 @@
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var HTML_1 = __webpack_require__(9);
+	var HTML_1 = __webpack_require__(10);
 	var File = (function () {
 	    function File() {
 	    }
@@ -2047,15 +2220,15 @@
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Video_1 = __webpack_require__(29);
-	var Chunk_1 = __webpack_require__(26);
-	var ChunkFactories_1 = __webpack_require__(30);
-	var CommandFactories_1 = __webpack_require__(31);
-	var MetadataFactory_1 = __webpack_require__(33);
-	var SVG_1 = __webpack_require__(16);
+	var Video_1 = __webpack_require__(30);
+	var Chunk_1 = __webpack_require__(27);
+	var ChunkFactories_1 = __webpack_require__(31);
+	var CommandFactories_1 = __webpack_require__(32);
+	var MetadataFactory_1 = __webpack_require__(34);
+	var SVG_1 = __webpack_require__(17);
 	var IO = (function () {
 	    function IO() {
 	        this.VideoChunksLayerType = "video-chunks";
@@ -2132,7 +2305,7 @@
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	var Video = (function () {
@@ -2211,7 +2384,7 @@
 
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -2219,14 +2392,14 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var SVG_1 = __webpack_require__(16);
-	var Vector_1 = __webpack_require__(15);
-	var Chunk_1 = __webpack_require__(26);
-	var Command_1 = __webpack_require__(24);
-	var Path_1 = __webpack_require__(21);
-	var Segments_1 = __webpack_require__(23);
-	var Color_1 = __webpack_require__(17);
-	var Spline_1 = __webpack_require__(22);
+	var SVG_1 = __webpack_require__(17);
+	var Vector_1 = __webpack_require__(16);
+	var Chunk_1 = __webpack_require__(27);
+	var Command_1 = __webpack_require__(25);
+	var Path_1 = __webpack_require__(22);
+	var Segments_1 = __webpack_require__(24);
+	var Color_1 = __webpack_require__(18);
+	var Spline_1 = __webpack_require__(23);
 	var TIME_PRECISION = 2;
 	var ChunkFactory = (function () {
 	    function ChunkFactory(next) {
@@ -2558,7 +2731,7 @@
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -2566,11 +2739,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var Command_1 = __webpack_require__(24);
-	var SVG_1 = __webpack_require__(16);
-	var HelperFunctions_1 = __webpack_require__(11);
-	var Color_1 = __webpack_require__(17);
-	var Brush_1 = __webpack_require__(32);
+	var Command_1 = __webpack_require__(25);
+	var SVG_1 = __webpack_require__(17);
+	var HelperFunctions_1 = __webpack_require__(12);
+	var Color_1 = __webpack_require__(18);
+	var Brush_1 = __webpack_require__(33);
 	var TIME_PRECISION = 2;
 	var COORDS_PRECISION = 3;
 	var PRESSURE_PRECISION = 4;
@@ -2584,8 +2757,13 @@
 	        }
 	        throw new Error("Command loading failed: Unsupported node " + node.nodeName + ".");
 	    };
+	    Object.defineProperty(CommandFactory.prototype, "CmdTimeParamName", {
+	        get: function () { return "t"; },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    CommandFactory.prototype.getCmdTime = function (el, chunkStart) {
-	        return SVG_1.SVGA.numAttr(el, "t", 0) + chunkStart;
+	        return SVG_1.SVGA.numAttr(el, this.CmdTimeParamName, 0) + chunkStart;
 	    };
 	    CommandFactory.prototype.ToSVG = function (cmd, chunkStart) {
 	        if (!!this.next) {
@@ -2595,7 +2773,9 @@
 	    };
 	    CommandFactory.prototype.storeTime = function (el, time) {
 	        if (time > 0) {
-	            SVG_1.SVGA.SetAttributes(el, { "t": HelperFunctions_1.precise(time, TIME_PRECISION) });
+	            var params = {};
+	            params[this.CmdTimeParamName] = HelperFunctions_1.precise(time, TIME_PRECISION);
+	            SVG_1.SVGA.SetAttributes(el, params);
 	        }
 	    };
 	    return CommandFactory;
@@ -2730,10 +2910,87 @@
 	    return ClearCanvasFactory;
 	})(CommandFactory);
 	exports.ClearCanvasFactory = ClearCanvasFactory;
+	var AddComponentFactory = (function (_super) {
+	    __extends(AddComponentFactory, _super);
+	    function AddComponentFactory() {
+	        _super.apply(this, arguments);
+	    }
+	    AddComponentFactory.prototype.FromSVG = function (node, chunkStart) {
+	        if (node.localName === AddComponentFactory.NodeName) {
+	            var attrs = SVG_1.SVGA.attrs(node);
+	            var params = {};
+	            attrs.forEach(function (el) { return params[el.name] = el.value; });
+	            return new Command_1.AddComponent(SVG_1.SVGA.attr(node, "type"), SVG_1.SVGA.attr(node, "id"), params, this.getCmdTime(node, chunkStart));
+	        }
+	        return _super.prototype.FromSVG.call(this, node, chunkStart);
+	    };
+	    AddComponentFactory.prototype.ToSVG = function (cmd, chunkStart) {
+	        if (cmd instanceof Command_1.AddComponent) {
+	            var cmdEl = SVG_1.SVGA.CreateElement(AddComponentFactory.NodeName, cmd.Params);
+	            _super.prototype.storeTime.call(this, cmdEl, cmd.Time - chunkStart);
+	            return cmdEl;
+	        }
+	        return _super.prototype.ToSVG.call(this, cmd, chunkStart);
+	    };
+	    AddComponentFactory.NodeName = "add-component";
+	    return AddComponentFactory;
+	})(CommandFactory);
+	exports.AddComponentFactory = AddComponentFactory;
+	var RemoveComponentFactory = (function (_super) {
+	    __extends(RemoveComponentFactory, _super);
+	    function RemoveComponentFactory() {
+	        _super.apply(this, arguments);
+	    }
+	    RemoveComponentFactory.prototype.FromSVG = function (node, chunkStart) {
+	        if (node.localName === RemoveComponentFactory.NodeName) {
+	            return new Command_1.RemoveComponent(SVG_1.SVGA.attr(node, "id"), this.getCmdTime(node, chunkStart));
+	        }
+	        return _super.prototype.FromSVG.call(this, node, chunkStart);
+	    };
+	    RemoveComponentFactory.prototype.ToSVG = function (cmd, chunkStart) {
+	        if (cmd instanceof Command_1.RemoveComponent) {
+	            var cmdEl = SVG_1.SVGA.CreateElement(RemoveComponentFactory.NodeName, { "id": cmd.Id });
+	            _super.prototype.storeTime.call(this, cmdEl, cmd.Time - chunkStart);
+	            return cmdEl;
+	        }
+	        return _super.prototype.ToSVG.call(this, cmd, chunkStart);
+	    };
+	    RemoveComponentFactory.NodeName = "remove-component";
+	    return RemoveComponentFactory;
+	})(CommandFactory);
+	exports.RemoveComponentFactory = RemoveComponentFactory;
+	var ComponentCommandFactory = (function (_super) {
+	    __extends(ComponentCommandFactory, _super);
+	    function ComponentCommandFactory() {
+	        _super.apply(this, arguments);
+	    }
+	    ComponentCommandFactory.prototype.FromSVG = function (node, chunkStart) {
+	        if (node.localName === ComponentCommandFactory.NodeName) {
+	            var attrs = SVG_1.SVGA.attrs(node);
+	            var params = {};
+	            attrs.forEach(function (el) {
+	                params[el.name] = el.value;
+	            });
+	            return new Command_1.AddComponent(SVG_1.SVGA.attr(node, "target"), SVG_1.SVGA.attr(node, "cmd"), params, this.getCmdTime(node, chunkStart));
+	        }
+	        return _super.prototype.FromSVG.call(this, node, chunkStart);
+	    };
+	    ComponentCommandFactory.prototype.ToSVG = function (cmd, chunkStart) {
+	        if (cmd instanceof Command_1.ComponentCommand) {
+	            var cmdEl = SVG_1.SVGA.CreateElement(ComponentCommandFactory.NodeName, cmd.Params);
+	            _super.prototype.storeTime.call(this, cmdEl, cmd.Time - chunkStart);
+	            return cmdEl;
+	        }
+	        return _super.prototype.ToSVG.call(this, cmd, chunkStart);
+	    };
+	    ComponentCommandFactory.NodeName = "component-cmd";
+	    return ComponentCommandFactory;
+	})(CommandFactory);
+	exports.ComponentCommandFactory = ComponentCommandFactory;
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	//namespace VectorScreencast.UI {
@@ -2763,12 +3020,12 @@
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Metadata_1 = __webpack_require__(34);
-	var SVG_1 = __webpack_require__(16);
-	var AudioPlayer_1 = __webpack_require__(6);
+	var Metadata_1 = __webpack_require__(35);
+	var SVG_1 = __webpack_require__(17);
+	var AudioPlayer_1 = __webpack_require__(7);
 	var MetadataFactory = (function () {
 	    function MetadataFactory() {
 	    }
@@ -2838,7 +3095,7 @@
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports) {
 
 	var Metadata = (function () {
@@ -2848,6 +3105,51 @@
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Metadata;
+
+
+/***/ },
+/* 36 */
+/***/ function(module, exports) {
+
+	var ComponentContainer = (function () {
+	    function ComponentContainer(uiLayer) {
+	        this.uiLayer = uiLayer;
+	        this.components = {};
+	    }
+	    ComponentContainer.prototype.AddComponent = function (type, id, params) {
+	        if (!!this.components[id]) {
+	            throw new Error("ComponentContainer already contains a component with ID of '" + id + "'");
+	        }
+	        if (!this.componentFactories[type]) {
+	            throw new Error("ComponentContainer does not have any factory for type '" + type + "'");
+	        }
+	        var c = this.components[id] = this.componentFactories[type](id, params);
+	        this.uiLayer.AddChild(c.GetUIElement());
+	    };
+	    ComponentContainer.prototype.RemoveComponent = function (id) {
+	        var c = this.components[id];
+	        if (!c) {
+	            throw new Error("ComponentContainer does not contain any component with an ID of '" + id + "'");
+	        }
+	        this.uiLayer.RemoveChild(c.GetUIElement());
+	    };
+	    ComponentContainer.prototype.ExecuteCommand = function (targetId, cmd, params) {
+	        var c = this.components[targetId];
+	        if (!c) {
+	            throw new Error("ComponentContainer does not contain any component with an ID of '" + targetId + "'");
+	        }
+	        c.ExecuteCommand(cmd, params);
+	    };
+	    ComponentContainer.prototype.RegisterFactory = function (type, factory) {
+	        if (!!this.componentFactories[type]) {
+	            throw new Error("ComponentContainer already contains a component factory for type '" + type + "'");
+	        }
+	        this.componentFactories[type] = factory;
+	    };
+	    return ComponentContainer;
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = ComponentContainer;
 
 
 /***/ }

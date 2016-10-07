@@ -15,6 +15,8 @@ import Path from './Path';
         SetCurrentColor(color: Color): void;	
         SetupOutputCorrection(sourceWidth: number, sourceHeight: number): number;
         SetEvents(events: VideoEvents): void;
+		EnterEraserMode(): void;
+		ExitEraserMode(): void;
 	} 
 	
 //}

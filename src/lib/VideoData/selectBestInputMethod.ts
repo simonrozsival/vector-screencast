@@ -8,22 +8,22 @@ import VideoEvents from '../Helpers/VideoEvents';
 import VideoTimer from '../Helpers/VideoTimer';
 
 
-export default function selectBestInputMethod(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer): PointingDevice {
+export default function selectBestInputMethod(events: VideoEvents, container: HTMLElement, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer): PointingDevice {
 	var device: PointingDevice;
 	
 	// select best input method
 	var wacomApi: IWacomApi = WacomTablet.IsAvailable();
 	if (wacomApi !== null) { // Wacom plugin is prefered
-		device = new WacomTablet(events, board, timer, wacomApi);
+		device = new WacomTablet(events, container, board, timer, wacomApi);
 		console.log("Wacom WebPAPI is used");
 	} else if (window.hasOwnProperty("PointerEvent")) { // pointer events implement pressure-sensitivity
-		device = new PointerEventsAPI(events, board, timer);
+		device = new PointerEventsAPI(events, container, board, timer);
 		console.log("Pointer Events API is used");
 	} else if (AppleForceTouch.isAvailable()) {
-		device = new AppleForceTouch(events, board, canvas, timer);
+		device = new AppleForceTouch(events, container, board, canvas, timer);
 		console.log("Apple Force Touch Events over Touch Events API is used");
 	} else { // fallback to mouse + touch events
-		device = new TouchEventsAPI(events, board, canvas, timer);
+		device = new TouchEventsAPI(events, container, board, canvas, timer);
 		console.log("Touch Events API are used.");
 	}
 				

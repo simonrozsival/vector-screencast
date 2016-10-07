@@ -16,16 +16,16 @@ import PointingDevice from './PointingDevice';
 						
 		private currentEvent: PointerEvent; 
 						
-		constructor(events: VideoEvents, board: HTMLElement, timer: VideoTimer) {
+		constructor(events: VideoEvents, container: HTMLElement, board: HTMLElement, timer: VideoTimer) {
 			super(events, board, timer);
 							
-			// board events						
-			this.board.addEventListener("pointermove",  	(e) => this.onPointerMove(e));
-			this.board.addEventListener("pointerdown", 		(e) => this.onPointerDown(e));
-			this.board.addEventListener("pointerup",  		(e) => this.onPointerUp(e));
-			this.board.addEventListener("pointerleave",  	(e) => this.onPointerLeave(e)); // release the mouse also when the user tries to draw outside of the "board"
-			this.board.addEventListener("pointerenter",  	(e)	=> this.onPointerLeave(e));
-			this.board.addEventListener("pointerover",  	(e)	=> this.onPointerOver(e)); // maybe start a new line, if the button is pressed
+			// board events			
+			container.addEventListener("pointermove",  	(e) => this.onPointerMove(e));
+			container.addEventListener("pointerdown", 	(e) => this.onPointerDown(e));
+			container.addEventListener("pointerup",  	(e) => this.onPointerUp(e));
+			container.addEventListener("pointerleave",  (e) => this.onPointerLeave(e)); // release the mouse also when the user tries to draw outside of the "board"
+			container.addEventListener("pointerenter",  (e)	=> this.onPointerLeave(e));
+			container.addEventListener("pointerover",  	(e)	=> this.onPointerOver(e)); // maybe start a new line, if the button is pressed
 			this.currentEvent = null;
 			this.isDown = false;
 		}

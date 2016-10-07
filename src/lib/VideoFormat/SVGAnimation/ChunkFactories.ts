@@ -3,7 +3,7 @@ import VideoEvents, { VideoEventType } from '../../Helpers/VideoEvents';
 import SVG, { SVGA } from '../../Helpers/SVG';
 import Vector2 from '../../Helpers/Vector';
 import Chunk, { PathChunk, EraseChunk, VoidChunk } from '../../VideoData/Chunk';
-import Command, { MoveCursor, ChangeBrushColor, ChangeBrushSize, DrawNextSegment, ClearCanvas } from '../../VideoData/Command';
+import { Command, MoveCursor, ChangeBrushColor, ChangeBrushSize, DrawNextSegment, ClearCanvas } from '../../VideoData/Command';
 import CommandFactory from './CommandFactories';
 import Path from '../../Drawing/Path';
 import Segment, { QuadrilateralSegment, CurvedSegment, ZeroLengthSegment } from '../../Drawing/Segments';

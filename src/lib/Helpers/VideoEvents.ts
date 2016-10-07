@@ -4,8 +4,8 @@
  */
     
 /**
-	* The list of supported video events.
-	*/
+ * The list of supported video events.
+ */
 export enum VideoEventType {
 	/** Start or resume playing or recording of the video. */
 	Start,
@@ -73,7 +73,14 @@ export enum VideoEventType {
 	/** One part of the process is busy. */
 	Busy,
 	/** One part of the process is not busy any more. */
-	Ready,
+	Ready,	
+	
+	/** Creates a new instance of a component */
+	AddComponent,
+	/** Remove a component */
+	RemoveComponent,
+	/** A command for a component  */
+	ComponentCommand,
 	
 	// DO NOT ADD NEW EVENTS UNDERNEATH:
 	/** Hack - the 'length' enum option is declared as last, so it gets the number, that resembles the count of the event types. */ 
@@ -82,8 +89,8 @@ export enum VideoEventType {
 
 
 /**
-	* Video event instance. 
-	*/
+ * Video event instance. 
+ */
 class VideoEvent {
 	/** Collection of subscribed listeners. */
 	private listeners: Array<Function>;
@@ -91,24 +98,32 @@ class VideoEvent {
 	public get Type(): VideoEventType { return this.type; }
 
 	/**
-		* @param   type    Event type.
-		*/
+	 * @param   type    Event type.
+	 */
 	constructor(private type: VideoEventType) {
 		this.listeners = new Array(0); // prepare a dense empty array
+		this.removeWhenDone = new Array(0);
 	}
 	
 	/**
-		* Attach a new listener.
-		* @param   command     New listener. 
-		*/
+	 * Attach a new listener.
+	 * @param   command     New listener. 
+	 */
 	public on(command: Function): void {
 		this.listeners.push(command);
 	}
 	
+	private removeWhenDone: Array<Function>;
+	
+	public once(command: Function) {
+		this.on(command);
+		this.removeWhenDone.push(command);
+	}
+	
 	/**
-		* Remove listener
-		* @param   command     Listener to be removed.
-		*/
+	 * Remove listener
+	 * @param   command     Listener to be removed.
+	 */
 	public off(command: Function): void {
 		var index: number = this.listeners.indexOf(command);
 		if (index >= 0) {            
@@ -118,27 +133,33 @@ class VideoEvent {
 	}
 	
 	/**
-		* Trigger this event
-		* @param   args    Array of all arguments to be passed to the listeners.
-		*/
+	 * Trigger this event
+	 * @param   args    Array of all arguments to be passed to the listeners.
+	 */
 	public trigger(args: Array<any>): void {
-		for (var i = 0; i < this.listeners.length; i++) {
-			var cmd = this.listeners[i];
+		for (let cmd of this.listeners) {
 			cmd.apply(this, args);
+		}
+		
+		// remove the unnecessary commands
+		while(this.removeWhenDone.length > 0) {
+			let cmd = this.removeWhenDone.shift();
+			let i = this.listeners.indexOf(cmd);
+			this.listeners.splice(i, 1);
 		}
 	}
 } 
 
 /**
-	* An interface for holding an associative array of events.
-	*/
+ * An interface for holding an associative array of events.
+ */
 interface Events {
 	[index: number]: VideoEvent;
 }
 
 /**
-	* Global mediator class. Implements the Mediator/Event aggregator design pattern.
-	*/
+ * Global mediator class. Implements the Mediator/Event aggregator design pattern.
+ */
 export default class VideoEvents {
 	
 	/** Registered events */
@@ -149,23 +170,37 @@ export default class VideoEvents {
 	}
 		
 	/**
-		* Register new event listener.
-		* @param   type    Event type.
-		* @param   command Command to register as a listener of this event.
-		*/
+	 * Register new event listener.
+	 * @param   type    Event type.
+	 * @param   command Command to register as a listener of this event.
+	 */
 	public on(type: VideoEventType, command: Function) {
 		if (!this.events[<number> type]) {
 			this.events[<number> type] = new VideoEvent(type);
 		}
 
 		this.events[type].on(command);
+	}	
+			
+	/**
+	 * Register new event listener.
+	 * @param   type    Event type.
+	 * @param   command Command to register as a listener of this event.
+	 */
+	public once(type: VideoEventType, command: Function) {
+		if (!this.events[<number> type]) {
+			this.events[<number> type] = new VideoEvent(type);
+		}
+
+		this.events[type].once(command);
 	}
 	
+	
 	/**
-		* Unregister event listener.
-		* @param   type    Event type.
-		* @param   command The function to unregister.
-		*/
+	 * Unregister event listener.
+	 * @param   type    Event type.
+	 * @param   command The function to unregister.
+	 */
 	public off(type: VideoEventType, command: Function) {
 		if (!!this.events[<number> type]) {
 			this.events[<number> type].off(command);
@@ -173,13 +208,14 @@ export default class VideoEvents {
 	}         
 		
 	/**
-		* Trigger an event.
-		* @param   type    Event type.
-		* @param   args    A variadic array of arguments.
-		*/
+	 * Trigger an event.
+	 * @param   type    Event type.
+	 * @param   args    A variadic array of arguments.
+	 */
 	public trigger(type: VideoEventType, ...args: Array<any>) {
 		var e = this.events[<number> type];
-		if (!!e) { // !! - convert to boolean 
+		if (!!e) {  
+			//console.log(VideoEventType[e.Type], args);
 			e.trigger(args);
 		}
 	}

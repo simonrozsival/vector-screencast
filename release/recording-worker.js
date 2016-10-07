@@ -44,16 +44,16 @@
 /* 0 */
 /***/ function(module, exports) {
 
+	/// <reference path="../../node_modules/typescript/lib/lib.webworker.d.ts" />
 	var CMD_INIT = "init";
 	var CMD_PUSH_DATA = "pushData";
 	var CMD_FINISH = "finish";
 	function error(msg) {
 	    console.log("Recording Worker error: " + msg);
-	    this.postMessage({ type: "error", msg: msg });
+	    postMessage({ type: "error", msg: msg });
 	}
 	var audioProcessor = null;
-	this.onmessage = function (e) {
-	    var _this = this;
+	onmessage = function (e) {
 	    var msg = e.data;
 	    if (!msg.hasOwnProperty("cmd")) {
 	        console.log("Recording Worker error: message does not contain 'cmd' property.");
@@ -67,18 +67,18 @@
 	                    path: msg.path,
 	                    secured: false,
 	                    opened: function () { return console.log("Streaming was initialised successfully."); },
-	                    finished: function (files) { return _this.postMessage({ type: "finished", files: files }); },
+	                    finished: function (files) { return postMessage({ type: "finished", files: files }); },
 	                    error: function () { return error("Can't init audio processor"); }
 	                });
 	                break;
 	            case CMD_PUSH_DATA:
 	                if (!audioProcessor.PushData(msg.data)) {
-	                    this.postMessage({ type: "network-error" });
+	                    postMessage({ type: "network-error" });
 	                }
 	                break;
 	            case CMD_FINISH:
 	                audioProcessor.Finish({
-	                    success: function (data) { return _this.postMessage({ error: false, files: data.files }); },
+	                    success: function (data) { return postMessage({ error: false, files: data.files }); },
 	                    error: error
 	                });
 	                break;

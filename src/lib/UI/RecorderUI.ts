@@ -3,12 +3,13 @@ import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
 import HTML from '../Helpers/HTML';
 import VideoTimer from '../Helpers/VideoTimer';
 import { millisecondsToString } from '../Helpers/HelperFunctions';
-import { IElement, SimpleElement, Panel, IconButton, IconOnlyButton, H2 } from './BasicElements';
+import { IElement, SimpleElement, Panel, IconButton, IconOnlyButton, H2, Div } from './BasicElements';
 import { ChangeColorButton, ChangeBrushSizeButton } from './Buttons';
 import Board from './Board';
 import BrushSize from './Brush';
 import Color from '../UI/Color';
 import * as Localization from '../Localization/Recorder';
+import { IconClasses } from '../Settings/IconClasses';
 
 
 //namespace VectorScreencast.UI {
@@ -19,19 +20,25 @@ import * as Localization from '../Localization/Recorder';
 	export default class RecorderUI extends Panel {
 		
 		/** The black board container */
-		private board: Board;
+		protected board: Board;
+		
+		public get Board(): Board { return this.board; }
 		
 		/** UI controls */
-		private controls: Panel;
+		protected controls: Panel;
+		
+		/** UI components */
+		protected components: Panel;
+		public get ComponentsLayer(): Panel { return this.components; }
 			
 		/** The element showing the elaspsed time since the begining of recording */
-		private timeDisplay: SimpleElement;
+		protected timeDisplay: SimpleElement;
 			
 		/** Is recording running? */
-		private isRecording: boolean;
+		protected isRecording: boolean;
 		
 		/** Microphone is muted by the user. */
-		private micIsMuted: boolean;
+		protected micIsMuted: boolean;
 		
 		/** Get the width of the board in pixels. */
 		public get Width(): number {
@@ -51,49 +58,61 @@ import * as Localization from '../Localization/Recorder';
 		/** Translated strings */
 		public Localization: Localization.Recorder;
 		
+		public Icons: IconClasses; 
+		
 		/** (High res.) timer */
 		public Timer: VideoTimer;
 		
 		/** Is some of the parts of the video waiting for something? */
-		private isBusy: boolean;
+		protected isBusy: boolean;
+		
+		protected events: VideoEvents;
+		public set Events(e: VideoEvents) { this.events = e; }
 			
 		/**
 		 * Create a new instance of Recorder UI
 		 * @param	id				Unique ID of this recorder instance 
 		 */
-		constructor(private id: string, protected events: VideoEvents) {						
-			super("div", `${id}-recorder`);
+		constructor(protected id: string) {						
+			super('div', `${id}-recorder`);
 			this.AddClass("vector-video-wrapper");
 			
 			this.isRecording = false;
 			this.isBusy = false;		
-			this.micIsMuted = false;									
+			this.micIsMuted = false;					
+			this.board = null;				
 		}
 		
 		public CreateHTML(autohide: boolean, colorPallete: Array<Color>, brushSizes: Array<BrushSize>): void {			
 			// prepare the board
 			this.board = this.CreateBoard();
+			this.components = new Panel('div');
 			
 			// prepare the panels
-			this.controls = new Panel("div", `${this.id}-controls`)
-									.AddChildren(
-										this.CreateButtonsPanel().AddClass("ui-controls-panel"),			
-										this.CreateColorsPanel(colorPallete).AddClass("ui-controls-panel"),
-										this.CreateBrushSizesPanel(brushSizes).AddClass("ui-controls-panel"),			
-										this.CreateEraserPanel().AddClass("ui-controls-panel"),			
-										this.CreateEraseAllPanel().AddClass("ui-controls-panel"),
-										this.CreateMicPanel().AddClass("ui-controls-panel")	
-									)
-									.AddClasses("ui-controls", "ui-control");
+			this.controls = this.CreateControlsPanel(colorPallete, brushSizes);
 									
 			// if autohiding is requested, add 'autohide' class
 			!!autohide && this.controls.AddClass("autohide");
 			
 			this.AddChildren(
 				this.board,
-				new Panel("div").AddClass("ui-controls-wrapper")
-								.AddChild(this.controls)
+				this.components,
+				new Panel('div').AddClass("ui-controls-wrapper")
+									.AddChild(this.controls)
 			);
+		}
+		
+			
+		protected CreateControlsPanel(colorPallete: Array<Color>, brushSizes: Array<BrushSize>): Panel {
+			return new Panel("div", `${this.id}-controls`)
+									.AddChildren(
+										this.CreateButtonsPanel().AddClass("ui-controls-panel"),			
+										this.CreateColorsPanel(colorPallete).AddClass("ui-controls-panel"),
+										this.CreateBrushSizesPanel(brushSizes).AddClass("ui-controls-panel"),			
+										this.CreateEraserPanel().AddClass("ui-controls-panel"),
+										this.CreateMicPanel().AddClass("ui-controls-panel")	
+									)
+									.AddClasses("ui-controls", "ui-control");
 		}
 		
 		
@@ -125,28 +144,28 @@ import * as Localization from '../Localization/Recorder';
 		/**
 		 * Create the 
 		 */
-		private CreateBoard() : Board {
+		protected CreateBoard() : Board {
 			var board: Board = new Board(`${this.id}-board`, this.events);			
 			return board;
 		}
 		
 		/** REC/PAUSE button */
-		private recPauseButton: IconButton;
+		protected recPauseButton: IconButton;
 		
 		/** UPLOAD button */
-		private uploadButton: IconButton;
+		protected uploadButton: IconButton;
 		
 		/**
 		 * Create a panel containing the REC/Pause button and the upload button.
 		 */
-		private CreateButtonsPanel() : Panel {
+		protected CreateButtonsPanel() : Panel {
 			
 			var buttonsPanel: Panel = new Panel("div", `${this.id}-panels`);
 			// the rec/pause button:
-			this.recPauseButton = new IconButton("icon-rec", this.Localization.Record, (e) => this.RecordPause());
+			this.recPauseButton = new IconOnlyButton(this.Icons.Rec, this.Localization.Record, (e) => this.RecordPause());
 			
 			// the upload button:
-			this.uploadButton = new IconButton("icon-upload", this.Localization.Upload, (e) => this.InitializeUpload());
+			this.uploadButton = new IconOnlyButton(this.Icons.Upload, this.Localization.Upload, (e) => this.InitializeUpload());
 			HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });	
 			
 			buttonsPanel.AddChildren(
@@ -163,7 +182,7 @@ import * as Localization from '../Localization/Recorder';
 		/**
 		 * This function is called when the REC/PAUSE button is clicked.
 		 */
-		private RecordPause() : void {
+		protected RecordPause() : void {
 			if(this.isRecording === true) {
 				this.PauseRecording();
 				this.uploadButton.GetHTML().removeAttribute("disabled");
@@ -176,19 +195,19 @@ import * as Localization from '../Localization/Recorder';
 		}
 		
 		/** Ticking interval handler */
-		private ticking: number;
+		protected ticking: number;
 		
 		/** Ticking interval */
-		private tickingInterval: number = 100;
+		protected tickingInterval: number = 100;
 		
 		/**
 		 * Start (or continue) recording
 		 */
-		private StartRecording() : void {
+		protected StartRecording() : void {
 			if(this.isRecording === false) {
 				this.isRecording = true;
 				
-				this.recPauseButton.ChangeIcon("icon-pause");
+				this.recPauseButton.ChangeIcon("pause");
 				this.board.IsRecording = true;
 				
 				this.ticking = setInterval(() => this.Tick(), this.tickingInterval);
@@ -199,11 +218,11 @@ import * as Localization from '../Localization/Recorder';
 		/**
 		 * Pause recording
 		 */
-		private PauseRecording() : void {
+		protected PauseRecording() : void {
 			if(this.isRecording === true) {
 				this.isRecording = false;			
 				
-				this.recPauseButton.ChangeIcon("icon-rec");
+				this.recPauseButton.ChangeIcon("rec");
 				this.board.IsRecording = false;
 				
 				clearInterval(this.ticking);
@@ -214,11 +233,11 @@ import * as Localization from '../Localization/Recorder';
 		/**
 		 * Update the displayed time
 		 */
-		private Tick() : void {
+		protected Tick() : void {
 			this.recPauseButton.ChangeContent(millisecondsToString(this.Timer.CurrentTime()));
 		}
 				
-		private InitializeUpload() {
+		protected InitializeUpload() {
 			// disable the record and upload buttons
 			HTML.SetAttributes(this.recPauseButton.GetHTML(), { "disabled": "disabled" });
 			HTML.SetAttributes(this.uploadButton.GetHTML(), { "disabled": "disabled" });
@@ -230,7 +249,7 @@ import * as Localization from '../Localization/Recorder';
 		 * Create a panel for changing colors
 		 * @param	brushSizes	List of possible brush colors
 		 */
-		private CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
+		protected CreateColorsPanel(colorPallete: Array<Color>) : Panel {	
 			var colorsGroup = new Panel("div").AddClass("btn-group");					
 			for(var i = 0; i < colorPallete.length; i++) {
 				var btn = new ChangeColorButton(this.events, colorPallete[i]);
@@ -249,7 +268,7 @@ import * as Localization from '../Localization/Recorder';
 		 * Create a panel for changing brush size
 		 * @param	brushSizes	List of possible brush sizes
 		 */
-		private CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {
+		protected CreateBrushSizesPanel(brushSizes: Array<BrushSize>) : Panel {
 			var sizesGroup = new Panel("div").AddClass("btn-group");
 			for(var i = 0; i < brushSizes.length; i++) {
 				sizesGroup.AddChild(new ChangeBrushSizeButton(this.events, brushSizes[i]));			
@@ -264,74 +283,61 @@ import * as Localization from '../Localization/Recorder';
 		}	
 		
 		/** Current selected color. */
-		private currentColor: Color;
+		protected currentColor: Color;
 		
 		/** Special brush color button - current color of the canvas background. */
-		private switchToEraserButton: ChangeColorButton;
+		protected switchToEraserButton: ChangeColorButton;
 		
 		/** Button for clearing the canvas with single color. */
-		private eraseAllButton: ChangeColorButton;
+		protected eraseAllButton: ChangeColorButton;
 		
 		/**
 		 * Create a panel containing the eraser brush and the "erase all button"
 		 */
-		private CreateEraserPanel() : Panel {			
-			this.switchToEraserButton = new ChangeColorButton(this.events, Color.BackgroundColor);
-			return new Panel("div", `${this.id}-erase`)
-						.AddChildren(
-							new H2(this.Localization.Erase),
-							this.switchToEraserButton
-						);
-		}
-		
-		/**
-		 * Create a panel containing the eraser brush and the "erase all button"
-		 */
-		private CreateEraseAllPanel() : Panel {			
-			var panel: Panel = new Panel("div", `${this.id}-erase`);
-			var title: SimpleElement = new H2(this.Localization.EraseAll);
-			panel.AddChild(title);
-			
+		protected CreateEraserPanel() : Panel {			
+			var switchToEraserButton = new ChangeColorButton(this.events, Color.BackgroundColor);
 			// the "erase all" button:
-			this.eraseAllButton = new ChangeColorButton(this.events, Color.BackgroundColor, () => this.EraseAll());	
+			this.eraseAllButton = new ChangeColorButton(this.events, Color.BackgroundColor, () => {					
+				this.events.trigger(VideoEventType.ClearCanvas, this.currentColor);
+				switchToEraserButton.SetColor(this.currentColor);
+			});
+				
 			this.events.on(VideoEventType.ChangeColor, (color: Color) => {
 				this.currentColor = color;
 				this.eraseAllButton.SetColor(color);
 			});
 			
-			panel.AddChild(this.eraseAllButton);
-			return panel;
-		}
-		
-		/**
-		 * Clear the canvas
-		 */
-		private EraseAll(): void {
-			this.events.trigger(VideoEventType.ClearCanvas, this.currentColor);
-			this.switchToEraserButton.SetColor(this.currentColor);			
-		}
-		
+			return new Panel("div", `${this.id}-erase`)
+						.AddChildren(
+							new H2(this.Localization.Erase),
+							new Panel("div").AddClass("btn-group")
+								.AddChildren(				
+									switchToEraserButton,
+									this.eraseAllButton
+								)
+						);
+		}		
 		
 		/** Audio recording control button */
-		private micButton: IconOnlyButton;
+		protected micButton: IconOnlyButton;
 		
 		/**
 		 * Create a panel with microphone statistics. 
 		 */
 		protected CreateMicPanel(): IElement {
-			this.micButton = new IconOnlyButton("icon-mic-off", this.Localization.AudioRecordingUnavailable, () => this.MuteMic());
+			this.micButton = new IconOnlyButton(this.Icons.MicrophoneDisabled, this.Localization.AudioRecordingUnavailable, () => this.MuteMic());
 			HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
 			
 			// Change the microphone icon and text according to current settings
 			this.events.on(VideoEventType.AudioRecordingAvailable, () => {			
 				this.micButton.GetHTML().removeAttribute("disabled");
 				if(!this.micIsMuted) {
-					this.micButton.ChangeIcon("icon-mic").ChangeContent(this.Localization.AudioRecordingAvailable);					
+					this.micButton.ChangeIcon(this.Icons.MicrophoneEnabled).ChangeContent(this.Localization.AudioRecordingAvailable);					
 				}
 			});
 			
 			this.events.on(VideoEventType.AudioRecordingUnavailable, () => {
-				this.micButton.ChangeIcon("icon-mic-off").ChangeContent(this.Localization.AudioRecordingUnavailable);
+				this.micButton.ChangeIcon(this.Icons.MicrophoneDisabled).ChangeContent(this.Localization.AudioRecordingUnavailable);
 				HTML.SetAttributes(this.micButton.GetHTML(), { disabled: "disabled" });
 			});
 			
@@ -349,9 +355,9 @@ import * as Localization from '../Localization/Recorder';
 			this.micIsMuted = !this.micIsMuted;
 			
 			if(this.micIsMuted) {
-				this.micButton.ChangeIcon("icon-mic-off");
+				this.micButton.ChangeIcon("mic-off");
 			} else {
-				this.micButton.ChangeIcon("icon-mic");
+				this.micButton.ChangeIcon("mic");
 			}			
 		}
 	}	

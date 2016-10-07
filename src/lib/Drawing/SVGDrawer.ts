@@ -134,6 +134,14 @@ import Path, { SvgPath } from './Path';
             
             return min;
         }
+						
+		public EnterEraserMode() {
+			throw new Error("Not implemented yet.");	
+		}
+		
+		public ExitEraserMode() {
+			throw new Error("Not implemented yet.");
+		}
     
     }    
 

@@ -3,7 +3,7 @@ import HTML from '../Helpers/HTML';
 import VideoTimer from '../Helpers/VideoTimer';
 import { millisecondsToString } from '../Helpers/HelperFunctions';
 
-import { IElement, SimpleElement, Panel, IconButton, IconOnlyButton, H2 } from './BasicElements';
+import { IElement, SimpleElement, Panel, IconButton, IconOnlyButton, H2, Span } from './BasicElements';
 import Board from './Board';
 import BrushSize from './Brush';
 import Color from '../UI/Color';
@@ -75,7 +75,7 @@ import Metadata from '../VideoData/Metadata';
 		public CreateControls(autohide: boolean): void {	
 			// prepare the timeline and other controls
 			this.timeline = this.CreateTimeLine();	
-			this.hidingButton = <IconOnlyButton> new IconOnlyButton(autohide ? "icon-show" : "icon-hide", "", (e: Event) => this.ToggleAutohiding())
+			this.hidingButton = <IconOnlyButton> new IconOnlyButton(autohide ? "show" : "hide", "", (e: Event) => this.ToggleAutohiding())
 												.AddClasses("autohiding-toggle");
 															
 			this.controls = new Panel("div", `${this.id}-controls`)
@@ -171,7 +171,7 @@ import Metadata from '../VideoData/Metadata';
 		 * Create a panel containing the PLAY/PAUSE button and the upload button.
 		 */
 		private CreateButtonsPanel() : Panel {
-			this.playPauseButton = new IconOnlyButton("icon-play", this.Localization.Play, (e) => this.PlayPause());
+			this.playPauseButton = new IconOnlyButton("play", this.Localization.Play, (e) => this.PlayPause());
 			return <Panel> new Panel("div")
 						.AddChildren(
 							new H2(this.Localization.ControlPlayback),
@@ -207,7 +207,7 @@ import Metadata from '../VideoData/Metadata';
 			if(!this.controls) return;
 			if(this.reachedEnd === true) {
 				this.reachedEnd = false; // user has skipped somewhere - but definitely not directly to the end (100%)				
-				this.playPauseButton.ChangeIcon("icon-play");
+				this.playPauseButton.ChangeIcon("play");
 			}
 		}
 				
@@ -218,7 +218,7 @@ import Metadata from '../VideoData/Metadata';
 			if(!this.controls) return;
 			if(this.isPlaying === false) {
 				this.isPlaying = true;
-				this.playPauseButton.ChangeIcon("icon-pause");
+				this.playPauseButton.ChangeIcon("pause");
 				this.playPauseButton.ChangeContent(this.Localization.Pause);
 				this.AddClass("playing");
 							
@@ -234,7 +234,7 @@ import Metadata from '../VideoData/Metadata';
 			if(!this.controls) return;
 			
 			this.isPlaying = false;			
-			this.playPauseButton.ChangeIcon("icon-play");
+			this.playPauseButton.ChangeIcon("play");
 			this.playPauseButton.ChangeContent(this.Localization.Play);
 			this.RemoveClass("playing");
 			
@@ -257,8 +257,8 @@ import Metadata from '../VideoData/Metadata';
 		 * Creates a panel with the information about the progress of the video.
 		 */
 		private CreateTimeStatus() : IElement {			
-			this.currentTime = new SimpleElement("span", "0:00");
-			this.totalTime = new SimpleElement("span", "0:00");
+			this.currentTime = new Span("0:00");
+			this.totalTime = new Span("0:00");
 			
 			return new Panel("div")
 				.AddChildren(
@@ -266,7 +266,7 @@ import Metadata from '../VideoData/Metadata';
 					new Panel("div")
 						.AddChildren(
 							this.currentTime,
-							new SimpleElement("span", " / "),
+							new Span(" / "),
 							this.totalTime							
 						)
 						.AddClass("ui-time")
@@ -295,7 +295,7 @@ import Metadata from '../VideoData/Metadata';
 		public ReachedEnd(): void {
 			if(!this.controls) return;
 			this.PausePlaying();
-			this.playPauseButton.ChangeIcon("icon-replay").ChangeContent(this.Localization.Replay);
+			this.playPauseButton.ChangeIcon("replay").ChangeContent(this.Localization.Replay);
 			this.reachedEnd = true;			
 			this.UpdateCurrentTime(); // make the time be exacetely the duration of the video and the timeline is at 100%
 		}
@@ -339,9 +339,9 @@ import Metadata from '../VideoData/Metadata';
 					new H2(this.Localization.VolumeControl),
 					new Panel("div", `${this.id}-audio-controls`)
 						.AddChildren(
-							(this.volumeDownBtn = new IconOnlyButton("icon-volume-down", this.Localization.VolumeDown, (e) => this.VolumeDown())),
-							(this.volumeUpBtn = new IconOnlyButton("icon-volume-up", this.Localization.VolumeUp, (e) => this.VolumeUp())),
-							(this.volumeOffBtn = new IconOnlyButton("icon-volume-off", this.Localization.Mute, (e) => this.Mute()))
+							(this.volumeDownBtn = new IconOnlyButton("volume-down", this.Localization.VolumeDown, (e) => this.VolumeDown())),
+							(this.volumeUpBtn = new IconOnlyButton("volume-up", this.Localization.VolumeUp, (e) => this.VolumeUp())),
+							(this.volumeOffBtn = new IconOnlyButton("volume-off", this.Localization.Mute, (e) => this.Mute()))
 						)
 						.AddClass("btn-group")
 				)
@@ -392,10 +392,10 @@ import Metadata from '../VideoData/Metadata';
 		protected ToggleAutohiding(): void {
 			if(this.controls.HasClass("autohide")) {
 				this.controls.RemoveClass("autohide");
-				this.hidingButton.ChangeIcon("icon-hide");
+				this.hidingButton.ChangeIcon("hide");
 			} else {
 				this.controls.AddClass("autohide");
-				this.hidingButton.ChangeIcon("icon-show");
+				this.hidingButton.ChangeIcon("show");
 			}
 		}
 		 

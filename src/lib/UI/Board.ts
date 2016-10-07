@@ -46,11 +46,11 @@ import BrushSize from './Brush';
 		 */
 		constructor(id: string, protected events: VideoEvents) {
 			super("div", id); // Panel
-			HTML.SetAttributes(this.GetHTML(), { class: "vector-video-board" });
+			this.AddClass('vector-video-board');
 			
 			// create a cursor 
 			this.cursor = new Cursor(events);
-			this.AddChild(<IElement> this.cursor);
+			this.AddChild(this.cursor);
 			
 			// make board's position relative for the cursor			
 			HTML.SetAttributes(this.GetHTML(), { position: "relative" });
@@ -58,11 +58,11 @@ import BrushSize from './Brush';
 			// move the cursor
 			events.on(VideoEventType.CursorState, 			(state: CursorState) 	=> this.UpdateCursorPosition(state));
 			events.on(VideoEventType.CursorState, 			(state: CursorState) 	=> this.UpdateCursorPosition(state));			
-			events.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)				=> this.UpdateCursorSize(state));
-			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
-			events.on(VideoEventType.ChangeColor, 			(state: Color)					=> this.UpdateCursorColor(state));
-			events.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)			=> this.UpdateCursorScale(scalingFactor));
-			events.on(VideoEventType.CursorOffset, 		(offset: Vector2)		=> this.cursor.Offset = offset);
+			events.on(VideoEventType.ChangeBrushSize, 		(state: BrushSize)		=> this.UpdateCursorSize(state));
+			events.on(VideoEventType.ChangeColor, 			(state: Color)			=> this.UpdateCursorColor(state));
+			events.on(VideoEventType.ChangeColor, 			(state: Color)			=> this.UpdateCursorColor(state));
+			events.on(VideoEventType.CanvasScalingFactor, 	(scalingFactor: number)	=> this.UpdateCursorScale(scalingFactor));
+			events.on(VideoEventType.CursorOffset, 			(offset: Vector2)		=> this.cursor.Offset = offset);
 		}
 				
 		/**

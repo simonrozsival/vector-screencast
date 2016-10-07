@@ -1,12 +1,13 @@
 import HTML from '../Helpers/HTML';
 	
-//namespace VectorScreencast.UI {
-		
+//export namespace VectorScreencast.UI {
+	
 	/**
 	 * Basic UI interface
 	 */
 	export interface IElement {
 		GetHTML(): HTMLElement;
+		Refresh(): void;
 		HasClass(className: string): boolean;
 		AddClass(className: string): IElement;
 		AddClasses(...classes: Array<string>): IElement;
@@ -14,7 +15,7 @@ import HTML from '../Helpers/HTML';
 		RemoveClasses(...classes: Array<string>): IElement;
 	}
 	
-	export class SimpleElement implements IElement {		
+	export abstract class SimpleElement implements IElement {		
 		/** The simple element */
 		private element: HTMLElement;
 		
@@ -39,6 +40,11 @@ import HTML from '../Helpers/HTML';
 		 * Getter of the element.
 		 */
 		public GetHTML() : HTMLElement { return this.element; }
+		
+		/**
+		 * DOM has changed, element should adapt to the changes.
+		 */
+		public Refresh() { }
 		
 		/**
 		 * Does the HTML element has a specific class in it's class list?
@@ -83,9 +89,27 @@ import HTML from '../Helpers/HTML';
 	}	
 	
 	
+	
 	/**
 	 * A few concrete UI elements
 	 */
+	
+	export class Span extends SimpleElement {
+		constructor(text?: string) {
+			text = text || "";
+			super("span", text);
+		}
+	}
+	 
+	/**
+	 * A few concrete UI elements
+	 */
+	
+	export class Div extends SimpleElement {
+		constructor(text: string = "") {
+			super("div", text);
+		}
+	}
 	 
 	/**
 	 * Basic UI button
@@ -99,16 +123,19 @@ import HTML from '../Helpers/HTML';
 		 * @param	text	Button caption
 		 * @param	onClick	Optional click event handler
 		 */
-		constructor(text: string, onClick?: (e: MouseEvent) => void) {
+		constructor(text: string) {
 			super("button");	
 			this.AddClass("ui-button");
-			this.content = new SimpleElement("span", text);
+			this.content = new Span(text);
 			this.GetHTML().appendChild(this.content.GetHTML());
-					
-			if(!!onClick) {
-				this.GetHTML().onclick = onClick; // no event arguments are passed on purpose
-			}
 		}		
+		
+		/**
+		 * Set the DOM event handler to detect user's clicks.
+		 */
+		set Click(handler: (e: MouseEvent) => void) {			
+			this.GetHTML().onclick = handler;
+		}
 		
 		/**
 		 * Change the content of the button.
@@ -121,11 +148,25 @@ import HTML from '../Helpers/HTML';
 	}
 	
 	/**
+	 * Create an icon
+	 */
+	export interface IconFactory {
+		(iconClass: string): IElement;
+	}
+	
+	/**
 	 * Extended UI button
 	 */
 	export class IconButton extends Button {
 			
-		protected icon: IElement;
+		protected icon: IElement;		
+		
+		/**
+		 * A factory for creating a specific icon
+		 */
+		static CreateIcon: IconFactory = (iconClass: string) => {
+			return new Span().AddClasses('fa', `fa-${iconClass}`);
+		};
 			
 		/**
 		 * Create a basic button with a text in it
@@ -134,10 +175,11 @@ import HTML from '../Helpers/HTML';
 		 * @param	onClick	Optional click event handler
 		 */
 		constructor(protected iconClass: string, content: string, onClick?: (e: Event) => void) {
-			super(content, onClick);
+			super(content);
+			this.Click = onClick;
 			
 			// the content isn't a simple text..
-			this.icon = new SimpleElement("span", "").AddClasses("icon", iconClass);
+			this.icon = IconButton.CreateIcon(iconClass);
 			this.AddClass("has-icon");
 			this.GetHTML().appendChild(this.icon.GetHTML());						
 		}
@@ -153,7 +195,7 @@ import HTML from '../Helpers/HTML';
 	 * Button with an icon but without any text.
 	 */
 	export class IconOnlyButton extends IconButton {
-		constructor(iconClass: string, title: string, onClick?: (e: Event) => void) {
+		constructor(iconClass: string, title: string = "", onClick?: (e: Event) => void) {
 			super(iconClass, "", onClick); // empty content
 			this.ChangeContent(title);			
 			this.AddClass("icon-only-button");
@@ -214,8 +256,17 @@ import HTML from '../Helpers/HTML';
 		}
 		
 		/**
+		 * Refresh all the elements beneath.
+		 */
+		Refresh() {
+			this.Children.forEach(element => {
+				element.Refresh();
+			});
+		}
+		
+		/**
 		 * Add another element to the collection.
-		 * @param	btn		Element instance.
+		 * @param	el		Element instance.
 		 */
 		public AddChild(el: IElement): Panel {
 			return this.AddChildren(el);
@@ -232,6 +283,22 @@ import HTML from '../Helpers/HTML';
 			}
 			
 			return this;
+		}
+		
+		/**
+		 * Remove a child element from the DOM and from the list of children.
+		 * @param	el		Element instance
+		 */
+		public RemoveChild(el: IElement): boolean {
+			var i = this.elements.indexOf(el);
+			if(i === -1) {
+				return false; // the element does not exist
+			}
+			
+			let child = this.elements[i]; 			
+			this.GetHTML().removeChild(child.GetHTML()); // remove from the DOM
+			this.elements.splice(i, 1); // remove from the list
+			return true;
 		}		
 		
 		/**

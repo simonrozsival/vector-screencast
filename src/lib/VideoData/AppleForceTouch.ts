@@ -20,10 +20,10 @@ import VideoTimer from '../Helpers/VideoTimer';
 		/** This property *might* contain information about pressure level, if the device  */
 		private forceLevel: number;
 						
-		constructor(events: VideoEvents, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer) {
-			super(events, board, canvas, timer);			
+		constructor(events: VideoEvents, container: HTMLElement, board: HTMLElement, canvas: HTMLElement, timer: VideoTimer) {
+			super(events, container, board, canvas, timer);			
 			// board events						
-			this.board.onmousemove = (e: MouseEvent) => this.checkForce((<WebkitMouseEvent>e).webkitForce); // only bind the event if I am sure there is the force touch API
+			container.onmousemove = (e: MouseEvent) => this.checkForce((<WebkitMouseEvent>e).webkitForce); // only bind the event if I am sure there is the force touch API
 			this.forceLevel = 0; 
 		}
 		

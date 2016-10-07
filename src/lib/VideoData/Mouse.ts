@@ -10,15 +10,15 @@ import VideoTimer from '../Helpers/VideoTimer';
 	*/
 	export default class Mouse extends PointingDevice {
 								
-		constructor(events: VideoEvents, board: HTMLElement, timer: VideoTimer) {
+		constructor(events: VideoEvents, container: HTMLElement, board: HTMLElement, timer: VideoTimer) {
 			super(events, board, timer);
-			// board events						
-			this.board.onmousemove = 	(e) => this.onMouseMove(e);
-			this.board.onmousedown =	(e) => this.onMouseDown(e);
-			this.board.onmouseup = 		(e) => this.onMouseUp(e);
-			this.board.onmouseleave = 	(e) => this.onMouseLeave(e); // release the mouse also when the user tries to draw outside of the "board"
-			this.board.onmouseenter = 	(e)	=> this.onMouseEnter(e);
-			this.board.onmouseover = 	(e)	=> this.onMouseOver(e); // maybe start a new line, if the button is pressed
+			// board events		
+			container.onmousemove = 	(e) => this.onMouseMove(e);
+			container.onmousedown =	(e) => this.onMouseDown(e);
+			container.onmouseup = 	(e) => this.onMouseUp(e);
+			container.onmouseleave = 	(e) => this.onMouseLeave(e); // release the mouse also when the user tries to draw outside of the "board"
+			container.onmouseenter = 	(e)	=> this.onMouseEnter(e);
+			container.onmouseover = 	(e)	=> this.onMouseOver(e); // maybe start a new line, if the button is pressed
 		}
 		
 		/**

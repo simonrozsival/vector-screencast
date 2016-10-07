@@ -1,29 +1,32 @@
-webpackJsonp([1],[
-/* 0 */
+webpackJsonp([1],{
+
+/***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	var PointingDevice_1 = __webpack_require__(35);
-	var Video_1 = __webpack_require__(29);
-	var Chunk_1 = __webpack_require__(26);
-	var Command_1 = __webpack_require__(24);
-	var DynaDraw_1 = __webpack_require__(41);
-	var SVGDrawer_1 = __webpack_require__(42);
-	var AudioRecorder_1 = __webpack_require__(43);
-	var VideoEvents_1 = __webpack_require__(7);
-	var Errors_1 = __webpack_require__(8);
-	var VideoTimer_1 = __webpack_require__(19);
-	var Metadata_1 = __webpack_require__(34);
-	var Color_1 = __webpack_require__(17);
-	var Brush_1 = __webpack_require__(32);
-	var File_1 = __webpack_require__(27);
-	var IO_1 = __webpack_require__(28);
-	var RecorderUI_1 = __webpack_require__(44);
+	var Video_1 = __webpack_require__(30);
+	var Chunk_1 = __webpack_require__(27);
+	var Command_1 = __webpack_require__(25);
+	var DynaDraw_1 = __webpack_require__(37);
+	var CanvasDrawer_1 = __webpack_require__(21);
+	var AudioRecorder_1 = __webpack_require__(38);
+	var VideoEvents_1 = __webpack_require__(8);
+	var Errors_1 = __webpack_require__(9);
+	var VideoTimer_1 = __webpack_require__(20);
+	var Metadata_1 = __webpack_require__(35);
+	var Color_1 = __webpack_require__(18);
+	var Brush_1 = __webpack_require__(33);
+	var File_1 = __webpack_require__(28);
+	var IO_1 = __webpack_require__(29);
+	var RecorderUI_1 = __webpack_require__(39);
+	var ComponentContainer_1 = __webpack_require__(36);
+	var selectBestInputMethod_1 = __webpack_require__(41);
 	var Recorder = (function () {
 	    function Recorder(id, settings) {
 	        var _this = this;
 	        this.id = id;
 	        this.settings = settings;
 	        this.events = new VideoEvents_1.default();
+	        var e = this.events;
 	        this.isRecording = false;
 	        this.timer = new VideoTimer_1.default(false);
 	        this.recordingBlocked = false;
@@ -91,27 +94,40 @@ webpackJsonp([1],[
 	            };
 	            settings.Localization = loc;
 	        }
-	        this.events.on(VideoEvents_1.VideoEventType.ChangeBrushSize, function (size) { return _this.ChangeBrushSize(size); });
-	        this.events.on(VideoEvents_1.VideoEventType.ChangeColor, function (color) { return _this.ChangeColor(color); });
-	        this.events.on(VideoEvents_1.VideoEventType.CursorState, function (state) { return _this.ProcessCursorState(state); });
-	        this.events.on(VideoEvents_1.VideoEventType.ClearCanvas, function (color) { return _this.ClearCanvas(color); });
-	        this.events.on(VideoEvents_1.VideoEventType.Start, function () { return _this.Start(); });
-	        this.events.on(VideoEvents_1.VideoEventType.Pause, function () { return _this.Pause(); });
-	        this.events.on(VideoEvents_1.VideoEventType.StartUpload, function () { return _this.StartUpload(); });
+	        e.on(VideoEvents_1.VideoEventType.ChangeBrushSize, function (size) { return _this.ChangeBrushSize(size); });
+	        e.on(VideoEvents_1.VideoEventType.ChangeColor, function (color) { return _this.ChangeColor(color); });
+	        e.on(VideoEvents_1.VideoEventType.CursorState, function (state) { return _this.ProcessCursorState(state); });
+	        e.on(VideoEvents_1.VideoEventType.ClearCanvas, function (color) { return _this.ClearCanvas(color); });
+	        e.on(VideoEvents_1.VideoEventType.Start, function () { return _this.Start(); });
+	        e.on(VideoEvents_1.VideoEventType.Pause, function () { return _this.Pause(); });
+	        e.on(VideoEvents_1.VideoEventType.StartUpload, function () { return _this.StartUpload(); });
 	        this.busyLevel = 0;
-	        this.events.on(VideoEvents_1.VideoEventType.Busy, function () { return _this.Busy(); });
-	        this.events.on(VideoEvents_1.VideoEventType.Ready, function () { return _this.Ready(); });
+	        e.on(VideoEvents_1.VideoEventType.Busy, function () { return _this.Busy(); });
+	        e.on(VideoEvents_1.VideoEventType.Ready, function () { return _this.Ready(); });
 	        this.events.on(VideoEvents_1.VideoEventType.StartPath, function (path) {
 	            _this.PushChunk(new Chunk_1.PathChunk(path, _this.timer.CurrentTime(), _this.lastEraseData));
 	            _this.data.CurrentChunk.PushCommand(new Command_1.DrawNextSegment(_this.timer.CurrentTime()));
 	        });
 	        this.events.on(VideoEvents_1.VideoEventType.DrawSegment, function () { return _this.data.CurrentChunk.PushCommand(new Command_1.DrawNextSegment(_this.timer.CurrentTime())); });
+	        this.components = new ComponentContainer_1.default(this.ui);
+	        e.on(VideoEvents_1.VideoEventType.AddComponent, function (type, id, params) {
+	            _this.data.CurrentChunk.PushCommand(new Command_1.AddComponent(type, id, params, _this.timer.CurrentTime()));
+	            _this.components.AddComponent(type, id, params);
+	        });
+	        e.on(VideoEvents_1.VideoEventType.RemoveComponent, function (id) {
+	            _this.data.CurrentChunk.PushCommand(new Command_1.RemoveComponent(id, _this.timer.CurrentTime()));
+	            _this.components.RemoveComponent(id);
+	        });
+	        e.on(VideoEvents_1.VideoEventType.ComponentCommand, function (targetId, cmd, params) {
+	            _this.data.CurrentChunk.PushCommand(new Command_1.ComponentCommand(targetId, cmd, params, _this.timer.CurrentTime()));
+	            _this.components.ExecuteCommand(targetId, cmd, params);
+	        });
 	        var min = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size < currentValue.Size ? previousValue : currentValue; }).Size;
 	        var max = brushes.reduce(function (previousValue, currentValue, index, arr) { return previousValue.Size > currentValue.Size ? previousValue : currentValue; }).Size;
-	        this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new SVGDrawer_1.default(true);
+	        this.drawer = !!settings.DrawingStrategy ? settings.DrawingStrategy : new CanvasDrawer_1.default(true);
 	        this.drawer.SetEvents(this.events);
-	        this.dynaDraw = new DynaDraw_1.default(this.events, function () { return _this.drawer.CreatePath(_this.events); }, !settings.DisableDynamicLineWidth, min, max, this.timer);
-	        this.ui = !!settings.UI ? settings.UI : new RecorderUI_1.default(id, this.events);
+	        this.dynaDraw = new DynaDraw_1.default(e, function () { return _this.drawer.CreatePath(e); }, !settings.DisableDynamicLineWidth, min, max, this.timer);
+	        this.ui = !!settings.UI ? settings.UI : new RecorderUI_1.default(id, e);
 	        this.ui.Timer = this.timer;
 	        this.ui.Localization = settings.Localization;
 	        this.ui.SetBusyText(settings.Localization.Busy);
@@ -120,17 +136,22 @@ webpackJsonp([1],[
 	        this.ui.AcceptCanvas(canvas);
 	        container.appendChild(this.ui.GetHTML());
 	        this.drawer.Stretch();
-	        this.pointer = PointingDevice_1.default.SelectBestMethod(this.events, this.ui.GetHTML(), canvas, this.timer);
+	        this.pointer = selectBestInputMethod_1.default(e, this.ui.GetHTML(), canvas, this.timer);
+	        this.ClearCanvas(Color_1.default.BackgroundColor);
+	        e.trigger(VideoEvents_1.VideoEventType.ChangeColor, Color_1.default.ForegroundColor);
+	        e.trigger(VideoEvents_1.VideoEventType.ChangeBrushSize, new Brush_1.default(5));
 	        if (!!settings.Audio) {
-	            this.audioRecorder = new AudioRecorder_1.default(settings.Audio, this.events);
+	            this.audioRecorder = new AudioRecorder_1.default(settings.Audio, e);
 	            this.audioRecorder.Init();
 	        }
-	        this.ClearCanvas(Color_1.default.BackgroundColor);
-	        this.events.trigger(VideoEvents_1.VideoEventType.ChangeColor, Color_1.default.ForegroundColor);
-	        this.events.trigger(VideoEvents_1.VideoEventType.ChangeBrushSize, new Brush_1.default(5));
 	    }
 	    Object.defineProperty(Recorder.prototype, "Events", {
 	        get: function () { return this.events; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Recorder.prototype, "Components", {
+	        get: function () { return this.components; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -270,435 +291,12 @@ webpackJsonp([1],[
 
 
 /***/ },
-/* 1 */,
-/* 2 */,
-/* 3 */,
-/* 4 */,
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */,
-/* 19 */,
-/* 20 */,
-/* 21 */,
-/* 22 */,
-/* 23 */,
-/* 24 */,
-/* 25 */,
-/* 26 */,
-/* 27 */,
-/* 28 */,
-/* 29 */,
-/* 30 */,
-/* 31 */,
-/* 32 */,
-/* 33 */,
-/* 34 */,
-/* 35 */
+
+/***/ 37:
 /***/ function(module, exports, __webpack_require__) {
 
-	var VideoEvents_1 = __webpack_require__(7);
-	var State_1 = __webpack_require__(25);
-	var WacomTablet_1 = __webpack_require__(36);
-	var Pointer_1 = __webpack_require__(38);
-	var AppleForceTouch_1 = __webpack_require__(39);
-	var Touch_1 = __webpack_require__(40);
-	var PointingDevice = (function () {
-	    function PointingDevice(events, board, timer) {
-	        this.events = events;
-	        this.board = board;
-	        this.timer = timer;
-	        this.isHoveringOverUIControl = false;
-	    }
-	    PointingDevice.SelectBestMethod = function (events, board, canvas, timer) {
-	        var device;
-	        var wacomApi = WacomTablet_1.default.IsAvailable();
-	        if (wacomApi !== null) {
-	            device = new WacomTablet_1.default(events, board, timer, wacomApi);
-	            console.log("Wacom WebPAPI is used");
-	        }
-	        else if (window.hasOwnProperty("PointerEvent")) {
-	            device = new Pointer_1.default(events, board, timer);
-	            console.log("Pointer Events API is used");
-	        }
-	        else if (AppleForceTouch_1.default.isAvailable()) {
-	            device = new AppleForceTouch_1.default(events, board, canvas, timer);
-	            console.log("Apple Force Touch Events over Touch Events API is used");
-	        }
-	        else {
-	            device = new Touch_1.default(events, board, canvas, timer);
-	            console.log("Touch Events API are used.");
-	        }
-	        device.InitControlsAvoiding();
-	        return device;
-	    };
-	    PointingDevice.prototype.getCursor = function () { return this.cursor; };
-	    PointingDevice.prototype.InitControlsAvoiding = function () {
-	        var _this = this;
-	        var controls = document.getElementsByClassName("ui-control-panel");
-	        for (var i = 0; i < controls.length; i++) {
-	            var element = controls[i];
-	            element.onmouseover = function (e) { return _this.isHoveringOverUIControl = true; };
-	            element.onmouseout = function (e) { return _this.isHoveringOverUIControl = false; };
-	        }
-	    };
-	    PointingDevice.prototype.GetPressure = function () {
-	        return (this.isDown === true && this.isInside === true) ? 1 : 0;
-	    };
-	    PointingDevice.prototype.onMove = function (e) {
-	        this.cursor = this.getCursorPosition(e);
-	        this.ReportAction();
-	    };
-	    PointingDevice.prototype.onDown = function (e) {
-	        if (this.isHoveringOverUIControl === false) {
-	            this.isDown = true;
-	            this.cursor = this.getCursorPosition(e);
-	            this.ReportAction();
-	        }
-	    };
-	    PointingDevice.prototype.onUp = function (e) {
-	        this.isDown = false;
-	        this.cursor = this.getCursorPosition(e);
-	        this.ReportAction();
-	    };
-	    PointingDevice.prototype.onLeave = function (e) {
-	        if (this.GetPressure() > 0) {
-	            this.onMove(e);
-	            this.isDown = false;
-	            this.onMove(e);
-	            this.isDown = true;
-	        }
-	        this.isInside = false;
-	    };
-	    PointingDevice.prototype.onOver = function (e) {
-	        this.isInside = true;
-	    };
-	    PointingDevice.prototype.onLooseFocus = function (e) {
-	        this.isInside = false;
-	        this.isDown = false;
-	    };
-	    PointingDevice.prototype.getCursorPosition = function (e) {
-	        if (e.clientX == undefined || e.clientY == undefined) {
-	            console.log("Wrong 'getCursorPosition' parameter. Event data required.");
-	        }
-	        return {
-	            x: e.clientX,
-	            y: e.clientY
-	        };
-	    };
-	    PointingDevice.prototype.ReportAction = function () {
-	        var state = new State_1.CursorState(this.timer.CurrentTime(), this.cursor.x, this.cursor.y, this.GetPressure());
-	        this.events.trigger(VideoEvents_1.VideoEventType.CursorState, state);
-	    };
-	    return PointingDevice;
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = PointingDevice;
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Mouse_1 = __webpack_require__(37);
-	var HTML_1 = __webpack_require__(9);
-	var WacomPointerType;
-	(function (WacomPointerType) {
-	    WacomPointerType[WacomPointerType["OutOfProximity"] = 0] = "OutOfProximity";
-	    WacomPointerType[WacomPointerType["Pen"] = 1] = "Pen";
-	    WacomPointerType[WacomPointerType["Mouse"] = 2] = "Mouse";
-	    WacomPointerType[WacomPointerType["Eraseer"] = 3] = "Eraseer";
-	})(WacomPointerType || (WacomPointerType = {}));
-	var WacomTablet = (function (_super) {
-	    __extends(WacomTablet, _super);
-	    function WacomTablet(events, board, timer, penApi) {
-	        _super.call(this, events, board, timer);
-	        this.penApi = penApi;
-	    }
-	    WacomTablet.Factory = function (api) {
-	        return function (events, board, timer) { return new WacomTablet(events, board, timer, api); };
-	    };
-	    WacomTablet.prototype.GetPressure = function () {
-	        if (this.isDown === false || this.isInside === false) {
-	            return 0;
-	        }
-	        if (this.penApi && this.penApi.pointerType == WacomPointerType.Pen) {
-	            return this.isInside === true ? this.penApi.pressure : 0;
-	        }
-	        else {
-	            return _super.prototype.GetPressure.call(this);
-	        }
-	    };
-	    WacomTablet.IsAvailable = function () {
-	        var plugin = HTML_1.default.CreateElement("object", { type: "application/x-wacomtabletplugin" });
-	        document.body.appendChild(plugin);
-	        if (!!plugin.version === true) {
-	            console.log("Wacom tablet is connected and plugin installed. Plugin version is " + plugin.version + ".");
-	            return plugin.penAPI;
-	        }
-	        return null;
-	    };
-	    return WacomTablet;
-	})(Mouse_1.default);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = WacomTablet;
-
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var PointingDevice_1 = __webpack_require__(35);
-	var Mouse = (function (_super) {
-	    __extends(Mouse, _super);
-	    function Mouse(events, board, timer) {
-	        var _this = this;
-	        _super.call(this, events, board, timer);
-	        this.board.onmousemove = function (e) { return _this.onMouseMove(e); };
-	        this.board.onmousedown = function (e) { return _this.onMouseDown(e); };
-	        this.board.onmouseup = function (e) { return _this.onMouseUp(e); };
-	        this.board.onmouseleave = function (e) { return _this.onMouseLeave(e); };
-	        this.board.onmouseenter = function (e) { return _this.onMouseEnter(e); };
-	        this.board.onmouseover = function (e) { return _this.onMouseOver(e); };
-	    }
-	    Mouse.prototype.InitControlsAvoiding = function () {
-	        var _this = this;
-	        var controls = document.getElementsByClassName("ui-control");
-	        for (var i = 0; i < controls.length; i++) {
-	            var element = controls[i];
-	            element.onmouseover = function (e) { return _this.isHoveringOverUIControl = true; };
-	            element.onmouseout = function (e) { return _this.isHoveringOverUIControl = false; };
-	        }
-	    };
-	    Mouse.prototype.onMouseMove = function (e) {
-	        this.onMove(e);
-	    };
-	    Mouse.prototype.onMouseDown = function (e) {
-	        this.onDown(e);
-	    };
-	    Mouse.prototype.onMouseUp = function (e) {
-	        this.onUp(e);
-	    };
-	    Mouse.prototype.onMouseLeave = function (e) {
-	        this.onLeave(e);
-	    };
-	    Mouse.prototype.onMouseEnter = function (e) {
-	        if (e.buttons === 0) {
-	            this.isDown = false;
-	        }
-	    };
-	    Mouse.prototype.onMouseOver = function (e) {
-	        this.isInside = true;
-	    };
-	    return Mouse;
-	})(PointingDevice_1.default);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = Mouse;
-
-
-/***/ },
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var PointingDevice_1 = __webpack_require__(35);
-	var PointerEventsAPI = (function (_super) {
-	    __extends(PointerEventsAPI, _super);
-	    function PointerEventsAPI(events, board, timer) {
-	        var _this = this;
-	        _super.call(this, events, board, timer);
-	        this.board.addEventListener("pointermove", function (e) { return _this.onPointerMove(e); });
-	        this.board.addEventListener("pointerdown", function (e) { return _this.onPointerDown(e); });
-	        this.board.addEventListener("pointerup", function (e) { return _this.onPointerUp(e); });
-	        this.board.addEventListener("pointerleave", function (e) { return _this.onPointerLeave(e); });
-	        this.board.addEventListener("pointerenter", function (e) { return _this.onPointerLeave(e); });
-	        this.board.addEventListener("pointerover", function (e) { return _this.onPointerOver(e); });
-	        this.currentEvent = null;
-	        this.isDown = false;
-	    }
-	    PointerEventsAPI.prototype.GetPressure = function () {
-	        if (this.isDown === false || this.currentEvent === null) {
-	            return 0;
-	        }
-	        if (this.currentEvent.pointerType === "pen") {
-	            return this.currentEvent.pressure;
-	        }
-	        return 1;
-	    };
-	    PointerEventsAPI.prototype.InitControlsAvoiding = function () {
-	        var _this = this;
-	        var controls = document.getElementsByClassName("ui-control");
-	        for (var i = 0; i < controls.length; i++) {
-	            var element = controls[i];
-	            element.onpointerover = function (e) { return _this.isHoveringOverUIControl = true; };
-	            element.onpointerout = function (e) { return _this.isHoveringOverUIControl = false; };
-	        }
-	    };
-	    PointerEventsAPI.prototype.onPointerMove = function (e) {
-	        this.onMove(e);
-	        this.currentEvent = e;
-	    };
-	    PointerEventsAPI.prototype.onPointerDown = function (e) {
-	        this.onDown(e);
-	        this.currentEvent = e;
-	    };
-	    PointerEventsAPI.prototype.onPointerUp = function (e) {
-	        this.onUp(e);
-	        this.currentEvent = e;
-	    };
-	    PointerEventsAPI.prototype.onPointerLeave = function (e) {
-	        this.onLeave(e);
-	        this.currentEvent = e;
-	    };
-	    PointerEventsAPI.prototype.onPointerEnter = function (e) {
-	        if (e.buttons === 0) {
-	            this.isDown = false;
-	        }
-	        this.currentEvent = e;
-	    };
-	    PointerEventsAPI.prototype.onPointerOver = function (e) {
-	        this.isInside = true;
-	        this.currentEvent = e;
-	    };
-	    return PointerEventsAPI;
-	})(PointingDevice_1.default);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = PointerEventsAPI;
-
-
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Touch_1 = __webpack_require__(40);
-	var AppleForceTouch = (function (_super) {
-	    __extends(AppleForceTouch, _super);
-	    function AppleForceTouch(events, board, canvas, timer) {
-	        var _this = this;
-	        _super.call(this, events, board, canvas, timer);
-	        this.board.onmousemove = function (e) { return _this.checkForce(e.webkitForce); };
-	        this.forceLevel = 0;
-	    }
-	    AppleForceTouch.isAvailable = function () {
-	        return "WEBKIT_FORCE_AT_FORCE_MOUSE_DOWN" in MouseEvent;
-	    };
-	    AppleForceTouch.prototype.GetPressure = function () {
-	        return this.forceLevel;
-	    };
-	    AppleForceTouch.prototype.checkForce = function (webkitForce) {
-	        this.forceLevel = Math.min(1, webkitForce);
-	    };
-	    return AppleForceTouch;
-	})(Touch_1.default);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = AppleForceTouch;
-
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Mouse_1 = __webpack_require__(37);
-	var TouchEventsAPI = (function (_super) {
-	    __extends(TouchEventsAPI, _super);
-	    function TouchEventsAPI(events, container, canvas, timer) {
-	        var _this = this;
-	        _super.call(this, events, container, timer);
-	        this.canvas = canvas;
-	        canvas.addEventListener("touchstart", function (ev) { return _this.TouchStart(ev); });
-	        canvas.addEventListener("touchend", function (ev) { return _this.TouchEnd(ev); });
-	        canvas.addEventListener("touchcancel", function (ev) { return _this.TouchEnd(ev); });
-	        canvas.addEventListener("touchleave", function (ev) { return _this.TouchLeave(ev); });
-	        canvas.addEventListener("touchmove", function (ev) { return _this.TouchMove(ev); });
-	    }
-	    TouchEventsAPI.prototype.TouchStart = function (event) {
-	        event.preventDefault();
-	        var touches = event.changedTouches;
-	        var touch = touches[0];
-	        this.currentTouch = touch.identifier;
-	        this.isInside = true;
-	        this.isHoveringOverUIControl = false;
-	        this.onMouseDown(touch);
-	    };
-	    TouchEventsAPI.prototype.TouchLeave = function (event) {
-	        event.preventDefault();
-	        var touch = this.filterTouch(event.changedTouches);
-	        if (touch === null) {
-	            return;
-	        }
-	        this.onMouseLeave(touch);
-	    };
-	    TouchEventsAPI.prototype.TouchEnd = function (event) {
-	        var touch = this.filterTouch(event.changedTouches);
-	        if (touch === null) {
-	            return;
-	        }
-	        this.onMouseUp(touch);
-	        this.currentTouch = null;
-	    };
-	    TouchEventsAPI.prototype.TouchMove = function (event) {
-	        event.preventDefault();
-	        var touch = this.filterTouch(event.changedTouches);
-	        if (touch === null) {
-	            return;
-	        }
-	        this.onMouseMove(touch);
-	    };
-	    TouchEventsAPI.prototype.filterTouch = function (touchList) {
-	        for (var i = 0; i < touchList.length; i++) {
-	            var element = touchList[i];
-	            if (element.identifier === this.currentTouch) {
-	                return element;
-	            }
-	        }
-	        return null;
-	    };
-	    return TouchEventsAPI;
-	})(Mouse_1.default);
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = TouchEventsAPI;
-
-
-/***/ },
-/* 41 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vector_1 = __webpack_require__(15);
-	var VideoEvents_1 = __webpack_require__(7);
+	var Vector_1 = __webpack_require__(16);
+	var VideoEvents_1 = __webpack_require__(8);
 	var DynaDraw = (function () {
 	    function DynaDraw(events, pathFactory, slowSimulation, minBrushSize, maxBrushSize, timer) {
 	        var _this = this;
@@ -914,90 +512,14 @@ webpackJsonp([1],[
 
 
 /***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
 
-	var SVG_1 = __webpack_require__(16);
-	var VideoEvents_1 = __webpack_require__(7);
-	var Vector_1 = __webpack_require__(15);
-	var Path_1 = __webpack_require__(21);
-	var SVGDrawer = (function () {
-	    function SVGDrawer(curved) {
-	        if (curved === void 0) { curved = true; }
-	        this.curved = curved;
-	    }
-	    SVGDrawer.prototype.SetEvents = function (events) {
-	        this.events = events;
-	    };
-	    SVGDrawer.prototype.CreateCanvas = function () {
-	        this.svg = SVG_1.default.CreateElement("svg");
-	        var backgroundLayer = SVG_1.default.CreateElement("g");
-	        this.bg = SVG_1.default.CreateElement("rect", {
-	            id: "background"
-	        });
-	        backgroundLayer.appendChild(this.bg);
-	        this.svg.appendChild(backgroundLayer);
-	        this.canvas = SVG_1.default.CreateElement("g", {
-	            id: "canvas"
-	        });
-	        this.svg.appendChild(this.canvas);
-	        return this.svg;
-	    };
-	    SVGDrawer.prototype.Stretch = function () {
-	        var parent = this.svg.parentElement;
-	        var width = parent.clientWidth;
-	        var height = parent.clientHeight;
-	        SVG_1.default.SetAttributes(this.svg, {
-	            width: width,
-	            height: height
-	        });
-	        SVG_1.default.SetAttributes(this.bg, {
-	            width: width,
-	            height: height
-	        });
-	        this.events.trigger(VideoEvents_1.VideoEventType.CanvasSize, width, height);
-	    };
-	    SVGDrawer.prototype.ClearCanvas = function (color) {
-	        while (!!this.canvas.firstChild) {
-	            this.canvas.removeChild(this.canvas.firstChild);
-	        }
-	        SVG_1.default.SetAttributes(this.bg, { fill: color.CssValue });
-	    };
-	    SVGDrawer.prototype.SetCurrentColor = function (color) {
-	        this.currentColor = color;
-	    };
-	    SVGDrawer.prototype.CreatePath = function (events) {
-	        return new Path_1.SvgPath(events, this.curved, this.currentColor.CssValue, this.canvas);
-	    };
-	    SVGDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
-	        var wr = this.svg.clientWidth / sourceWidth;
-	        var hr = this.svg.clientHeight / sourceHeight;
-	        var min = Math.min(wr, hr);
-	        SVG_1.default.SetAttributes(this.svg, {
-	            "viewBox": "0 0 " + sourceWidth + " " + sourceHeight
-	        });
-	        if (min === wr) {
-	            this.events.trigger(VideoEvents_1.VideoEventType.CursorOffset, new Vector_1.default(0, (this.svg.clientHeight - sourceHeight * min) / 2));
-	        }
-	        else {
-	            this.events.trigger(VideoEvents_1.VideoEventType.CursorOffset, new Vector_1.default((this.svg.clientWidth - sourceWidth * min) / 2, 0));
-	        }
-	        return min;
-	    };
-	    return SVGDrawer;
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = SVGDrawer;
-
-
-/***/ },
-/* 43 */
+/***/ 38:
 /***/ function(module, exports, __webpack_require__) {
 
 	/// <reference path="audio.d.ts" />
-	var VideoEvents_1 = __webpack_require__(7);
-	var Errors_1 = __webpack_require__(8);
-	var AudioPlayer_1 = __webpack_require__(6);
+	var VideoEvents_1 = __webpack_require__(8);
+	var Errors_1 = __webpack_require__(9);
+	var AudioPlayer_1 = __webpack_require__(7);
 	var AudioRecorder = (function () {
 	    function AudioRecorder(config, events) {
 	        var _this = this;
@@ -1017,6 +539,8 @@ webpackJsonp([1],[
 	            this.settings.port = config.port;
 	        if (!!config.path)
 	            this.settings.path = config.path;
+	        if (!!config.recordingWorkerPath)
+	            this.settings.recordingWorkerPath = config.recordingWorkerPath;
 	        this.recording = false;
 	        this.muted = false;
 	        this.events.on(VideoEvents_1.VideoEventType.MuteAudioRecording, function () { return _this.muted = !_this.muted; });
@@ -1210,7 +734,8 @@ webpackJsonp([1],[
 
 
 /***/ },
-/* 44 */
+
+/***/ 39:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1218,13 +743,13 @@ webpackJsonp([1],[
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
-	var HTML_1 = __webpack_require__(9);
-	var HelperFunctions_1 = __webpack_require__(11);
-	var BasicElements_1 = __webpack_require__(12);
-	var Buttons_1 = __webpack_require__(45);
-	var Board_1 = __webpack_require__(13);
-	var Color_1 = __webpack_require__(17);
+	var VideoEvents_1 = __webpack_require__(8);
+	var HTML_1 = __webpack_require__(10);
+	var HelperFunctions_1 = __webpack_require__(12);
+	var BasicElements_1 = __webpack_require__(13);
+	var Buttons_1 = __webpack_require__(40);
+	var Board_1 = __webpack_require__(14);
+	var Color_1 = __webpack_require__(18);
 	var RecorderUI = (function (_super) {
 	    __extends(RecorderUI, _super);
 	    function RecorderUI(id, events) {
@@ -1408,7 +933,8 @@ webpackJsonp([1],[
 
 
 /***/ },
-/* 45 */
+
+/***/ 40:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -1416,9 +942,9 @@ webpackJsonp([1],[
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var BasicElements_1 = __webpack_require__(12);
-	var VideoEvents_1 = __webpack_require__(7);
-	var HTML_1 = __webpack_require__(9);
+	var BasicElements_1 = __webpack_require__(13);
+	var VideoEvents_1 = __webpack_require__(8);
+	var HTML_1 = __webpack_require__(10);
 	var ChangeColorButton = (function (_super) {
 	    __extends(ChangeColorButton, _super);
 	    function ChangeColorButton(events, color, callback) {
@@ -1480,6 +1006,412 @@ webpackJsonp([1],[
 	exports.ChangeBrushSizeButton = ChangeBrushSizeButton;
 
 
+/***/ },
+
+/***/ 41:
+/***/ function(module, exports, __webpack_require__) {
+
+	var WacomTablet_1 = __webpack_require__(42);
+	var Pointer_1 = __webpack_require__(45);
+	var AppleForceTouch_1 = __webpack_require__(46);
+	var Touch_1 = __webpack_require__(47);
+	function selectBestInputMethod(events, board, canvas, timer) {
+	    var device;
+	    var wacomApi = WacomTablet_1.default.IsAvailable();
+	    if (wacomApi !== null) {
+	        device = new WacomTablet_1.default(events, board, timer, wacomApi);
+	        console.log("Wacom WebPAPI is used");
+	    }
+	    else if (window.hasOwnProperty("PointerEvent")) {
+	        device = new Pointer_1.default(events, board, timer);
+	        console.log("Pointer Events API is used");
+	    }
+	    else if (AppleForceTouch_1.default.isAvailable()) {
+	        device = new AppleForceTouch_1.default(events, board, canvas, timer);
+	        console.log("Apple Force Touch Events over Touch Events API is used");
+	    }
+	    else {
+	        device = new Touch_1.default(events, board, canvas, timer);
+	        console.log("Touch Events API are used.");
+	    }
+	    device.InitControlsAvoiding();
+	    return device;
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = selectBestInputMethod;
+
+
+/***/ },
+
+/***/ 42:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Mouse_1 = __webpack_require__(43);
+	var HTML_1 = __webpack_require__(10);
+	var WacomPointerType;
+	(function (WacomPointerType) {
+	    WacomPointerType[WacomPointerType["OutOfProximity"] = 0] = "OutOfProximity";
+	    WacomPointerType[WacomPointerType["Pen"] = 1] = "Pen";
+	    WacomPointerType[WacomPointerType["Mouse"] = 2] = "Mouse";
+	    WacomPointerType[WacomPointerType["Eraseer"] = 3] = "Eraseer";
+	})(WacomPointerType || (WacomPointerType = {}));
+	var WacomTablet = (function (_super) {
+	    __extends(WacomTablet, _super);
+	    function WacomTablet(events, board, timer, penApi) {
+	        _super.call(this, events, board, timer);
+	        this.penApi = penApi;
+	    }
+	    WacomTablet.Factory = function (api) {
+	        return function (events, board, timer) { return new WacomTablet(events, board, timer, api); };
+	    };
+	    WacomTablet.prototype.GetPressure = function () {
+	        if (this.isDown === false || this.isInside === false) {
+	            return 0;
+	        }
+	        if (this.penApi && this.penApi.pointerType == WacomPointerType.Pen) {
+	            return this.isInside === true ? this.penApi.pressure : 0;
+	        }
+	        else {
+	            return _super.prototype.GetPressure.call(this);
+	        }
+	    };
+	    WacomTablet.IsAvailable = function () {
+	        var plugin = HTML_1.default.CreateElement("object", { type: "application/x-wacomtabletplugin" });
+	        document.body.appendChild(plugin);
+	        if (!!plugin.version === true) {
+	            console.log("Wacom tablet is connected and plugin installed. Plugin version is " + plugin.version + ".");
+	            return plugin.penAPI;
+	        }
+	        return null;
+	    };
+	    return WacomTablet;
+	})(Mouse_1.default);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = WacomTablet;
+
+
+/***/ },
+
+/***/ 43:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var PointingDevice_1 = __webpack_require__(44);
+	var Mouse = (function (_super) {
+	    __extends(Mouse, _super);
+	    function Mouse(events, board, timer) {
+	        var _this = this;
+	        _super.call(this, events, board, timer);
+	        this.board.onmousemove = function (e) { return _this.onMouseMove(e); };
+	        this.board.onmousedown = function (e) { return _this.onMouseDown(e); };
+	        this.board.onmouseup = function (e) { return _this.onMouseUp(e); };
+	        this.board.onmouseleave = function (e) { return _this.onMouseLeave(e); };
+	        this.board.onmouseenter = function (e) { return _this.onMouseEnter(e); };
+	        this.board.onmouseover = function (e) { return _this.onMouseOver(e); };
+	    }
+	    Mouse.prototype.InitControlsAvoiding = function () {
+	        var _this = this;
+	        var controls = document.getElementsByClassName("ui-control");
+	        for (var i = 0; i < controls.length; i++) {
+	            var element = controls[i];
+	            element.onmouseover = function (e) { return _this.isHoveringOverUIControl = true; };
+	            element.onmouseout = function (e) { return _this.isHoveringOverUIControl = false; };
+	        }
+	    };
+	    Mouse.prototype.onMouseMove = function (e) {
+	        this.onMove(e);
+	    };
+	    Mouse.prototype.onMouseDown = function (e) {
+	        this.onDown(e);
+	    };
+	    Mouse.prototype.onMouseUp = function (e) {
+	        this.onUp(e);
+	    };
+	    Mouse.prototype.onMouseLeave = function (e) {
+	        this.onLeave(e);
+	    };
+	    Mouse.prototype.onMouseEnter = function (e) {
+	        if (e.buttons === 0) {
+	            this.isDown = false;
+	        }
+	    };
+	    Mouse.prototype.onMouseOver = function (e) {
+	        this.isInside = true;
+	    };
+	    return Mouse;
+	})(PointingDevice_1.default);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Mouse;
+
+
+/***/ },
+
+/***/ 44:
+/***/ function(module, exports, __webpack_require__) {
+
+	var VideoEvents_1 = __webpack_require__(8);
+	var State_1 = __webpack_require__(26);
+	var PointingDevice = (function () {
+	    function PointingDevice(events, board, timer) {
+	        this.events = events;
+	        this.board = board;
+	        this.timer = timer;
+	        this.isHoveringOverUIControl = false;
+	    }
+	    PointingDevice.prototype.getCursor = function () { return this.cursor; };
+	    PointingDevice.prototype.InitControlsAvoiding = function () {
+	        var _this = this;
+	        var controls = document.getElementsByClassName("ui-control-panel");
+	        for (var i = 0; i < controls.length; i++) {
+	            var element = controls[i];
+	            element.onmouseover = function (e) { return _this.isHoveringOverUIControl = true; };
+	            element.onmouseout = function (e) { return _this.isHoveringOverUIControl = false; };
+	        }
+	    };
+	    PointingDevice.prototype.GetPressure = function () {
+	        return (this.isDown === true && this.isInside === true) ? 1 : 0;
+	    };
+	    PointingDevice.prototype.onMove = function (e) {
+	        this.cursor = this.getCursorPosition(e);
+	        this.ReportAction();
+	    };
+	    PointingDevice.prototype.onDown = function (e) {
+	        if (this.isHoveringOverUIControl === false) {
+	            this.isDown = true;
+	            this.cursor = this.getCursorPosition(e);
+	            this.ReportAction();
+	        }
+	    };
+	    PointingDevice.prototype.onUp = function (e) {
+	        this.isDown = false;
+	        this.cursor = this.getCursorPosition(e);
+	        this.ReportAction();
+	    };
+	    PointingDevice.prototype.onLeave = function (e) {
+	        if (this.GetPressure() > 0) {
+	            this.onMove(e);
+	            this.isDown = false;
+	            this.onMove(e);
+	            this.isDown = true;
+	        }
+	        this.isInside = false;
+	    };
+	    PointingDevice.prototype.onOver = function (e) {
+	        this.isInside = true;
+	    };
+	    PointingDevice.prototype.onLooseFocus = function (e) {
+	        this.isInside = false;
+	        this.isDown = false;
+	    };
+	    PointingDevice.prototype.getCursorPosition = function (e) {
+	        if (e.clientX == undefined || e.clientY == undefined) {
+	            console.log("Wrong 'getCursorPosition' parameter. Event data required.");
+	        }
+	        return {
+	            x: e.clientX,
+	            y: e.clientY
+	        };
+	    };
+	    PointingDevice.prototype.ReportAction = function () {
+	        var state = new State_1.CursorState(this.timer.CurrentTime(), this.cursor.x, this.cursor.y, this.GetPressure());
+	        this.events.trigger(VideoEvents_1.VideoEventType.CursorState, state);
+	    };
+	    return PointingDevice;
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = PointingDevice;
+
+
+/***/ },
+
+/***/ 45:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var PointingDevice_1 = __webpack_require__(44);
+	var PointerEventsAPI = (function (_super) {
+	    __extends(PointerEventsAPI, _super);
+	    function PointerEventsAPI(events, board, timer) {
+	        var _this = this;
+	        _super.call(this, events, board, timer);
+	        this.board.addEventListener("pointermove", function (e) { return _this.onPointerMove(e); });
+	        this.board.addEventListener("pointerdown", function (e) { return _this.onPointerDown(e); });
+	        this.board.addEventListener("pointerup", function (e) { return _this.onPointerUp(e); });
+	        this.board.addEventListener("pointerleave", function (e) { return _this.onPointerLeave(e); });
+	        this.board.addEventListener("pointerenter", function (e) { return _this.onPointerLeave(e); });
+	        this.board.addEventListener("pointerover", function (e) { return _this.onPointerOver(e); });
+	        this.currentEvent = null;
+	        this.isDown = false;
+	    }
+	    PointerEventsAPI.prototype.GetPressure = function () {
+	        if (this.isDown === false || this.currentEvent === null) {
+	            return 0;
+	        }
+	        if (this.currentEvent.pointerType === "pen") {
+	            return this.currentEvent.pressure;
+	        }
+	        return 1;
+	    };
+	    PointerEventsAPI.prototype.InitControlsAvoiding = function () {
+	        var _this = this;
+	        var controls = document.getElementsByClassName("ui-control");
+	        for (var i = 0; i < controls.length; i++) {
+	            var element = controls[i];
+	            element.onpointerover = function (e) { return _this.isHoveringOverUIControl = true; };
+	            element.onpointerout = function (e) { return _this.isHoveringOverUIControl = false; };
+	        }
+	    };
+	    PointerEventsAPI.prototype.onPointerMove = function (e) {
+	        this.onMove(e);
+	        this.currentEvent = e;
+	    };
+	    PointerEventsAPI.prototype.onPointerDown = function (e) {
+	        this.onDown(e);
+	        this.currentEvent = e;
+	    };
+	    PointerEventsAPI.prototype.onPointerUp = function (e) {
+	        this.onUp(e);
+	        this.currentEvent = e;
+	    };
+	    PointerEventsAPI.prototype.onPointerLeave = function (e) {
+	        this.onLeave(e);
+	        this.currentEvent = e;
+	    };
+	    PointerEventsAPI.prototype.onPointerEnter = function (e) {
+	        if (e.buttons === 0) {
+	            this.isDown = false;
+	        }
+	        this.currentEvent = e;
+	    };
+	    PointerEventsAPI.prototype.onPointerOver = function (e) {
+	        this.isInside = true;
+	        this.currentEvent = e;
+	    };
+	    return PointerEventsAPI;
+	})(PointingDevice_1.default);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = PointerEventsAPI;
+
+
+/***/ },
+
+/***/ 46:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Touch_1 = __webpack_require__(47);
+	var AppleForceTouch = (function (_super) {
+	    __extends(AppleForceTouch, _super);
+	    function AppleForceTouch(events, board, canvas, timer) {
+	        var _this = this;
+	        _super.call(this, events, board, canvas, timer);
+	        this.board.onmousemove = function (e) { return _this.checkForce(e.webkitForce); };
+	        this.forceLevel = 0;
+	    }
+	    AppleForceTouch.isAvailable = function () {
+	        return "WEBKIT_FORCE_AT_FORCE_MOUSE_DOWN" in MouseEvent;
+	    };
+	    AppleForceTouch.prototype.GetPressure = function () {
+	        return this.forceLevel;
+	    };
+	    AppleForceTouch.prototype.checkForce = function (webkitForce) {
+	        this.forceLevel = Math.min(1, webkitForce);
+	    };
+	    return AppleForceTouch;
+	})(Touch_1.default);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = AppleForceTouch;
+
+
+/***/ },
+
+/***/ 47:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Mouse_1 = __webpack_require__(43);
+	var TouchEventsAPI = (function (_super) {
+	    __extends(TouchEventsAPI, _super);
+	    function TouchEventsAPI(events, container, canvas, timer) {
+	        var _this = this;
+	        _super.call(this, events, container, timer);
+	        this.canvas = canvas;
+	        canvas.addEventListener("touchstart", function (ev) { return _this.TouchStart(ev); });
+	        canvas.addEventListener("touchend", function (ev) { return _this.TouchEnd(ev); });
+	        canvas.addEventListener("touchcancel", function (ev) { return _this.TouchEnd(ev); });
+	        canvas.addEventListener("touchleave", function (ev) { return _this.TouchLeave(ev); });
+	        canvas.addEventListener("touchmove", function (ev) { return _this.TouchMove(ev); });
+	    }
+	    TouchEventsAPI.prototype.TouchStart = function (event) {
+	        event.preventDefault();
+	        var touches = event.changedTouches;
+	        var touch = touches[0];
+	        this.currentTouch = touch.identifier;
+	        this.isInside = true;
+	        this.isHoveringOverUIControl = false;
+	        this.onMouseDown(touch);
+	    };
+	    TouchEventsAPI.prototype.TouchLeave = function (event) {
+	        event.preventDefault();
+	        var touch = this.filterTouch(event.changedTouches);
+	        if (touch === null) {
+	            return;
+	        }
+	        this.onMouseLeave(touch);
+	    };
+	    TouchEventsAPI.prototype.TouchEnd = function (event) {
+	        var touch = this.filterTouch(event.changedTouches);
+	        if (touch === null) {
+	            return;
+	        }
+	        this.onMouseUp(touch);
+	        this.currentTouch = null;
+	    };
+	    TouchEventsAPI.prototype.TouchMove = function (event) {
+	        event.preventDefault();
+	        var touch = this.filterTouch(event.changedTouches);
+	        if (touch === null) {
+	            return;
+	        }
+	        this.onMouseMove(touch);
+	    };
+	    TouchEventsAPI.prototype.filterTouch = function (touchList) {
+	        for (var i = 0; i < touchList.length; i++) {
+	            var element = touchList[i];
+	            if (element.identifier === this.currentTouch) {
+	                return element;
+	            }
+	        }
+	        return null;
+	    };
+	    return TouchEventsAPI;
+	})(Mouse_1.default);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = TouchEventsAPI;
+
+
 /***/ }
-]);
+
+});
 //# sourceMappingURL=recorder.js.map

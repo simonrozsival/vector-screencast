@@ -83,9 +83,8 @@ import Segment, { ZeroLengthSegment, QuadrilateralSegment, CurvedSegment } from 
 		/**
 		 * Path of the color fill.
 		 */
-		public get Color(): string {
-			return this.color;
-		}
+		public get Color(): string { return this.color; }		
+		public set Color(value: string) { this.color = value; }
 		
 		public StartPath(pt: Vector2, radius: number): void {
 			this.segments = [ new ZeroLengthSegment(pt.clone().add(new Vector2(0, radius)), pt.clone().add(new Vector2(0, -radius))) ];		

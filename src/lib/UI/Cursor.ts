@@ -1,6 +1,6 @@
 
 import Vector2 from '../Helpers/Vector';
-import { SimpleElement } from './BasicElements';
+import { Div } from './BasicElements';
 import BrushSize from './Brush';
 import VideoEvents, { VideoEventType } from '../Helpers/VideoEvents';
 import HTML from '../Helpers/HTML';
@@ -13,7 +13,7 @@ import Color from './Color';
 	/**
 	 * Cursor implementation.
 	 */
-	export default class Cursor extends SimpleElement {
+	export default class Cursor extends Div {
 		
 		/** The distance of the  */
 		protected radius:  number;
@@ -50,7 +50,7 @@ import Color from './Color';
 		 * Initialise a cursor. It's size and color must be explicitely changed before using it though!
 		 */
 		constructor(protected events: VideoEvents) {
-			super("div");			
+			super();			
 			this.radius = 20;
 			this.stroke = 3;
 			this.position = new Vector2(0, 0);
@@ -74,7 +74,7 @@ import Color from './Color';
 				width: 2*this.radius,
 				height: 2*this.radius
 			});
-			this.GetHTML().appendChild(this.svg);
+			this.AddClass('ui-cursor').GetHTML().appendChild(this.svg);
 	
 			// draw the dot at the center of the SVG element
 			this.bgColor = Color.BackgroundColor;
@@ -86,11 +86,6 @@ import Color from './Color';
 				"stroke-width": this.stroke
 			});
 			this.svg.appendChild(this.dot);
-	
-			// I want to move the cursor to any point - access directly the HTML style attribute
-			this.GetHTML().style.position = "absolute";
-			this.GetHTML().style.background = "transparent";
-			this.GetHTML().style.lineHeight = "0";
 			
 			this.events.on(VideoEventType.ClearCanvas, (color: Color) => {
 				this.bgColor = color;
@@ -114,7 +109,9 @@ import Color from './Color';
 		 * Change the color of brush outline according to current settings.
 		 */
 		public ChangeColor(color: Color) {
-			if(color.CssValue === this.bgColor.CssValue) {
+			if (color.CssValue === Color.Transparent.CssValue) {
+				color = new Color("black"); 
+			} else if (color.CssValue === this.bgColor.CssValue) {
 				color = color.CssValue === Color.ForegroundColor.CssValue ? Color.BackgroundColor : Color.ForegroundColor; // make it inverse
 			}
 			

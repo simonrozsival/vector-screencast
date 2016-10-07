@@ -104,29 +104,29 @@ import { Writer, Reader } from '../VideoFormat';
 				throw new Error(`SVGAnimation IO parsing error: Document must be an XML document`);
 			}
 			
-			var xml: Document = doc;
+			let xml: Document = doc;
 			if(xml.documentElement.childElementCount !== 2) {
 				throw new Error(`SVGAnimation document root element must have exactely two children nodes, but has ${xml.documentElement.childNodes.length} instead`)
 			}
 						
-			var video: Video = new Video();						
+			let video: Video = new Video();						
 						
 			// load video info
-			var metaNode = xml.documentElement.firstElementChild;
+			let metaNode = xml.documentElement.firstElementChild;
 			video.Metadata = this.metadataFactory.FromSVG(metaNode);
 			
 			// load chunks of data
-			var chunksLayer: Element = metaNode.nextElementSibling;
+			let chunksLayer: Element = metaNode.nextElementSibling;
 			if(chunksLayer.localName !== "g" || SVGA.attr(chunksLayer, "type") !== this.VideoChunksLayerType) {
 				throw new Error(`SVGAnimation IO parsing error: chunks layer must be a SVG <g> node with a:type='${this.VideoChunksLayerType}',`
 									+ ` got <${chunksLayer.localName}> with a:type='${SVGA.attr(chunksLayer, "type")}'`);
 			}
 			
-			var lastErase: number = 0;
-			var i: number = 0;						
-			var chunk: Element = chunksLayer.firstElementChild;
+			let lastErase: number = 0;
+			let i: number = 0;						
+			let chunk: Element = chunksLayer.firstElementChild;
 			while(!!chunk) {
-				var next = this.chunkFactory.FromSVG(events, chunk, this.commandFactory);
+				let next = this.chunkFactory.FromSVG(events, chunk, this.commandFactory);
 				next.LastErase = lastErase;
 				video.PushChunk(next);				
 				if(next instanceof EraseChunk) {

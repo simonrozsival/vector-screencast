@@ -3,22 +3,24 @@ webpackJsonp([0],{
 /***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	var AudioPlayer_1 = __webpack_require__(6);
-	var VideoEvents_1 = __webpack_require__(7);
-	var Errors_1 = __webpack_require__(8);
-	var PlayerUI_1 = __webpack_require__(10);
-	var VideoTimer_1 = __webpack_require__(19);
-	var CanvasDrawer_1 = __webpack_require__(20);
-	var Command_1 = __webpack_require__(24);
-	var Chunk_1 = __webpack_require__(26);
-	var File_1 = __webpack_require__(27);
-	var IO_1 = __webpack_require__(28);
+	var AudioPlayer_1 = __webpack_require__(7);
+	var VideoEvents_1 = __webpack_require__(8);
+	var Errors_1 = __webpack_require__(9);
+	var PlayerUI_1 = __webpack_require__(11);
+	var VideoTimer_1 = __webpack_require__(20);
+	var CanvasDrawer_1 = __webpack_require__(21);
+	var Command_1 = __webpack_require__(25);
+	var Chunk_1 = __webpack_require__(27);
+	var File_1 = __webpack_require__(28);
+	var IO_1 = __webpack_require__(29);
+	var ComponentContainer_1 = __webpack_require__(36);
 	var Player = (function () {
 	    function Player(id, settings) {
 	        var _this = this;
 	        this.settings = settings;
 	        this.lastMouseMoveState = null;
 	        this.events = new VideoEvents_1.default();
+	        var e = this.events;
 	        var container = document.getElementById(id);
 	        if (!container) {
 	            Errors_1.default.Report(Errors_1.ErrorType.Fatal, "Container #" + id + " doesn't exist. Video Player couldn't be initialised.");
@@ -55,12 +57,12 @@ webpackJsonp([0],{
 	        this.drawer.SetEvents(this.events);
 	        this.ui.AcceptCanvas(this.drawer.CreateCanvas());
 	        container.appendChild(this.ui.GetHTML());
-	        this.events.on(VideoEvents_1.VideoEventType.Start, function () { return _this.Play(); });
-	        this.events.on(VideoEvents_1.VideoEventType.Pause, function () { return _this.Pause(); });
-	        this.events.on(VideoEvents_1.VideoEventType.ReachEnd, function () { return _this.Pause(); });
-	        this.events.on(VideoEvents_1.VideoEventType.ClearCanvas, function (color) { return _this.ClearCavnas(color); });
-	        this.events.on(VideoEvents_1.VideoEventType.ChangeColor, function (color) { return _this.drawer.SetCurrentColor(color); });
-	        this.events.on(VideoEvents_1.VideoEventType.JumpTo, function (progress) { return _this.JumpTo(progress); });
+	        e.on(VideoEvents_1.VideoEventType.Start, function () { return _this.Play(); });
+	        e.on(VideoEvents_1.VideoEventType.Pause, function () { return _this.Pause(); });
+	        e.on(VideoEvents_1.VideoEventType.ReachEnd, function () { return _this.Pause(); });
+	        e.on(VideoEvents_1.VideoEventType.ClearCanvas, function (color) { return _this.ClearCavnas(color); });
+	        e.on(VideoEvents_1.VideoEventType.ChangeColor, function (color) { return _this.drawer.SetCurrentColor(color); });
+	        e.on(VideoEvents_1.VideoEventType.JumpTo, function (progress) { return _this.JumpTo(progress); });
 	        this.events.on(VideoEvents_1.VideoEventType.DrawSegment, function () { return _this.DrawSegment(); });
 	        this.events.on(VideoEvents_1.VideoEventType.DrawPath, function (path) {
 	            _this.drawnPath.DrawWholePath();
@@ -69,6 +71,10 @@ webpackJsonp([0],{
 	        this.busyLevel = 0;
 	        this.events.on(VideoEvents_1.VideoEventType.Busy, function () { return _this.Busy(); });
 	        this.events.on(VideoEvents_1.VideoEventType.Ready, function () { return _this.Ready(); });
+	        this.components = new ComponentContainer_1.default(this.ui);
+	        e.on(VideoEvents_1.VideoEventType.AddComponent, function (type, id, params) { return _this.components.AddComponent(type, id, params); });
+	        e.on(VideoEvents_1.VideoEventType.RemoveComponent, function (id) { return _this.components.RemoveComponent(id); });
+	        e.on(VideoEvents_1.VideoEventType.ComponentCommand, function (targetId, cmd, params) { return _this.components.ExecuteCommand(targetId, cmd, params); });
 	        this.ui.SetBusyText(settings.Localization.Busy);
 	        this.events.trigger(VideoEvents_1.VideoEventType.Busy);
 	        File_1.default.ReadFileAsync(settings.Source, function (file) {
@@ -82,6 +88,11 @@ webpackJsonp([0],{
 	    }
 	    Object.defineProperty(Player.prototype, "Events", {
 	        get: function () { return this.events; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Player.prototype, "Components", {
+	        get: function () { return this.components; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -141,6 +152,9 @@ webpackJsonp([0],{
 	    Player.prototype.Sync = function () {
 	        while (!!this.video.CurrentChunk) {
 	            if (this.video.CurrentChunk.CurrentCommand === undefined) {
+	                if (!!this.drawnPath) {
+	                    this.drawnPath.Draw();
+	                }
 	                this.MoveToNextChunk();
 	                if (!this.video.CurrentChunk
 	                    || !this.video.CurrentChunk.CurrentCommand) {
@@ -275,7 +289,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 10:
+/***/ 11:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -283,12 +297,12 @@ webpackJsonp([0],{
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
-	var HTML_1 = __webpack_require__(9);
-	var HelperFunctions_1 = __webpack_require__(11);
-	var BasicElements_1 = __webpack_require__(12);
-	var Board_1 = __webpack_require__(13);
-	var TimeLine_1 = __webpack_require__(18);
+	var VideoEvents_1 = __webpack_require__(8);
+	var HTML_1 = __webpack_require__(10);
+	var HelperFunctions_1 = __webpack_require__(12);
+	var BasicElements_1 = __webpack_require__(13);
+	var Board_1 = __webpack_require__(14);
+	var TimeLine_1 = __webpack_require__(19);
 	var PlayerUI = (function (_super) {
 	    __extends(PlayerUI, _super);
 	    function PlayerUI(id, events) {
@@ -420,11 +434,11 @@ webpackJsonp([0],{
 	        return new TimeLine_1.default(this.id + "-timeline", this.events);
 	    };
 	    PlayerUI.prototype.CreateTimeStatus = function () {
-	        this.currentTime = new BasicElements_1.SimpleElement("span", "0:00");
-	        this.totalTime = new BasicElements_1.SimpleElement("span", "0:00");
+	        this.currentTime = new BasicElements_1.Span("0:00");
+	        this.totalTime = new BasicElements_1.Span("0:00");
 	        return new BasicElements_1.Panel("div")
 	            .AddChildren(new BasicElements_1.H2(this.Localization.TimeStatus), new BasicElements_1.Panel("div")
-	            .AddChildren(this.currentTime, new BasicElements_1.SimpleElement("span", " / "), this.totalTime)
+	            .AddChildren(this.currentTime, new BasicElements_1.Span(" / "), this.totalTime)
 	            .AddClass("ui-time"))
 	            .AddClass("ui-controls-panel");
 	    };
@@ -494,7 +508,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 18:
+/***/ 19:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __extends = (this && this.__extends) || function (d, b) {
@@ -502,9 +516,9 @@ webpackJsonp([0],{
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VideoEvents_1 = __webpack_require__(7);
-	var BasicElements_1 = __webpack_require__(12);
-	var HelperFunctions_1 = __webpack_require__(11);
+	var VideoEvents_1 = __webpack_require__(8);
+	var BasicElements_1 = __webpack_require__(13);
+	var HelperFunctions_1 = __webpack_require__(12);
 	var TimeLine = (function (_super) {
 	    __extends(TimeLine, _super);
 	    function TimeLine(id, events) {
@@ -515,16 +529,16 @@ webpackJsonp([0],{
 	        this.GetHTML().classList.add("ui-progressbar");
 	        var bar = new BasicElements_1.Panel("div");
 	        bar.AddClass("ui-progress");
-	        bar.AddChild(new BasicElements_1.SimpleElement("div").AddClass("ui-current-time"));
+	        bar.AddChild(new BasicElements_1.Div().AddClass("ui-current-time"));
 	        this.progresbar = bar;
 	        this.AddChild(bar);
 	        bar = null;
-	        var buffer = new BasicElements_1.SimpleElement("div");
+	        var buffer = new BasicElements_1.Div();
 	        buffer.AddClass("ui-buffer");
 	        this.bufferbar = buffer;
 	        this.AddChild(buffer);
 	        buffer = null;
-	        this.arrow = new BasicElements_1.SimpleElement("div", "0:00");
+	        this.arrow = new BasicElements_1.Div("0:00");
 	        this.arrow.AddClass("ui-arrow");
 	        this.AddChild(this.arrow);
 	        this.Sync(0);
@@ -567,62 +581,6 @@ webpackJsonp([0],{
 	})(BasicElements_1.Panel);
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = TimeLine;
-
-
-/***/ },
-
-/***/ 20:
-/***/ function(module, exports, __webpack_require__) {
-
-	var VideoEvents_1 = __webpack_require__(7);
-	var HTML_1 = __webpack_require__(9);
-	var Path_1 = __webpack_require__(21);
-	var CanvasDrawer = (function () {
-	    function CanvasDrawer(curved) {
-	        if (curved === void 0) { curved = true; }
-	        this.curved = curved;
-	    }
-	    CanvasDrawer.prototype.SetEvents = function (events) {
-	        this.events = events;
-	    };
-	    CanvasDrawer.prototype.CreateCanvas = function () {
-	        this.canvas = HTML_1.default.CreateElement("canvas");
-	        this.context = this.canvas.getContext("2d");
-	        return this.canvas;
-	    };
-	    CanvasDrawer.prototype.Stretch = function () {
-	        var parent = this.canvas.parentElement;
-	        var width = parent.clientWidth;
-	        var height = parent.clientHeight;
-	        this.originalHeight = height;
-	        this.originalWidth = width;
-	        HTML_1.default.SetAttributes(this.canvas, {
-	            width: width,
-	            height: height
-	        });
-	        this.events.trigger(VideoEvents_1.VideoEventType.CanvasSize, width, height);
-	    };
-	    CanvasDrawer.prototype.SetupOutputCorrection = function (sourceWidth, sourceHeight) {
-	        var wr = this.canvas.width / sourceWidth;
-	        var hr = this.canvas.height / sourceHeight;
-	        var min = Math.min(wr, hr);
-	        this.context.scale(min, min);
-	        return min;
-	    };
-	    CanvasDrawer.prototype.ClearCanvas = function (color) {
-	        this.context.fillStyle = color.CssValue;
-	        this.context.fillRect(0, 0, this.originalWidth, this.originalHeight);
-	    };
-	    CanvasDrawer.prototype.SetCurrentColor = function (color) {
-	        this.currentColor = color;
-	    };
-	    CanvasDrawer.prototype.CreatePath = function (events) {
-	        return new Path_1.CanvasPath(events, this.curved, this.currentColor.CssValue, this.context);
-	    };
-	    return CanvasDrawer;
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = CanvasDrawer;
 
 
 /***/ }
